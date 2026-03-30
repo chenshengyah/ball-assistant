@@ -1,14 +1,15 @@
-# 云开发 quickstart
+# ball-assistant
 
-该项目已切换为 TypeScript 开发，微信开发者工具会直接编译 `miniprogram/**/*.ts` 源码。
+微信小程序项目，使用 TypeScript 开发，并保留云开发初始化能力。
 
-这是云开发的快速启动指引，其中演示了如何上手使用云开发的三大基础能力：
+## 开发说明
 
-- 数据库：一个既可在小程序前端操作，也能在云函数中读写的 JSON 文档型数据库
-- 文件存储：在小程序前端直接上传/下载云端文件，在云开发控制台可视化管理
-- 云函数：在云端运行的代码，微信私有协议天然鉴权，开发者只需编写业务逻辑代码
+- 小程序源码目录：`miniprogram/`
+- 产品与页面文档目录：`docs/`
+- 微信开发者工具已启用 `useCompilerPlugins: ["typescript"]`
+- 当前包含自定义 tabbar 和三个基础页面：`首页`、`活动`、`我的`
 
 ## 参考文档
 
-- [云开发文档](https://developers.weixin.qq.com/miniprogram/dev/wxcloud/basis/getting-started.html)
 - [小程序 TypeScript 开发文档](https://developers.weixin.qq.com/miniprogram/dev/devtools/compilets.html)
+- [云开发文档](https://developers.weixin.qq.com/miniprogram/dev/wxcloud/basis/getting-started.html)

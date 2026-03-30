@@ -1,0 +1,4 @@
+.page-shell {
+  padding: 48rpx 32rpx calc(160rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}

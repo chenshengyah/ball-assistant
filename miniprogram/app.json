@@ -1,12 +1,36 @@
 {
   "pages": [
-    "pages/index"
+    "pages/home/index",
+    "pages/activity/index",
+    "pages/activity-create/index",
+    "pages/profile/index"
   ],
+  "tabBar": {
+    "custom": true,
+    "color": "#7A8599",
+    "selectedColor": "#111827",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/activity/index",
+        "text": "活动"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
   "window": {
     "backgroundColor": "#F6F6F6",
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "云开发 QuickStart",
+    "navigationBarTitleText": "ball-assistant",
     "navigationBarTextStyle": "black"
   },
   "sitemapLocation": "sitemap.json",

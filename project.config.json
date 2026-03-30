@@ -1,6 +1,5 @@
 {
   "miniprogramRoot": "miniprogram/",
-  "cloudfunctionRoot": "cloudfunctions/",
   "setting": {
     "urlCheck": true,
     "es6": true,
@@ -39,15 +38,14 @@
     "minifyWXML": true,
     "localPlugins": false,
     "disableUseStrict": false,
-    "useCompilerPlugins": false,
+    "useCompilerPlugins": ["typescript"],
     "condition": false,
     "swc": false,
     "disableSWC": true
   },
   "appid": "wx0ca414704fdd8166",
-  "projectname": "quickstart-wx-cloud",
+  "projectname": "ball-assistant",
   "libVersion": "2.20.1",
-  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {
     "search": {
       "list": []
@@ -65,8 +63,8 @@
       "list": [
         {
           "id": -1,
-          "name": "db guide",
-          "pathName": "pages/databaseGuide/databaseGuide"
+          "name": "home",
+          "pathName": "pages/home/index"
         }
       ]
     }

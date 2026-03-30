@@ -1,0 +1,40 @@
+<view class="tab-bar" style="{{tabBarStyle}}">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="tab-bar__item"
+    data-path="{{item.pagePath}}"
+    bindtap="switchTab"
+  >
+    <view
+      class="tab-bar__content {{selected === index ? 'tab-bar__content--active' : ''}}"
+    >
+      <view class="tab-bar__icon">
+        <view wx:if="{{item.icon === 'home'}}" class="tab-icon tab-icon--home">
+          <view class="tab-icon__home-roof"></view>
+          <view class="tab-icon__home-body"></view>
+        </view>
+
+        <view
+          wx:elif="{{item.icon === 'activity'}}"
+          class="tab-icon tab-icon--activity"
+        >
+          <view class="tab-icon__calendar-body"></view>
+          <view class="tab-icon__calendar-bar"></view>
+          <view class="tab-icon__calendar-ring tab-icon__calendar-ring--left"></view>
+          <view class="tab-icon__calendar-ring tab-icon__calendar-ring--right"></view>
+        </view>
+
+        <view
+          wx:elif="{{item.icon === 'profile'}}"
+          class="tab-icon tab-icon--profile"
+        >
+          <view class="tab-icon__profile-head"></view>
+          <view class="tab-icon__profile-shoulder"></view>
+        </view>
+      </view>
+
+      <view class="tab-bar__text">{{item.text}}</view>
+    </view>
+  </view>
+</view>

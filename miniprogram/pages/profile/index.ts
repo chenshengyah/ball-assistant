@@ -1,6 +1,6 @@
-type IndexPageData = Record<string, never>;
+type ProfilePageData = Record<string, never>;
 
-Page<IndexPageData>({
+Page<ProfilePageData>({
   data: {},
 
   onLoad(_options: Record<string, string | undefined>): void {},

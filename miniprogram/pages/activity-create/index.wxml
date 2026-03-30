@@ -1,0 +1,417 @@
+<view class="create-page">
+  <view class="create-page__hero">
+    <view class="create-page__eyebrow">{{currentUserName}}</view>
+    <view class="create-page__title">{{pageTitle}}</view>
+    <view class="create-page__subtitle">{{pageCaption}}</view>
+  </view>
+
+  <view
+    wx:if="{{republishNotice}}"
+    class="notice-card"
+  >{{republishNotice}}</view>
+
+  <view class="section-card">
+    <view class="section-title">发布信息</view>
+
+    <view class="form-section">
+      <view class="form-label">发布身份</view>
+      <picker
+        mode="selector"
+        range="{{ownerLabels}}"
+        value="{{selectedOwnerIndex}}"
+        bindchange="handleOwnerChange"
+      >
+        <view class="picker-field">{{ownerLabels[selectedOwnerIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="form-section">
+      <view class="form-label">报名模式</view>
+      <picker
+        mode="selector"
+        range="{{signupModeLabels}}"
+        value="{{selectedSignupModeIndex}}"
+        bindchange="handleSignupModeChange"
+      >
+        <view class="picker-field">{{signupModeLabels[selectedSignupModeIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="form-section">
+      <view class="form-label">活动名称</view>
+      <input
+        class="text-field"
+        value="{{createForm.title}}"
+        placeholder="例如：周三晚场双打局"
+        data-field="title"
+        bindinput="handleCreateInput"
+      />
+    </view>
+
+    <view class="form-grid">
+      <view class="form-grid__item">
+        <view class="form-label">收费方式</view>
+        <picker
+          mode="selector"
+          range="{{chargeModeLabels}}"
+          value="{{selectedChargeModeIndex}}"
+          bindchange="handleChargeModeChange"
+        >
+          <view class="picker-field">{{chargeModeLabels[selectedChargeModeIndex]}}</view>
+        </picker>
+      </view>
+
+      <view class="form-grid__item">
+        <view class="form-label">收费金额（元）</view>
+        <input
+          class="text-field"
+          type="digit"
+          value="{{createForm.chargeAmountYuan}}"
+          placeholder="0"
+          data-field="chargeAmountYuan"
+          bindinput="handleCreateInput"
+        />
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="form-label">收费说明</view>
+      <input
+        class="text-field"
+        value="{{createForm.chargeDesc}}"
+        placeholder="例如：含场地和球"
+        data-field="chargeDesc"
+        bindinput="handleCreateInput"
+      />
+    </view>
+  </view>
+
+  <view class="section-card">
+    <view class="section-title">时间信息</view>
+
+    <view class="form-grid">
+      <view class="form-grid__item">
+        <view class="form-label">活动日期</view>
+        <picker
+          mode="date"
+          value="{{createForm.activityDate}}"
+          bindchange="handleCreateInput"
+          data-field="activityDate"
+        >
+          <view class="picker-field">{{createForm.activityDate}}</view>
+        </picker>
+      </view>
+
+      <view class="form-grid__item">
+        <view class="form-label">开始时间</view>
+        <picker
+          mode="time"
+          value="{{createForm.startTime}}"
+          bindchange="handleCreateInput"
+          data-field="startTime"
+        >
+          <view class="picker-field">{{createForm.startTime}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="form-grid">
+      <view class="form-grid__item">
+        <view class="form-label">结束时间</view>
+        <picker
+          mode="time"
+          value="{{createForm.endTime}}"
+          bindchange="handleCreateInput"
+          data-field="endTime"
+        >
+          <view class="picker-field">{{createForm.endTime}}</view>
+        </picker>
+      </view>
+
+      <view class="form-grid__item">
+        <view class="form-label">停止取消规则</view>
+        <picker
+          mode="selector"
+          range="{{cancelCutoffLabels}}"
+          value="{{selectedCancelCutoffIndex}}"
+          bindchange="handleCancelCutoffChange"
+        >
+          <view class="picker-field">{{cancelCutoffLabels[selectedCancelCutoffIndex]}}</view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-card">
+    <view class="section-header">
+      <view class="section-title">报名与场馆</view>
+      <view
+        class="section-link"
+        bindtap="handleOpenVenueManager"
+      >管理场馆与场地</view>
+    </view>
+
+    <view class="form-section">
+      <view class="form-label">选择场馆</view>
+      <picker
+        mode="selector"
+        range="{{venueLabels}}"
+        value="{{selectedVenueIndex}}"
+        bindchange="handleVenueChange"
+      >
+        <view class="picker-field">{{venueLabels[selectedVenueIndex]}}</view>
+      </picker>
+    </view>
+
+    <view
+      wx:if="{{createForm.signupMode === 'GENERAL'}}"
+      class="form-section"
+    >
+      <view class="form-label">活动总人数</view>
+      <input
+        class="text-field"
+        type="number"
+        value="{{createForm.totalCapacity}}"
+        placeholder="例如：36"
+        data-field="totalCapacity"
+        bindinput="handleCreateInput"
+      />
+      <view class="form-help">统一报名不分场地，超出人数会自动进入候补。</view>
+    </view>
+
+    <view
+      wx:if="{{createForm.signupMode === 'USER_SELECT_COURT'}}"
+      class="form-section"
+    >
+      <view class="form-label">启用场地</view>
+      <view class="form-help">每片场地可单独设置人数上限，超员后会自动进入候补。</view>
+
+      <view class="court-list">
+        <view
+          wx:for="{{availableCourts}}"
+          wx:key="venueCourtId"
+          wx:for-item="court"
+          class="court-card {{court.enabled ? 'court-card--active' : ''}}"
+        >
+          <view class="court-card__top">
+            <view class="court-card__name">{{court.label}}</view>
+            <view
+              class="court-card__toggle"
+              data-court-index="{{index}}"
+              bindtap="handleToggleCourt"
+            >{{court.enabled ? '已启用' : '点击启用'}}</view>
+          </view>
+
+          <view wx:if="{{court.enabled}}">
+            <view class="form-section">
+              <view class="form-label">人数上限</view>
+              <input
+                class="text-field"
+                type="number"
+                value="{{court.capacity}}"
+                data-court-index="{{index}}"
+                data-field="capacity"
+                bindinput="handleCourtInput"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-card">
+    <view class="section-title">活动描述</view>
+
+    <view class="form-section">
+      <textarea
+        class="textarea-field"
+        value="{{createForm.descriptionRichtext}}"
+        placeholder="填写玩法、水平要求、报名说明等"
+        data-field="descriptionRichtext"
+        bindinput="handleCreateInput"
+      ></textarea>
+    </view>
+  </view>
+
+  <view class="page-actions">
+    <view
+      class="action-button action-button--secondary"
+      bindtap="handleBack"
+    >返回</view>
+    <view
+      class="action-button action-button--primary"
+      bindtap="handleSubmitCreate"
+    >发布活动</view>
+  </view>
+
+  <view
+    wx:if="{{showVenueManager}}"
+    class="sheet-mask"
+    bindtap="handleCloseVenueManager"
+  ></view>
+  <view
+    wx:if="{{showVenueManager}}"
+    class="dialog"
+    catchtap="handleDialogTap"
+  >
+    <view class="dialog__title">场馆与场地管理</view>
+    <view class="dialog__subtitle">保存后会回到当前表单，并刷新可选场馆与场地。</view>
+
+    <scroll-view
+      class="dialog__body"
+      scroll-y="true"
+    >
+      <view class="form-section">
+        <view class="section-header">
+          <view class="form-label">管理场馆</view>
+          <view
+            class="section-link"
+            bindtap="handleStartCreateVenue"
+          >新建场馆</view>
+        </view>
+
+        <picker
+          wx:if="{{managerVenueLabels.length > 0}}"
+          mode="selector"
+          range="{{managerVenueLabels}}"
+          value="{{selectedManagerVenueIndex}}"
+          bindchange="handleManagerVenueChange"
+        >
+          <view class="picker-field">{{venueManagerForm.isNew ? '新建场馆中' : managerVenueLabels[selectedManagerVenueIndex]}}</view>
+        </picker>
+      </view>
+
+      <view class="form-grid">
+        <view class="form-grid__item">
+          <view class="form-label">场馆名称</view>
+          <input
+            class="text-field"
+            value="{{venueManagerForm.name}}"
+            placeholder="例如：浦东金桥羽毛球馆"
+            data-field="name"
+            bindinput="handleVenueManagerInput"
+          />
+        </view>
+
+        <view class="form-grid__item">
+          <view class="form-label">简称</view>
+          <input
+            class="text-field"
+            value="{{venueManagerForm.shortName}}"
+            placeholder="例如：金桥馆"
+            data-field="shortName"
+            bindinput="handleVenueManagerInput"
+          />
+        </view>
+      </view>
+
+      <view class="form-grid">
+        <view class="form-grid__item">
+          <view class="form-label">区域</view>
+          <input
+            class="text-field"
+            value="{{venueManagerForm.district}}"
+            placeholder="例如：浦东新区"
+            data-field="district"
+            bindinput="handleVenueManagerInput"
+          />
+        </view>
+
+        <view class="form-grid__item">
+          <view class="form-label">导航名</view>
+          <input
+            class="text-field"
+            value="{{venueManagerForm.navigationName}}"
+            placeholder="默认同场馆名称"
+            data-field="navigationName"
+            bindinput="handleVenueManagerInput"
+          />
+        </view>
+      </view>
+
+      <view class="form-section">
+        <view class="form-label">详细地址</view>
+        <input
+          class="text-field"
+          value="{{venueManagerForm.address}}"
+          placeholder="详细地址"
+          data-field="address"
+          bindinput="handleVenueManagerInput"
+        />
+      </view>
+
+      <view class="form-section">
+        <view class="section-header">
+          <view class="form-label">场地列表</view>
+          <view
+            class="section-link"
+            bindtap="handleAddManagerCourt"
+          >新增场地</view>
+        </view>
+        <view class="form-help">停用后的场地不会影响历史活动快照，但不会再出现在新建活动里。</view>
+
+        <view class="manager-court-list">
+          <view
+            wx:for="{{managerCourts}}"
+            wx:key="rowKey"
+            wx:for-item="court"
+            class="manager-court-card {{court.status === 'INACTIVE' ? 'manager-court-card--inactive' : ''}}"
+          >
+            <view class="section-header">
+              <view class="court-card__name">{{court.courtName || court.courtCode || '新场地'}}</view>
+              <view class="manager-court__tag">{{court.status === 'ACTIVE' ? '启用中' : '已停用'}}</view>
+            </view>
+
+            <view class="form-grid">
+              <view class="form-grid__item">
+                <view class="form-label">场地号</view>
+                <input
+                  class="text-field"
+                  value="{{court.courtCode}}"
+                  placeholder="例如：1 / A"
+                  data-court-index="{{index}}"
+                  data-field="courtCode"
+                  bindinput="handleManagerCourtInput"
+                  disabled="{{court.status !== 'ACTIVE'}}"
+                />
+              </view>
+
+              <view class="form-grid__item">
+                <view class="form-label">场地名称</view>
+                <input
+                  class="text-field"
+                  value="{{court.courtName}}"
+                  placeholder="例如：1 号场"
+                  data-court-index="{{index}}"
+                  data-field="courtName"
+                  bindinput="handleManagerCourtInput"
+                  disabled="{{court.status !== 'ACTIVE'}}"
+                />
+              </view>
+            </view>
+
+            <view class="manager-court__footer">
+              <view
+                class="section-link {{court.status !== 'ACTIVE' && !court.isNew ? 'section-link--muted' : ''}}"
+                data-court-index="{{index}}"
+                bindtap="handleToggleManagerCourtStatus"
+              >{{court.isNew ? '移除' : court.status === 'ACTIVE' ? '停用场地' : '已停用'}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="dialog__footer">
+      <view
+        class="action-button action-button--secondary"
+        bindtap="handleCloseVenueManager"
+      >取消</view>
+      <view
+        class="action-button action-button--primary"
+        bindtap="handleSaveVenueManager"
+      >保存配置</view>
+    </view>
+  </view>
+</view>
