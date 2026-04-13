@@ -397,6 +397,7 @@ export function getCurrentUser(): UserProfile {
   return getActivityStore().users.find((user) => user.id === "user-current") ?? {
     id: "user-current",
     nickname: "当前用户",
+    gender: "MALE",
     avatarColor: "#4C7CF0",
   };
 }

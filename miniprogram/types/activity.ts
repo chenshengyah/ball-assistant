@@ -21,9 +21,12 @@ export type RegistrationLogAction =
   | "REGISTRATION_MOVED"
   | "CAPACITY_UPDATED";
 
+export type UserGender = "MALE" | "FEMALE";
+
 export type UserProfile = {
   id: string;
   nickname: string;
+  gender: UserGender;
   avatarColor: string;
 };
 

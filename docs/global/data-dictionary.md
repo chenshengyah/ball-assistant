@@ -1,3 +1,23 @@
+# 数据字典
+
+## UserProfile
+
+| 字段名      | 类型   | 必填 | 说明                         |
+| ----------- | ------ | ---: | ---------------------------- |
+| userId      | string |   是 | 用户ID                       |
+| nickname    | string |   是 | 用户昵称                     |
+| gender      | enum   |   是 | `MALE / FEMALE`              |
+| avatarUrl   | string |   否 | 用户头像 URL                 |
+| avatarColor | string |   否 | 占位头像色值，用于无头像场景 |
+| status      | enum   |   否 | ACTIVE / INACTIVE            |
+| createdAt   | string |   否 | 创建时间                     |
+| updatedAt   | string |   否 | 更新时间                     |
+
+说明：
+
+- 当前版本 `gender` 为必填字段，不提供“未设置”状态
+- 活动报名、发布身份、俱乐部成员等业务对象只引用 `userId`，展示资料以 `UserProfile` 为准
+
 ## PublishIdentity
 
 | 字段名       | 类型    | 必填 | 说明              |

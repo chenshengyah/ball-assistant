@@ -24,12 +24,12 @@ export type ActivityStore = {
 
 const store: ActivityStore = {
   users: [
-    { id: "user-current", nickname: "小陈", avatarColor: "#4C7CF0" },
-    { id: "user-lin", nickname: "林北", avatarColor: "#43B581" },
-    { id: "user-ava", nickname: "Ava", avatarColor: "#FF8A65" },
-    { id: "user-zoe", nickname: "Zoe", avatarColor: "#A66BFF" },
-    { id: "user-neo", nickname: "Neo", avatarColor: "#FFB547" },
-    { id: "user-mia", nickname: "Mia", avatarColor: "#E56DAA" },
+    { id: "user-current", nickname: "小陈", gender: "MALE", avatarColor: "#4C7CF0" },
+    { id: "user-lin", nickname: "林北", gender: "MALE", avatarColor: "#43B581" },
+    { id: "user-ava", nickname: "Ava", gender: "FEMALE", avatarColor: "#FF8A65" },
+    { id: "user-zoe", nickname: "Zoe", gender: "FEMALE", avatarColor: "#A66BFF" },
+    { id: "user-neo", nickname: "Neo", gender: "MALE", avatarColor: "#FFB547" },
+    { id: "user-mia", nickname: "Mia", gender: "FEMALE", avatarColor: "#E56DAA" },
   ],
   venues: [
     {

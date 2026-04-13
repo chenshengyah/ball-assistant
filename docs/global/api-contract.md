@@ -1,6 +1,44 @@
 # API Contract
 
-## 1. 身份
+## 1. 用户
+
+### 获取当前用户资料
+
+GET /api/users/me
+
+返回：
+
+```json
+{
+  "userId": "user-current",
+  "nickname": "小陈",
+  "gender": "MALE",
+  "avatarUrl": "",
+  "avatarColor": "#4C7CF0"
+}
+```
+
+### 提交或更新当前用户资料
+
+PUT /api/users/me/profile
+
+请求：
+
+```json
+{
+  "nickname": "小陈",
+  "gender": "MALE",
+  "avatarUrl": ""
+}
+```
+
+说明：
+
+- `nickname` 必填
+- `gender` 必填，枚举仅允许 `MALE / FEMALE`
+- 当前版本不提供“未设置”状态
+
+## 2. 身份
 
 ### 获取当前用户可用发布身份
 
@@ -18,7 +56,7 @@ GET /api/publish-identities
 }
 ]
 
-## 2. 俱乐部
+## 3. 俱乐部
 
 ### 创建俱乐部
 
@@ -28,7 +66,7 @@ POST /api/clubs
 
 GET /api/clubs/my
 
-## 3. 场馆
+## 4. 场馆
 
 ### 获取俱乐部下场馆列表
 
@@ -42,7 +80,7 @@ POST /api/venues
 
 PUT /api/venues/:venueId
 
-## 4. 场地
+## 5. 场地
 
 ### 获取场馆下场地列表
 
@@ -60,7 +98,7 @@ PUT /api/courts/:courtId
 
 POST /api/courts/:courtId/disable
 
-## 5. 活动
+## 6. 活动
 
 ### 创建活动
 
@@ -78,7 +116,7 @@ GET /api/activities
 
 GET /api/activities/:activityId/republish-draft
 
-## 6. 报名
+## 7. 报名
 
 ### 报名活动
 
