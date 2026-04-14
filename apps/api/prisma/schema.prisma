@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserGender {
+  MALE
+  FEMALE
+}
+
+enum ClubRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum OwnerType {
+  PERSONAL
+  CLUB
+}
+
+enum ChargeMode {
+  FREE
+  FIXED
+  AA
+  OTHER
+}
+
+enum ActivityStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum SignupMode {
+  GENERAL
+  USER_SELECT_COURT
+}
+
+enum SignupStatus {
+  CONFIRMED
+  WAITLIST
+  CANCELLED
+}
+
+enum RegistrationLogAction {
+  REGISTRATION_CREATED
+  REGISTRATION_CANCELLED
+  REGISTRATION_MOVED
+  CAPACITY_UPDATED
+}
+
+model User {
+  id             String              @id @default(cuid())
+  openId         String              @unique
+  nickname       String?
+  gender         UserGender?
+  avatarUrl      String?
+  avatarColor    String              @default("#4C7CF0")
+  status         RecordStatus        @default(ACTIVE)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  createdClubs   Club[]              @relation("ClubCreator")
+  clubMembers    ClubMember[]
+  createdVenues  Venue[]             @relation("VenueCreator")
+  createdActs    Activity[]          @relation("ActivityCreator")
+  personalActs   Activity[]          @relation("PersonalActivityOwner")
+  signups        ActivitySignup[]
+  signupLogs     ActivitySignupLog[] @relation("SignupLogOperator")
+}
+
+model Club {
+  id          String       @id @default(cuid())
+  name        String
+  logoUrl     String?
+  coverUrl    String?
+  description String?
+  city        String?
+  creatorId   String
+  status      RecordStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  creator     User         @relation("ClubCreator", fields: [creatorId], references: [id])
+  members     ClubMember[]
+  venues      Venue[]
+  activities  Activity[]
+}
+
+model ClubMember {
+  id        String   @id @default(cuid())
+  clubId     String
+  userId     String
+  role       ClubRole
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  club       Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+}
+
+model Venue {
+  id             String       @id @default(cuid())
+  clubId         String?
+  createdByUserId String
+  name           String
+  shortName      String?
+  province       String?
+  city           String?
+  district       String?
+  address        String
+  latitude       Float?
+  longitude      Float?
+  navigationName String?
+  contactName    String?
+  contactPhone   String?
+  remark         String?
+  status         RecordStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  club           Club?        @relation(fields: [clubId], references: [id])
+  creator        User         @relation("VenueCreator", fields: [createdByUserId], references: [id])
+  courts         VenueCourt[]
+  activities     Activity[]
+}
+
+model VenueCourt {
+  id              String       @id @default(cuid())
+  venueId         String
+  courtCode       String
+  courtName       String
+  defaultCapacity Int?
+  defaultFeeCents Int?
+  description     String?
+  sortOrder       Int          @default(1)
+  status          RecordStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  venue           Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  activityCourts  ActivityCourt[]
+
+  @@unique([venueId, courtCode])
+}
+
+model Activity {
+  id                             String              @id @default(cuid())
+  ownerType                      OwnerType
+  ownerId                        String
+  createdByUserId                String
+  clubId                         String?
+  personalOwnerId                String?
+  title                          String
+  chargeMode                     ChargeMode
+  chargeAmountCents              Int                 @default(0)
+  chargeDesc                     String?
+  venueId                        String
+  venueSnapshotName              String
+  activityStartAt                DateTime
+  activityEndAt                  DateTime
+  cancelCutoffMinutesBeforeStart Int
+  cancelDeadlineAt               DateTime
+  descriptionRichtext            String?
+  signupMode                     SignupMode
+  totalCapacity                  Int?
+  status                         ActivityStatus      @default(PUBLISHED)
+  createdAt                      DateTime            @default(now())
+  updatedAt                      DateTime            @updatedAt
+  createdBy                      User                @relation("ActivityCreator", fields: [createdByUserId], references: [id])
+  club                           Club?               @relation(fields: [clubId], references: [id])
+  personalOwner                  User?               @relation("PersonalActivityOwner", fields: [personalOwnerId], references: [id])
+  venue                          Venue               @relation(fields: [venueId], references: [id])
+  courts                         ActivityCourt[]
+  signups                        ActivitySignup[]
+  signupLogs                     ActivitySignupLog[]
+}
+
+model ActivityCourt {
+  id                  String       @id @default(cuid())
+  activityId          String
+  venueCourtId        String
+  courtCodeSnapshot   String
+  courtNameSnapshot   String
+  capacity            Int
+  feeSnapshotCents    Int?
+  descriptionSnapshot String?
+  sortOrder           Int          @default(1)
+  status              RecordStatus @default(ACTIVE)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  activity            Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  venueCourt          VenueCourt   @relation(fields: [venueCourtId], references: [id])
+  signups             ActivitySignup[]
+}
+
+model ActivitySignup {
+  id              String              @id @default(cuid())
+  activityId      String
+  userId          String
+  activityCourtId String?
+  signupStatus    SignupStatus
+  queueNo         Int?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  activity        Activity            @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityCourt   ActivityCourt?      @relation(fields: [activityCourtId], references: [id])
+  logs            ActivitySignupLog[]
+
+  @@index([activityId, signupStatus])
+}
+
+model ActivitySignupLog {
+  id                String                @id @default(cuid())
+  activityId        String
+  registrationId    String
+  action            RegistrationLogAction
+  operatorId        String
+  fromActivityCourtId String?
+  toActivityCourtId String?
+  detail            String
+  createdAt         DateTime              @default(now())
+  activity          Activity              @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  registration      ActivitySignup        @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  operator          User                  @relation("SignupLogOperator", fields: [operatorId], references: [id])
+}

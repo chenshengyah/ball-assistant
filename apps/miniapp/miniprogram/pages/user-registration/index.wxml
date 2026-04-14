@@ -1,0 +1,35 @@
+<view class="registration-page">
+  <view class="registration-hero">
+    <view class="registration-hero__eyebrow">{{sourceLabel}}</view>
+    <view class="registration-hero__title">先补齐基础资料</view>
+    <view class="registration-hero__subtitle">目前只需要昵称和性别，保存后会自动回到你刚才的动作。</view>
+  </view>
+
+  <view class="registration-card">
+    <view class="registration-card__label">昵称</view>
+    <input
+      class="registration-input"
+      value="{{nickname}}"
+      placeholder="例如：小陈 / Ava / 北北"
+      bindinput="handleNicknameInput"
+    />
+
+    <view class="registration-card__label registration-card__label--top">性别</view>
+    <picker
+      range="{{genderLabels}}"
+      value="{{selectedGenderIndex}}"
+      bindchange="handleGenderChange"
+    >
+      <view class="registration-picker">{{genderLabels[selectedGenderIndex]}}</view>
+    </picker>
+
+    <view class="registration-card__hint">{{pendingLabel}}</view>
+
+    <view
+      class="registration-submit"
+      hover-class="registration-submit--hover"
+      hover-stay-time="80"
+      bindtap="handleSubmit"
+    >保存并继续</view>
+  </view>
+</view>

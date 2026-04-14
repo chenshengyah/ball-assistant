@@ -1,0 +1,128 @@
+page {
+  background: #f4f7fb;
+}
+
+.profile-page {
+  min-height: 100vh;
+  padding: 32rpx 32rpx calc(176rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 32rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #0f172a, #1d4ed8);
+  color: #ffffff;
+}
+
+.profile-hero__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.profile-hero__content {
+  flex: 1;
+}
+
+.profile-hero__status {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
+
+.profile-hero__title {
+  margin-top: 8rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.profile-hero__summary {
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  line-height: 1.6;
+  opacity: 0.92;
+}
+
+.profile-card,
+.profile-section {
+  margin-top: 24rpx;
+  padding: 28rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 20rpx 48rpx rgba(15, 23, 42, 0.06);
+}
+
+.profile-card__title,
+.profile-section__title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.profile-card__text {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #475569;
+}
+
+.profile-card__button {
+  margin-top: 24rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 240rpx;
+  height: 80rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.profile-card__button--hover,
+.profile-entry--hover {
+  opacity: 0.88;
+}
+
+.profile-entry {
+  margin-top: 20rpx;
+  padding: 24rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1rpx solid #e2e8f0;
+}
+
+.profile-entry:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profile-entry__title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.profile-entry__text {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.profile-entry__arrow {
+  font-size: 36rpx;
+  color: #94a3b8;
+}

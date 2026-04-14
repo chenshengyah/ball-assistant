@@ -1,0 +1,144 @@
+<view
+  wx:if="{{!isMissing}}"
+  class="detail-page"
+>
+  <view class="detail-card">
+    <view class="detail-card__top">
+      <view>
+        <view class="detail-card__title">{{title}}</view>
+        <view class="detail-card__owner">{{ownerLabel}}</view>
+      </view>
+      <view class="detail-card__status">{{statusLabel}}</view>
+    </view>
+
+    <view class="detail-card__summary">
+      <view class="summary-pill">{{chargeText}}</view>
+      <view class="summary-pill summary-pill--soft">{{signupStatusLabel}}</view>
+      <view class="summary-pill summary-pill--soft">{{signupModeLabel}}</view>
+    </view>
+
+    <view class="detail-meta">
+      <view class="detail-meta__row">
+        <view class="detail-meta__label">场馆</view>
+        <view class="detail-meta__value">{{venueLabel}}</view>
+      </view>
+      <view class="detail-meta__row">
+        <view class="detail-meta__label">时间</view>
+        <view class="detail-meta__value">{{scheduleText}}</view>
+      </view>
+      <view class="detail-meta__row">
+        <view class="detail-meta__label">报名截止</view>
+        <view class="detail-meta__value">{{cancelDeadlineText}}</view>
+      </view>
+      <view class="detail-meta__row">
+        <view class="detail-meta__label">我的状态</view>
+        <view class="detail-meta__value">{{currentUserSignupLabel}}</view>
+      </view>
+    </view>
+
+    <view class="detail-card__description">{{descriptionRichtext}}</view>
+  </view>
+
+  <view
+    wx:if="{{signupMode === 'USER_SELECT_COURT'}}"
+    class="court-list"
+  >
+    <view
+      wx:for="{{courts}}"
+      wx:key="id"
+      wx:for-item="court"
+      class="court-card"
+    >
+      <view class="court-card__top">
+        <view class="court-card__title">{{court.label}}</view>
+        <view class="court-card__counts">{{court.occupancyText}} · {{court.waitlistText}}</view>
+      </view>
+
+      <view class="chip-list">
+        <view
+          wx:for="{{court.registrations}}"
+          wx:key="registrationId"
+          wx:for-item="registration"
+          class="chip {{registration.isCurrentUser ? 'chip--mine' : ''}}"
+          data-registration-id="{{registration.registrationId}}"
+          bindtap="handleMoveRegistration"
+        >
+          <text>{{registration.nickname}}</text>
+          <text class="chip__tag">{{registration.tagText}}</text>
+        </view>
+      </view>
+
+      <view class="court-card__footer">
+        <view
+          wx:if="{{court.canSignup}}"
+          class="action-button action-button--primary"
+          data-activity-court-id="{{court.id}}"
+          bindtap="handleSignUp"
+        >{{court.signupButtonText}}</view>
+
+        <view
+          wx:if="{{canManage}}"
+          class="stepper"
+        >
+          <view
+            class="stepper__button {{!court.canDecreaseCapacity ? 'stepper__button--disabled' : ''}}"
+            data-activity-court-id="{{court.id}}"
+            data-delta="-1"
+            bindtap="handleAdjustCapacity"
+          >-</view>
+          <view class="stepper__text">调容量</view>
+          <view
+            class="stepper__button"
+            data-activity-court-id="{{court.id}}"
+            data-delta="1"
+            bindtap="handleAdjustCapacity"
+          >+</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view
+    wx:if="{{signupMode === 'GENERAL'}}"
+    class="court-card"
+  >
+    <view class="court-card__top">
+      <view class="court-card__title">统一报名</view>
+      <view class="court-card__counts">{{totalCapacityText}} · {{waitlistCount}} 候补</view>
+    </view>
+
+    <view class="court-card__footer">
+      <view
+        wx:if="{{canGeneralSignUp}}"
+        class="action-button action-button--primary"
+        bindtap="handleSignUp"
+      >{{generalSignupButtonText}}</view>
+    </view>
+  </view>
+
+  <view class="detail-actions">
+    <view
+      wx:if="{{canManage}}"
+      class="action-button action-button--secondary"
+      bindtap="handleRepublish"
+    >再次发布</view>
+    <view
+      wx:if="{{canCancelCurrentUserRegistration}}"
+      class="action-button action-button--danger"
+      bindtap="handleCancelSignup"
+    >取消我的报名</view>
+  </view>
+
+  <view
+    wx:if="{{isGuest}}"
+    class="guest-tip"
+  >当前是游客态，可以先看详情；点击报名或创建时才会触发登录和资料补全。</view>
+</view>
+
+<view
+  wx:else
+  class="missing-page"
+>
+  <view class="missing-page__title">活动不存在</view>
+  <view class="missing-page__text">可能已经被移除，或者链接失效了。</view>
+</view>

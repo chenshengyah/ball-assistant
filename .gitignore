@@ -1,8 +1,9 @@
-project.private.config.json
 node_modules/
 dist/
 .DS_Store
-miniprogram/app.js
-miniprogram/envList.js
-miniprogram/custom-tab-bar/index.js
-miniprogram/pages/**/index.js
+.turbo/
+apps/api/dist/
+apps/miniapp/miniprogram/app.js
+apps/miniapp/miniprogram/envList.js
+apps/miniapp/miniprogram/custom-tab-bar/index.js
+apps/miniapp/miniprogram/pages/**/index.js

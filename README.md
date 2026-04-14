@@ -1,15 +1,77 @@
 # ball-assistant
 
-微信小程序项目，使用 TypeScript 开发，并保留云开发初始化能力。
+`ball-assistant` 现已调整为一个 `pnpm workspace + Turbo` 的 monorepo，用来同时承载微信小程序前端、独立 Node API、共享工程配置和本地基础设施。
 
-## 开发说明
+## 目录结构
 
-- 小程序源码目录：`miniprogram/`
-- 产品与页面文档目录：`docs/`
-- 微信开发者工具已启用 `useCompilerPlugins: ["typescript"]`
-- 当前包含自定义 tabbar 和三个基础页面：`首页`、`活动`、`我的`
+```text
+.
+├── apps
+│   ├── api
+│   │   ├── prisma
+│   │   └── src
+│   └── miniapp
+│       ├── miniprogram
+│       ├── project.config.json
+│       └── typings
+├── docs
+├── infra
+│   └── docker-compose.yml
+└── packages
+    └── config
+```
 
-## 参考文档
+## 应用说明
 
-- [小程序 TypeScript 开发文档](https://developers.weixin.qq.com/miniprogram/dev/devtools/compilets.html)
-- [云开发文档](https://developers.weixin.qq.com/miniprogram/dev/wxcloud/basis/getting-started.html)
+- `apps/miniapp`：微信小程序工程，继续使用 TypeScript 开发，通过微信开发者工具打开
+- `apps/api`：NestJS + Fastify + Prisma + PostgreSQL 的独立 API 服务
+- `packages/config`：共享 TypeScript / ESLint / Prettier 配置
+- `infra`：本地开发依赖，如 PostgreSQL 的 `docker-compose`
+
+## 开发方式
+
+### 1. 安装依赖
+
+```bash
+pnpm install
+```
+
+### 2. 启动数据库
+
+```bash
+docker compose -f infra/docker-compose.yml up -d
+```
+
+### 3. 启动 API
+
+```bash
+pnpm --filter @ball-assistant/api dev
+```
+
+### 4. 生成小程序 API 类型
+
+```bash
+pnpm --filter @ball-assistant/miniapp codegen:api
+```
+
+### 5. 启动小程序
+
+使用微信开发者工具打开 `apps/miniapp`。
+
+## 常用命令
+
+```bash
+pnpm dev
+pnpm build
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
+## 当前阶段
+
+本轮已完成 monorepo 底座搭建和 API 工程初始化。后续业务开发建议顺序：
+
+1. 打通 `auth` 和 `users` 的真实联调
+2. 用真实 API 替换小程序的用户资料 mock
+3. 继续补齐 `activities / signups / my-activities` 业务模块

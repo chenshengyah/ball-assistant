@@ -30,23 +30,23 @@
 ## 6. 报名模式
 
 - 必选
-- 枚举：GENERAL / COURT_BASED
+- 枚举：GENERAL / USER_SELECT_COURT
 
 ## 7. 场地选择
 
-- 仅当 signupMode = COURT_BASED 时显示
+- 仅当 signupMode = USER_SELECT_COURT 时显示
 - 至少选择一个场地
 - 只能选择 status = ACTIVE 的场地
 
 ## 8. 收费方式
 
 - 必选
-- 枚举：FREE / FIXED
+- 枚举：FREE / FIXED / AA / OTHER
 
 ## 9. 收费金额
 
-- 仅当 feeType = FIXED 时显示
-- 必填
+- 仅当 chargeMode != FREE 时按创建页规则校验
+- 条件必填
 - 大于等于 0
 
 ## 10. 人数上限

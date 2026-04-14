@@ -6,7 +6,7 @@
 
 ## 当前阶段
 
-文档收敛中，原型补齐中。
+页面 PRD 已按主链路收口，原型补齐中。
 
 ## 状态说明
 
@@ -28,69 +28,79 @@
 ### 2. 目标用户与角色边界梳理
 
 - 目标：明确普通用户、个人发布者、俱乐部管理员在各流程中的权限和责任边界。
-- 当前状态：`[~] 进行中`
-- 依据：`docs/global/mvp-overview.md` 已定义目标用户，`docs/pages/club-register/README.md` 与 `docs/pages/activity-create/README.md` 已补充个人 / 俱乐部发布身份关系，但全局角色口径尚未单独沉淀。
+- 当前状态：`[x] 已完成`
+- 依据：`docs/global/mvp-overview.md` 已定义目标用户，`docs/global/role-boundaries.md` 已统一沉淀登录主体、发布身份、俱乐部成员权限和最小权限矩阵，页面文档改为统一引用该全局口径。
 - 完成标准：用户角色、发布身份、俱乐部身份之间的关系能在一处统一说明，页面文档中的权限表达保持一致。
-- 下一步：补一份全局角色边界说明，至少覆盖普通用户、个人发布、俱乐部管理员和俱乐部成员的差异。
+- 下一步：后续若需要拆分 `OWNER` 与 `ADMIN` 的细粒度差异，再补独立的俱乐部权限细则文档。
 
 ### 3. 核心流程拆解
 
 - 目标：把用户建档、俱乐部注册、场馆管理、创建活动、报名活动这些主链路串起来。
 - 当前状态：`[x] 已完成`
-- 依据：`docs/global/user-flow.md` 已定义用户建档、创建活动、俱乐部注册、场馆与场地管理等关键流程。
+- 依据：`docs/global/user-flow.md` 已定义用户建档、活动主办方、活动报名者、俱乐部注册、场馆与场地管理、最小管理动作等关键流程，`docs/global/activity-lifecycle.md` 已统一沉淀活动从创建到结束的全链路。
 - 完成标准：主链路和关键回跳关系在全局流程文档中清晰可读，页面 PRD 与流程描述一致。
-- 下一步：后续新增“活动详情”或“我的活动”文档时，同步补齐到全局流程里。
+- 下一步：进入首批开发清单拆分阶段，把流程节点继续落到具体任务。
 
 ### 4. 全局文档收敛
 
 - 目标：把产品目标、流程、接口口径和数据口径收敛到统一入口，降低查找成本。
 - 当前状态：`[x] 已完成`
-- 依据：`docs/README.md` 已整理为全局文档、页面文档和归档文档导航，`docs/global/` 下已有总览、流程、接口契约和数据字典。
+- 依据：`docs/README.md` 已整理为全局文档、进度记录、主链路页面文档和归档文档导航，`docs/global/` 下已有总览、流程、接口契约和数据字典。
 - 完成标准：全局资料不再散落在旧文件中，团队能通过 `docs/README.md` 快速找到主文档。
-- 下一步：把本进度文件纳入导航入口，后续新全局文档继续统一收口到 `docs/global/`。
+- 下一步：后续新增页面或全局文档时，继续统一收口到现有结构中。
 
 ### 5. 页面级 PRD 收敛
 
 - 目标：把核心页面的字段、交互、边界和异常情况明确到可开发程度。
-- 当前状态：`[~] 进行中`
-- 依据：已存在 `docs/pages/activity-create/README.md`、`docs/pages/activity-create/form-rules.md`、`docs/pages/club-register/README.md`、`docs/pages/venue-court-management/README.md`、`docs/pages/user-registration/README.md`，但 `活动详情`、`我的活动` 等仍未补齐。
-- 完成标准：MVP 范围内的核心页面都有对应 PRD，且字段和流程说明不互相冲突。
-- 下一步：优先补 `活动详情` 和 `我的活动` 页面文档，再统一检查各页面字段命名和枚举口径。
+- 当前状态：`[x] 已完成`
+- 依据：现已按主链路收口 `docs/pages/user-registration/README.md`、`docs/pages/club-register/README.md`、`docs/pages/venue-court-management/README.md`、`docs/pages/activity-create/README.md`，并补齐 `docs/pages/activity-detail/README.md` 与 `docs/pages/my-activities/README.md`。
+- 完成标准：MVP 范围内的核心页面都有对应 PRD，且页面职责已按主链路统一，不再把活动详情职责混进创建页或列表卡片。
+- 下一步：按页面 PRD 补前端原型和页面实现，并在实现过程中只回填字段级补充，不再打散页面职责。
 
 ### 6. 数据字典与接口口径对齐
 
 - 目标：确保文档中的领域对象、字段定义和接口契约能够支持后续开发，不在实现阶段频繁返工。
 - 当前状态：`[~] 进行中`
-- 依据：`docs/global/api-contract.md` 与 `docs/global/data-dictionary.md` 已存在，但当前代码仍主要依赖 `miniprogram/services/activity-store.ts` 的本地 mock 数据，类型定义和文档也存在少量命名差异。
+- 依据：`docs/global/api-contract.md` 与 `docs/global/data-dictionary.md` 已存在，且已补充活动详情和“我的活动”的最小能力；但当前代码仍主要依赖 `miniprogram/services/activity-store.ts` 的本地 mock 数据，文档与前端类型仍存在命名差异。
 - 完成标准：文档中的核心字段、枚举和资源边界能映射到后续真实接口与前端类型，不再出现明显冲突。
-- 下一步：在正式接接口前，对照 `docs/global/*` 与 `miniprogram/types/activity.ts` 做一次字段命名和枚举值清单核对。
+- 下一步：对照 `docs/global/*`、`docs/global/activity-state-machine.md` 与 `miniprogram/types/activity.ts` 做一次字段命名、动作权限和枚举值清单核对。
 
 ### 7. 页面信息架构与跳转关系整理
 
 - 目标：明确页面入口、路由关系、页面回跳和信息承接，避免开发时边做边补。
-- 当前状态：`[~] 进行中`
-- 依据：`docs/global/user-flow.md` 已描述主要回跳链路，`miniprogram/app.json` 当前已有 `home`、`activity`、`activity-create`、`profile` 四个页面，但尚未覆盖用户建档、俱乐部注册、活动详情等完整信息架构。
+- 当前状态：`[x] 已完成`
+- 依据：`docs/README.md` 已补主链路页面地图摘要，各页面 PRD 已统一补齐“入口与回跳”章节，并明确 `user-registration / club-register / venue-court-management / activity-create / activity-detail / my-activities` 的关系与 `profile` 的导航容器定位。
 - 完成标准：MVP 页面清单、入口位置、跳转关系和来源页回跳规则都已明确，且路由设计能覆盖主链路。
-- 下一步：补一版页面地图，至少明确“首页 / 活动 / 我的 / 创建活动 / 用户建档 / 俱乐部注册 / 活动详情 / 我的活动”的关系。
+- 下一步：把当前文档中的页面地图落成实际小程序页面与路由实现。
 
 ### 8. 原型 / 交互稿准备
 
 - 目标：在进入正式开发前，用页面原型或交互稿验证主要页面结构和核心操作路径。
 - 当前状态：`[~] 进行中`
-- 依据：`miniprogram/pages/activity/index.ts`、`miniprogram/pages/activity-create/index.ts`、`miniprogram/pages/home/index.ts` 已具备原型页面能力，但 `profile` 仍基本为空，仓库内也未见独立设计稿或交互稿沉淀。
+- 依据：`miniprogram/pages/activity/index.ts`、`miniprogram/pages/activity-create/index.ts`、`miniprogram/pages/home/index.ts` 已具备原型页面能力，但 `profile` 仍基本为空，用户建档、俱乐部注册、活动详情和我的活动页面原型仍未补齐。
 - 完成标准：MVP 关键页面都有可演示的原型或交互说明，能支撑评审和开发排期。
-- 下一步：优先补齐用户建档、俱乐部注册和我的页面原型，并把缺失页面和已完成原型对应起来。
+- 下一步：优先补齐用户建档、活动详情、我的活动和“我的”入口页原型，再回填俱乐部注册原型。
 
 ### 9. 开发范围冻结与首批开发清单
 
 - 目标：把“先做什么、后做什么”明确下来，形成真正可以执行的首批开发任务。
-- 当前状态：`[ ] 未开始`
-- 依据：当前已有全局文档和多份页面 PRD，但缺少一份明确的阶段性执行板来定义 P0 / P1 顺序。规划顺序可参考 `docs/progress/planning-order.md`。
+- 当前状态：`[~] 进行中`
+- 依据：`docs/progress/planning-order.md` 已定义阶段顺序，本轮已完成页面文档与信息架构收口，但尚未形成一份可直接执行的 P0 任务板。
 - 完成标准：形成第一批开发清单，至少明确先做哪些页面、依赖哪些文档、哪些项必须先补齐再进入开发。
-- 下一步：基于当前 PRD 和原型，整理一版 P0 开发顺序，优先考虑用户建档、创建活动、活动列表 / 报名这条主链路。
+- 下一步：基于当前 PRD 和原型现状，整理 P0 开发顺序，优先考虑用户建档、创建活动前置能力、活动详情、我的活动与“我的”入口回收。
 
 ## 最近更新记录
 
+- 2026-04-13：按主链路重排页面 PRD，统一 `user-registration -> club-register -> venue-court-management -> activity-create -> activity-detail -> my-activities` 的页面顺序与职责边界。
+- 2026-04-13：新增 `docs/pages/activity-detail/README.md`，统一活动发布后的详情承接、报名、取消报名、调场、调容量、取消活动和再次发布。
+- 2026-04-13：新增 `docs/pages/my-activities/README.md`，统一“我发布的 / 我报名的”活动集合回收口径。
+- 2026-04-13：更新 `docs/README.md`，补充页面地图摘要与主链路阅读顺序。
+- 2026-04-13：将“页面级 PRD 收敛”和“页面信息架构与跳转关系整理”更新为已完成，将“开发范围冻结与首批开发清单”更新为进行中。
+- 2026-04-13：新增 `docs/global/activity-state-machine.md`，统一活动状态、动作矩阵、守卫条件和状态迁移规则。
+- 2026-04-13：新增 `docs/global/activity-lifecycle.md`，统一活动从创建到结束的全链路、两层状态模型、页面职责和最小管理动作。
+- 2026-04-13：扩展 `docs/global/user-flow.md` 的活动主链路，补充主办方、报名者和最小管理动作流程。
+- 2026-04-13：补充活动详情与“我的活动”的最小接口能力，并将活动持久状态收敛为 `DRAFT / PUBLISHED / CANCELLED`。
+- 2026-04-13：新增 `docs/global/role-boundaries.md`，统一 MVP 的登录主体、发布身份、俱乐部成员权限和最小权限矩阵。
+- 2026-04-13：对齐 `docs/global/data-dictionary.md` 与 `docs/global/api-contract.md` 的发布身份枚举，统一使用 `PERSONAL / CLUB`。
 - 2026-04-13：新增前期开发准备进度文件，按当前 docs 和仓库现状预填模块状态。
-- 2026-04-13：将进度记录纳入 `docs/README.md` 导航，后续可直接在本文件更新前期准备进展。
 - 2026-04-13：补充 `planning-order.md`，用于指导前期规划的先后顺序和阶段产出。

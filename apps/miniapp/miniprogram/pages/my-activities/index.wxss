@@ -1,0 +1,66 @@
+page {
+  background: #f8fafc;
+}
+
+.my-activities-page {
+  min-height: 100vh;
+  padding: 40rpx 32rpx;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.page-subtitle {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #475569;
+}
+
+.section-card,
+.empty-card {
+  margin-top: 24rpx;
+  padding: 28rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 20rpx 48rpx rgba(15, 23, 42, 0.06);
+}
+
+.section-card__title,
+.empty-card__title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.activity-row {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1rpx solid #e2e8f0;
+}
+
+.activity-row__title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.activity-row__meta,
+.empty-card__text {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.activity-row__arrow {
+  font-size: 36rpx;
+  color: #94a3b8;
+}

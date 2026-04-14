@@ -23,11 +23,17 @@
 | 字段名       | 类型    | 必填 | 说明              |
 | ------------ | ------- | ---: | ----------------- |
 | identityId   | string  |   是 | 身份ID            |
-| identityType | enum    |   是 | USER / CLUB       |
+| identityType | enum    |   是 | PERSONAL / CLUB   |
 | identityName | string  |   是 | 显示名称          |
 | clubId       | string  |   否 | 俱乐部身份时有值  |
 | isDefault    | boolean |   是 | 是否默认身份      |
 | status       | enum    |   是 | ACTIVE / DISABLED |
+
+说明：
+
+- 每个用户默认应有一个 `PERSONAL` 发布身份
+- `CLUB` 发布身份只返回当前用户有发布权限的俱乐部
+- `MEMBER` 关系不单独出现在发布身份列表中
 
 ## Club
 
@@ -76,24 +82,53 @@
 | ------------------- | ------- | ---: | ------------------------------------------------- |
 | activityId          | string  |   是 | 活动ID                                            |
 | publishIdentityId   | string  |   是 | 发布身份ID                                        |
-| publishIdentityType | enum    |   是 | USER / CLUB                                       |
+| publishIdentityType | enum    |   是 | PERSONAL / CLUB                                   |
 | clubId              | string  |   否 | 俱乐部发布时有值                                  |
 | title               | string  |   是 | 活动标题                                          |
 | activityDate        | string  |   是 | 活动日期 YYYY-MM-DD                               |
 | startTime           | string  |   是 | 开始时间 HH:mm                                    |
 | endTime             | string  |   是 | 结束时间 HH:mm                                    |
 | venueId             | string  |   是 | 场馆ID                                            |
-| venueNameSnapshot   | string  |   是 | 场馆名称快照                                      |
-| signupMode          | enum    |   是 | GENERAL / COURT_BASED                             |
-| feeType             | enum    |   是 | FREE / FIXED                                      |
-| feeAmount           | number  |   否 | 固定收费金额                                      |
+| venueSnapshotName   | string  |   是 | 场馆名称快照                                      |
+| signupMode          | enum    |   是 | GENERAL / USER_SELECT_COURT                       |
+| chargeMode          | enum    |   是 | FREE / FIXED / AA / OTHER                         |
+| chargeAmountCents   | number  |   否 | 收费金额，单位分                                  |
+| chargeDesc          | string  |   否 | 收费说明                                          |
 | capacity            | number  |   是 | 总人数上限                                        |
 | allowWaitlist       | boolean |   是 | 是否允许候补                                      |
 | description         | string  |   否 | 活动说明                                          |
-| status              | enum    |   是 | DRAFT / PUBLISHED / CLOSED / FINISHED / CANCELLED |
+| status              | enum    |   是 | DRAFT / PUBLISHED / CANCELLED                     |
 | createdBy           | string  |   是 | 创建人ID                                          |
 | createdAt           | string  |   是 | 创建时间                                          |
 | updatedAt           | string  |   是 | 更新时间                                          |
+
+说明：
+
+- `status` 只表示活动持久状态，不直接等同于页面展示生命周期
+- `进行中` 和 `已结束` 由 `activityStartAt / activityEndAt / cancelDeadlineAt` 派生，不单独写回 `status`
+- 当前前端实现中，活动域还会使用 `ownerType / ownerId / activityStartAt / activityEndAt / cancelCutoffMinutesBeforeStart / cancelDeadlineAt / descriptionRichtext / totalCapacity` 等更贴近页面和类型的字段命名，后续正式接口定稿时应收敛为统一一套口径
+
+## ActivityView / ActivityDetailView
+
+| 字段名                       | 类型    | 必填 | 说明                                 |
+| ---------------------------- | ------- | ---: | ------------------------------------ |
+| activityId                   | string  |   是 | 活动ID                               |
+| status                       | enum    |   是 | 持久状态：DRAFT / PUBLISHED / CANCELLED |
+| lifecycleStatusLabel         | string  |   是 | 展示态：草稿 / 进行中 / 已结束 / 已取消 |
+| signupStatusLabel            | string  |   是 | 展示态：报名中 / 报名截止 / 进行中 / 已结束 / 已取消 |
+| isSignupOpen                 | boolean |   是 | 当前是否仍可报名                     |
+| isInProgress                 | boolean |   是 | 当前是否进行中                       |
+| isFinished                   | boolean |   是 | 当前是否已结束                       |
+| currentUserRegistrationId    | string  |   否 | 当前用户报名ID                       |
+| currentUserSignupLabel       | string  |   是 | 当前用户报名展示文案                 |
+| canCancelCurrentUserRegistration | boolean | 是 | 当前用户是否仍可取消报名             |
+| isManageable                 | boolean |   是 | 当前用户是否可管理该活动             |
+
+说明：
+
+- `ActivityView / ActivityDetailView` 是页面展示层对象，不替代活动主数据
+- 展示态字段由活动持久状态、时间字段和当前用户关系共同推导
+- 动作可用性字段应由统一状态机规则推导，不应由页面各自硬编码
 
 ## ActivityCourtSnapshot
 
@@ -120,3 +155,20 @@
 | cancelTime   | string |   否 | 取消时间                                    |
 | queueNo      | number |   否 | 候补序号                                    |
 | remark       | string |   否 | 备注                                        |
+
+说明：
+
+- 报名、候补、取消报名全部按 `userId` 维度记录
+- 当前 MVP 不支持“以俱乐部身份报名”
+
+## MyActivitiesCollection
+
+| 字段名      | 类型  | 必填 | 说明               |
+| ----------- | ----- | ---: | ------------------ |
+| published   | array |   是 | 我发布的活动列表   |
+| joined      | array |   是 | 我报名的活动列表   |
+
+说明：
+
+- “我的活动”至少区分“我发布的”和“我报名的”两类集合
+- 两类集合中的活动项都使用统一生命周期展示口径

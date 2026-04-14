@@ -1,0 +1,12 @@
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "baseUrl": ".",
+    "types": []
+  },
+  "include": [
+    "miniprogram/**/*.ts",
+    "typings/**/*.d.ts"
+  ]
+}
