@@ -41,6 +41,7 @@ page {
   margin-top: 20rpx;
   padding-top: 20rpx;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   border-top: 1rpx solid #e2e8f0;

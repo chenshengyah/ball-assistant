@@ -28,7 +28,7 @@
       </view>
     </view>-->
 
-    <view class="home-topbar__title">球局助手</view>
+    <view class="home-topbar__title"><text>球局助手</text></view>
     <view
       class="home-topbar__capsule-placeholder"
       style="{{capsuleStyle}}"
@@ -39,145 +39,145 @@
     class="home-content"
     style="{{homeContentStyle}}"
   >
-    <view class="home-hero">
-      <view class="home-hero__title">发现好活动</view>
-      <view class="home-hero__subtitle">看一看这周值得参加的活动吧！</view>
-    </view>
-
-    <!-- <view class="home-search-block">
-      <view class="home-search">
-        <view class="home-search__field">
-          <view class="icon-search icon-search--field">
-            <view class="icon-search__circle"></view>
-            <view class="icon-search__handle"></view>
-          </view>
-          <input
-            class="home-search__input"
-            value="{{searchKeyword}}"
-            placeholder="搜索活动、场馆或主理人"
-            placeholder-class="home-search__placeholder"
-            bindinput="handleSearchChange"
-          />
-        </view>
-
-        <view
-          class="home-search__filter"
-          hover-class="home-search__filter--hover"
-          hover-stay-time="80"
-          bindtap="handleFilterTap"
-        >
-          <view class="icon-tune">
-            <view class="icon-tune__line icon-tune__line--one"></view>
-            <view class="icon-tune__line icon-tune__line--two"></view>
-            <view class="icon-tune__line icon-tune__line--three"></view>
-            <view class="icon-tune__knob icon-tune__knob--one"></view>
-            <view class="icon-tune__knob icon-tune__knob--two"></view>
-            <view class="icon-tune__knob icon-tune__knob--three"></view>
-          </view>
-        </view>
+      <view class="home-hero">
+        <view class="home-hero__title"><text>发现好活动</text></view>
+        <view class="home-hero__subtitle"><text>看一看这周值得参加的活动吧！</text></view>
       </view>
-    </view>-->
 
-    <scroll-view
-      class="category-strip"
-      style="{{categoryStripStyle}}"
-      scroll-x
-      enable-flex
-      show-scrollbar="{{false}}"
-    >
-      <view class="category-strip__inner">
-        <view
-          wx:for="{{categories}}"
-          wx:key="id"
-          class="category-chip {{selectedCategory === item.id ? 'category-chip--active' : ''}}"
-          data-category-id="{{item.id}}"
-          hover-class="category-chip--hover"
-          hover-stay-time="80"
-          bindtap="handleCategoryTap"
-        >{{item.label}}</view>
-      </view>
-    </scroll-view>
+      <!-- <view class="home-search-block">
+        <view class="home-search">
+          <view class="home-search__field">
+            <view class="icon-search icon-search--field">
+              <view class="icon-search__circle"></view>
+              <view class="icon-search__handle"></view>
+            </view>
+            <input
+              class="home-search__input"
+              value="{{searchKeyword}}"
+              placeholder="搜索活动、场馆或主理人"
+              placeholder-class="home-search__placeholder"
+              bindinput="handleSearchChange"
+            />
+          </view>
 
-    <view
-      wx:if="{{visibleActivities.length > 0}}"
-      class="activity-list"
-    >
-      <view
-        wx:for="{{visibleActivities}}"
-        wx:key="id"
-        class="activity-card"
-        data-activity-id="{{item.id}}"
-        bindtap="handlePrimaryAction"
-      >
-        <view class="activity-card__cover">
-          <image
-            class="activity-card__image"
-            src="{{item.coverImageUrl}}"
-            mode="aspectFill"
-          />
           <view
-            class="activity-card__price-badge activity-card__price-badge--{{item.priceTone}}"
-          >{{item.priceText}}</view>
-        </view>
-
-        <view class="activity-card__body">
-          <!-- <view class="activity-card__eyebrow activity-card__eyebrow--{{item.badgeTone}}">
-            <view class="activity-card__eyebrow-icon"></view>
-            <view>{{item.badge}}</view>
-          </view>-->
-
-          <view class="activity-card__title">{{item.title}}</view>
-
-          <view class="activity-card__meta">
-            <view class="activity-card__meta-item">
-              <view class="meta-icon meta-icon--location"></view>
-              <view class="activity-card__meta-text">{{item.location}}</view>
-            </view>
-            <view class="activity-card__meta-item">
-              <view class="meta-icon meta-icon--schedule"></view>
-              <view class="activity-card__meta-text">{{item.schedule}}</view>
+            class="home-search__filter"
+            hover-class="home-search__filter--hover"
+            hover-stay-time="80"
+            bindtap="handleFilterTap"
+          >
+            <view class="icon-tune">
+              <view class="icon-tune__line icon-tune__line--one"></view>
+              <view class="icon-tune__line icon-tune__line--two"></view>
+              <view class="icon-tune__line icon-tune__line--three"></view>
+              <view class="icon-tune__knob icon-tune__knob--one"></view>
+              <view class="icon-tune__knob icon-tune__knob--two"></view>
+              <view class="icon-tune__knob icon-tune__knob--three"></view>
             </view>
           </view>
+        </view>
+      </view>-->
 
-          <view class="activity-card__footer">
-            <view class="activity-card__joined">
-              <view class="activity-card__avatars">
-                <view
-                  wx:for="{{item.avatars}}"
-                  wx:key="*this"
-                  wx:for-item="avatarColor"
-                  class="activity-card__avatar"
-                  style="background: {{avatarColor}};"
-                ></view>
+      <scroll-view
+        class="category-strip"
+        style="{{categoryStripStyle}}"
+        scroll-x
+        enable-flex
+        show-scrollbar="{{false}}"
+      >
+        <view class="category-strip__inner">
+          <view
+            wx:for="{{categories}}"
+            wx:key="id"
+            class="category-chip {{selectedCategory === item.id ? 'category-chip--active' : ''}}"
+            data-category-id="{{item.id}}"
+            hover-class="category-chip--hover"
+            hover-stay-time="80"
+            bindtap="handleCategoryTap"
+          ><text>{{item.label}}</text></view>
+        </view>
+      </scroll-view>
+
+      <view
+        wx:if="{{visibleActivities.length > 0}}"
+        class="activity-list"
+      >
+        <view
+          wx:for="{{visibleActivities}}"
+          wx:key="id"
+          class="activity-card"
+          data-activity-id="{{item.id}}"
+          bindtap="handlePrimaryAction"
+        >
+          <view class="activity-card__cover">
+            <image
+              class="activity-card__image"
+              src="{{item.coverImageUrl}}"
+              mode="aspectFill"
+            />
+            <view
+              class="activity-card__price-badge activity-card__price-badge--{{item.priceTone}}"
+            ><text>{{item.priceText}}</text></view>
+          </view>
+
+          <view class="activity-card__body">
+            <!-- <view class="activity-card__eyebrow activity-card__eyebrow--{{item.badgeTone}}">
+              <view class="activity-card__eyebrow-icon"></view>
+              <view><text>{{item.badge}}</text></view>
+            </view>-->
+
+            <view class="activity-card__title"><text>{{item.title}}</text></view>
+
+            <view class="activity-card__meta">
+              <view class="activity-card__meta-item">
+                <view class="meta-icon meta-icon--location"></view>
+                <view class="activity-card__meta-text"><text>{{item.location}}</text></view>
               </view>
-              <view class="activity-card__joined-text">{{item.participants}}</view>
+              <view class="activity-card__meta-item">
+                <view class="meta-icon meta-icon--schedule"></view>
+                <view class="activity-card__meta-text"><text>{{item.schedule}}</text></view>
+              </view>
             </view>
 
-            <view
-              class="activity-card__cta"
-              hover-class="activity-card__cta--hover"
-              hover-stay-time="80"
-              data-activity-id="{{item.id}}"
-              catchtap="handlePrimaryAction"
-            >{{item.actionText}}</view>
+            <view class="activity-card__footer">
+              <view class="activity-card__joined">
+                <view class="activity-card__avatars">
+                  <view
+                    wx:for="{{item.avatars}}"
+                    wx:key="*this"
+                    wx:for-item="avatarColor"
+                    class="activity-card__avatar"
+                    style="background: {{avatarColor}};"
+                  ></view>
+                </view>
+                <view class="activity-card__joined-text"><text>{{item.participants}}</text></view>
+              </view>
+
+              <view
+                class="activity-card__cta"
+                hover-class="activity-card__cta--hover"
+                hover-stay-time="80"
+                data-activity-id="{{item.id}}"
+                catchtap="handlePrimaryAction"
+              ><text>{{item.actionText}}</text></view>
+            </view>
           </view>
         </view>
       </view>
-    </view>
 
-    <view
-      wx:else
-      class="home-empty"
-    >
-      <view class="home-empty__number">0</view>
-      <view class="home-empty__title">没有匹配的活动</view>
-      <view class="home-empty__subtitle">试试切换分类或搜索别的关键词。</view>
-    </view>
+      <view
+        wx:else
+        class="home-empty"
+      >
+        <view class="home-empty__number"><text>0</text></view>
+        <view class="home-empty__title"><text>没有匹配的活动</text></view>
+        <view class="home-empty__subtitle"><text>试试切换分类或搜索别的关键词。</text></view>
+      </view>
 
-    <view class="home-stats">
-      <view class="home-stats__number">12+</view>
-      <view class="home-stats__label">EVENTS FOUND THIS WEEK</view>
-    </view>
+      <view class="home-stats">
+        <view class="home-stats__number"><text>12+</text></view>
+        <view class="home-stats__label"><text>EVENTS FOUND THIS WEEK</text></view>
+      </view>
   </view>
 
   <view
@@ -187,7 +187,7 @@
     hover-stay-time="80"
     bindtap="handleCreateActivity"
   >
-    <view class="home-fab__plus">+</view>
-    <view>创建活动</view>
+    <view class="home-fab__plus"><text>+</text></view>
+    <view><text>创建活动</text></view>
   </view>
 </view>

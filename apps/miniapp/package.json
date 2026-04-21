@@ -9,7 +9,7 @@
     "typecheck": "node -e \"console.log('Miniapp typecheck is temporarily tracked in WeChat DevTools until the local typings are upgraded')\"",
     "typecheck:strict": "tsc -p tsconfig.json --noEmit",
     "test": "node -e \"console.log('No miniapp automated tests yet')\"",
-    "codegen:api": "openapi-typescript http://127.0.0.1:3000/api/openapi-json -o miniprogram/generated/api-types.d.ts"
+    "codegen:api": "openapi-typescript http://192.168.5.49:3000/api/openapi-json -o miniprogram/generated/api-types.d.ts"
   },
   "devDependencies": {
     "openapi-typescript": "^7.7.0"

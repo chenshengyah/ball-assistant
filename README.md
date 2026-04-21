@@ -36,25 +36,34 @@
 pnpm install
 ```
 
-### 2. 启动数据库
+### 2. 一键启动本地后端
+
+```bash
+pnpm dev
+```
+
+该命令会先启动 `infra/docker-compose.yml` 里的 PostgreSQL，执行 Prisma migration，再进入 `apps/api` 的本地开发模式。
+
+### 3. 分步启动数据库
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d
 ```
 
-### 3. 启动 API
+### 4. 分步启动 API
 
 ```bash
+pnpm db:migrate
 pnpm --filter @ball-assistant/api dev
 ```
 
-### 4. 生成小程序 API 类型
+### 5. 生成小程序 API 类型
 
 ```bash
 pnpm --filter @ball-assistant/miniapp codegen:api
 ```
 
-### 5. 启动小程序
+### 6. 启动小程序
 
 使用微信开发者工具打开 `apps/miniapp`。
 
@@ -62,6 +71,10 @@ pnpm --filter @ball-assistant/miniapp codegen:api
 
 ```bash
 pnpm dev
+pnpm dev:all
+pnpm db:up
+pnpm db:migrate
+pnpm db:down
 pnpm build
 pnpm lint
 pnpm typecheck

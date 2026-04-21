@@ -3,14 +3,17 @@ import {
   openUserRegistrationFromProfile,
   requireCompleteProfile,
 } from "../../services/auth";
+import { getPageTopStyle } from "../../utils/chrome";
 
 type ProfilePageData = {
   actionButtonText: string;
+  baseProfileLabel: string;
   hintText: string;
   initial: string;
   isAuthenticated: boolean;
   isProfileComplete: boolean;
   nickname: string;
+  pageTopStyle: string;
   roleSummary: string;
   statusLabel: string;
 };
@@ -18,32 +21,44 @@ type ProfilePageData = {
 Page({
   data: {
     actionButtonText: "登录并完善资料",
+    baseProfileLabel: "基础资料待补齐",
     hintText: "游客可以先浏览首页和活动详情，进入创建、报名和我的活动时再登录。",
     initial: "游",
     isAuthenticated: false,
     isProfileComplete: false,
     nickname: "游客",
+    pageTopStyle: "",
     roleSummary: "先看看活动，有需要时再补资料。",
     statusLabel: "游客模式",
   } as ProfilePageData,
 
   onLoad(): void {
+    this.syncPageChrome();
     this.hydratePage();
   },
 
   onShow(): void {
+    this.syncPageChrome();
     this.hydratePage();
+  },
+
+  syncPageChrome(): void {
+    this.setData({
+      pageTopStyle: getPageTopStyle(16),
+    });
   },
 
   hydratePage(): void {
     const authSnapshot = getAuthSnapshot();
     const isAuthenticated = authSnapshot.status !== "ANONYMOUS";
-    const isProfileComplete = authSnapshot.status === "AUTHENTICATED_COMPLETE";
+    const isBaseProfileComplete = authSnapshot.baseProfileComplete;
+    const isProfileComplete = isBaseProfileComplete;
 
     this.setData({
-      actionButtonText: isProfileComplete ? "编辑资料" : "登录并完善资料",
+      actionButtonText: isAuthenticated ? "编辑资料" : "登录并完善资料",
+      baseProfileLabel: isBaseProfileComplete ? "基础资料已完善" : "基础资料待补齐",
       hintText: isProfileComplete
-        ? "角色相关入口已经可用，继续进入我的活动、创建活动或俱乐部入口。"
+        ? "资料已完善，创建活动和报名都可以直接继续。"
         : "游客可继续浏览公开内容，角色相关动作会在点击时要求补齐资料。",
       initial: (authSnapshot.user?.nickname ?? "游客").slice(0, 1),
       isAuthenticated,
@@ -52,12 +67,12 @@ Page({
       roleSummary: isProfileComplete
         ? "资料已完善，可使用报名、创建和我的活动。"
         : isAuthenticated
-          ? "已登录，但还需要补齐昵称和性别。"
+          ? "已登录，但还需要补齐头像昵称和性别。"
           : "首页、活动列表和活动详情都可以先看。",
       statusLabel: isProfileComplete
         ? "已完善资料"
         : isAuthenticated
-          ? "待完善资料"
+          ? "待完善基础资料"
           : "游客模式",
     });
   },

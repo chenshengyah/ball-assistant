@@ -1,0 +1,16 @@
+<view class="app-nav__bar" style="{{barStyle}}">
+  <view class="app-nav__side" style="{{sideStyle}}">
+    <view
+      wx:if="{{showBack}}"
+      class="app-nav__back"
+      hover-class="app-nav__back--hover"
+      hover-stay-time="80"
+      bindtap="handleBack"
+    >
+      <view class="app-nav__back-chevron"></view>
+    </view>
+  </view>
+
+  <view class="app-nav__title"><text>{{title}}</text></view>
+  <view class="app-nav__capsule" style="{{capsuleStyle}}"></view>
+</view>

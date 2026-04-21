@@ -24,7 +24,13 @@ export type ActivityStore = {
 
 const store: ActivityStore = {
   users: [
-    { id: "user-current", nickname: "小陈", gender: "MALE", avatarColor: "#4C7CF0" },
+    {
+      id: "user-current",
+      nickname: "小陈",
+      gender: "MALE",
+      avatarColor: "#4C7CF0",
+      baseProfileComplete: true,
+    },
     { id: "user-lin", nickname: "林北", gender: "MALE", avatarColor: "#43B581" },
     { id: "user-ava", nickname: "Ava", gender: "FEMALE", avatarColor: "#FF8A65" },
     { id: "user-zoe", nickname: "Zoe", gender: "FEMALE", avatarColor: "#A66BFF" },
@@ -110,8 +116,20 @@ const store: ActivityStore = {
     },
   ],
   clubs: [
-    { id: "club-penguin", name: "企鹅羽球俱乐部", status: "ACTIVE" },
-    { id: "club-rally", name: "Rally 周末局", status: "ACTIVE" },
+    {
+      id: "club-penguin",
+      name: "企鹅羽球俱乐部",
+      contactName: "阿鹏",
+      contactPhone: "13912345678",
+      status: "ACTIVE",
+    },
+    {
+      id: "club-rally",
+      name: "Rally 周末局",
+      contactName: "Mia",
+      contactPhone: "13700001111",
+      status: "ACTIVE",
+    },
   ],
   clubMembers: [
     { id: "member-1", clubId: "club-penguin", userId: "user-current", role: "OWNER" },
@@ -125,6 +143,12 @@ const store: ActivityStore = {
       ownerType: "CLUB",
       ownerId: "club-penguin",
       createdBy: "user-current",
+      ownerDisplay: {
+        mode: "CLUB",
+        name: "企鹅羽球俱乐部",
+        contactName: "阿鹏",
+        contactWechat: "penguin-apeng",
+      },
       title: "周三晚场双打局",
       chargeMode: "FIXED",
       chargeAmountCents: 6800,
@@ -145,6 +169,13 @@ const store: ActivityStore = {
       ownerType: "PERSONAL",
       ownerId: "user-current",
       createdBy: "user-current",
+      ownerDisplay: {
+        mode: "PERSONAL",
+        name: "小陈",
+        avatarColor: "#4C7CF0",
+        contactName: "小陈",
+        contactWechat: "xc-badminton",
+      },
       title: "周末轻松娱乐局",
       chargeMode: "AA",
       chargeAmountCents: 4500,
@@ -164,6 +195,12 @@ const store: ActivityStore = {
       ownerType: "CLUB",
       ownerId: "club-rally",
       createdBy: "user-current",
+      ownerDisplay: {
+        mode: "CLUB",
+        name: "Rally 周末局",
+        contactName: "Mia",
+        contactWechat: "rally-mia",
+      },
       title: "周中 36 人大组局",
       chargeMode: "AA",
       chargeAmountCents: 0,
@@ -174,7 +211,7 @@ const store: ActivityStore = {
       activityEndAt: "2026-04-22T22:00:00+08:00",
       cancelCutoffMinutesBeforeStart: 120,
       cancelDeadlineAt: "2026-04-22T17:00:00+08:00",
-      descriptionRichtext: "统一报名，不预先分场地，活动开始前由管理员统一编排。",
+      descriptionRichtext: "统一分配，不预先分场地，活动开始前由管理员线下统一编排。",
       signupMode: "GENERAL",
       totalCapacity: 36,
       status: "PUBLISHED",

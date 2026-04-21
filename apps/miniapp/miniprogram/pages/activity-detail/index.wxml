@@ -1,58 +1,77 @@
+<app-nav title="活动详情" fallbackUrl="/pages/activity/index"></app-nav>
+
 <view
   wx:if="{{!isMissing}}"
   class="detail-page"
+  style="{{pageTopStyle}}"
 >
-  <view class="detail-card">
-    <view class="detail-card__top">
-      <view>
-        <view class="detail-card__title">{{title}}</view>
-        <view class="detail-card__owner">{{ownerLabel}}</view>
+    <view class="detail-card">
+      <view class="detail-card__top">
+        <view>
+          <view class="detail-card__title"><text>{{title}}</text></view>
+          <view class="detail-card__owner"><text>{{ownerLabel}}</text></view>
+        </view>
+        <view class="detail-card__status"><text>{{statusLabel}}</text></view>
       </view>
-      <view class="detail-card__status">{{statusLabel}}</view>
-    </view>
 
     <view class="detail-card__summary">
-      <view class="summary-pill">{{chargeText}}</view>
-      <view class="summary-pill summary-pill--soft">{{signupStatusLabel}}</view>
-      <view class="summary-pill summary-pill--soft">{{signupModeLabel}}</view>
+      <view class="summary-pill"><text>{{chargeText}}</text></view>
+      <view class="summary-pill summary-pill--soft"><text>{{signupStatusLabel}}</text></view>
+      <view class="summary-pill summary-pill--soft"><text>{{signupModeLabel}}</text></view>
     </view>
 
     <view class="detail-meta">
       <view class="detail-meta__row">
-        <view class="detail-meta__label">场馆</view>
-        <view class="detail-meta__value">{{venueLabel}}</view>
+        <view class="detail-meta__label"><text>场馆</text></view>
+        <view class="detail-meta__value"><text>{{venueLabel}}</text></view>
       </view>
       <view class="detail-meta__row">
-        <view class="detail-meta__label">时间</view>
-        <view class="detail-meta__value">{{scheduleText}}</view>
+        <view class="detail-meta__label"><text>时间</text></view>
+        <view class="detail-meta__value"><text>{{scheduleText}}</text></view>
       </view>
       <view class="detail-meta__row">
-        <view class="detail-meta__label">报名截止</view>
-        <view class="detail-meta__value">{{cancelDeadlineText}}</view>
+        <view class="detail-meta__label"><text>报名截止</text></view>
+        <view class="detail-meta__value"><text>{{cancelDeadlineText}}</text></view>
       </view>
       <view class="detail-meta__row">
-        <view class="detail-meta__label">我的状态</view>
-        <view class="detail-meta__value">{{currentUserSignupLabel}}</view>
+        <view class="detail-meta__label"><text>我的状态</text></view>
+        <view class="detail-meta__value"><text>{{currentUserSignupLabel}}</text></view>
+      </view>
+      <view wx:if="{{ownerContactName}}" class="detail-meta__row">
+        <view class="detail-meta__label"><text>发起人</text></view>
+        <view class="detail-meta__value"><text>{{ownerContactName}}</text></view>
+      </view>
+      <view wx:if="{{ownerContactWechat}}" class="detail-meta__row">
+        <view class="detail-meta__label"><text>联系微信</text></view>
+        <view class="detail-meta__value"><text>{{ownerContactWechat}}</text></view>
       </view>
     </view>
 
-    <view class="detail-card__description">{{descriptionRichtext}}</view>
-  </view>
-
-  <view
-    wx:if="{{signupMode === 'USER_SELECT_COURT'}}"
-    class="court-list"
-  >
+    <rich-text
+      wx:if="{{descriptionRichtext}}"
+      class="detail-card__richtext"
+      nodes="{{descriptionRichtext}}"
+    ></rich-text>
     <view
-      wx:for="{{courts}}"
-      wx:key="id"
-      wx:for-item="court"
-      class="court-card"
+      wx:else
+      class="detail-card__description detail-card__description--empty"
+    ><text>主办方暂未填写图文详情。</text></view>
+    </view>
+
+    <view
+      wx:if="{{signupMode === 'USER_SELECT_COURT'}}"
+      class="court-list"
     >
-      <view class="court-card__top">
-        <view class="court-card__title">{{court.label}}</view>
-        <view class="court-card__counts">{{court.occupancyText}} · {{court.waitlistText}}</view>
-      </view>
+      <view
+        wx:for="{{courts}}"
+        wx:key="id"
+        wx:for-item="court"
+        class="court-card"
+      >
+        <view class="court-card__top">
+          <view class="court-card__title"><text>{{court.label}}</text></view>
+          <view class="court-card__counts"><text>{{court.occupancyText}} · {{court.waitlistText}}</text></view>
+        </view>
 
       <view class="chip-list">
         <view
@@ -68,77 +87,78 @@
         </view>
       </view>
 
-      <view class="court-card__footer">
-        <view
-          wx:if="{{court.canSignup}}"
-          class="action-button action-button--primary"
-          data-activity-court-id="{{court.id}}"
-          bindtap="handleSignUp"
-        >{{court.signupButtonText}}</view>
+        <view class="court-card__footer">
+          <view
+            wx:if="{{court.canSignup}}"
+            class="action-button action-button--primary"
+            data-activity-court-id="{{court.id}}"
+            bindtap="handleSignUp"
+          ><text>{{court.signupButtonText}}</text></view>
 
-        <view
-          wx:if="{{canManage}}"
-          class="stepper"
-        >
           <view
-            class="stepper__button {{!court.canDecreaseCapacity ? 'stepper__button--disabled' : ''}}"
-            data-activity-court-id="{{court.id}}"
-            data-delta="-1"
-            bindtap="handleAdjustCapacity"
-          >-</view>
-          <view class="stepper__text">调容量</view>
-          <view
-            class="stepper__button"
-            data-activity-court-id="{{court.id}}"
-            data-delta="1"
-            bindtap="handleAdjustCapacity"
-          >+</view>
+            wx:if="{{canManage}}"
+            class="stepper"
+          >
+            <view
+              class="stepper__button {{!court.canDecreaseCapacity ? 'stepper__button--disabled' : ''}}"
+              data-activity-court-id="{{court.id}}"
+              data-delta="-1"
+              bindtap="handleAdjustCapacity"
+            ><text>-</text></view>
+            <view class="stepper__text"><text>调容量</text></view>
+            <view
+              class="stepper__button"
+              data-activity-court-id="{{court.id}}"
+              data-delta="1"
+              bindtap="handleAdjustCapacity"
+            ><text>+</text></view>
+          </view>
         </view>
       </view>
     </view>
-  </view>
 
-  <view
-    wx:if="{{signupMode === 'GENERAL'}}"
-    class="court-card"
-  >
-    <view class="court-card__top">
-      <view class="court-card__title">统一报名</view>
-      <view class="court-card__counts">{{totalCapacityText}} · {{waitlistCount}} 候补</view>
+    <view
+      wx:if="{{signupMode === 'GENERAL'}}"
+      class="court-card"
+    >
+      <view class="court-card__top">
+        <view class="court-card__title"><text>统一分配</text></view>
+        <view class="court-card__counts"><text>{{totalCapacityText}} · {{waitlistCount}} 候补</text></view>
+      </view>
+
+      <view class="court-card__footer">
+        <view
+          wx:if="{{canGeneralSignUp}}"
+          class="action-button action-button--primary"
+          bindtap="handleSignUp"
+        ><text>{{generalSignupButtonText}}</text></view>
+      </view>
     </view>
 
-    <view class="court-card__footer">
+    <view class="detail-actions">
       <view
-        wx:if="{{canGeneralSignUp}}"
-        class="action-button action-button--primary"
-        bindtap="handleSignUp"
-      >{{generalSignupButtonText}}</view>
+        wx:if="{{canManage}}"
+        class="action-button action-button--secondary"
+        bindtap="handleRepublish"
+      ><text>再次发布</text></view>
+      <view
+        wx:if="{{canCancelCurrentUserRegistration}}"
+        class="action-button action-button--danger"
+        bindtap="handleCancelSignup"
+      ><text>取消我的报名</text></view>
     </view>
-  </view>
 
-  <view class="detail-actions">
     <view
-      wx:if="{{canManage}}"
-      class="action-button action-button--secondary"
-      bindtap="handleRepublish"
-    >再次发布</view>
-    <view
-      wx:if="{{canCancelCurrentUserRegistration}}"
-      class="action-button action-button--danger"
-      bindtap="handleCancelSignup"
-    >取消我的报名</view>
-  </view>
-
-  <view
-    wx:if="{{isGuest}}"
-    class="guest-tip"
-  >当前是游客态，可以先看详情；点击报名或创建时才会触发登录和资料补全。</view>
+      wx:if="{{isGuest}}"
+      class="guest-tip"
+    ><text>当前是游客态，可以先看详情；点击报名或创建时才会触发登录和资料补全。</text></view>
 </view>
 
 <view
   wx:else
   class="missing-page"
+  style="{{pageTopStyle}}"
 >
-  <view class="missing-page__title">活动不存在</view>
-  <view class="missing-page__text">可能已经被移除，或者链接失效了。</view>
+  <view class="missing-page__title"><text>活动不存在</text></view>
+  <view class="missing-page__text"><text>可能已经被移除，或者链接失效了。</text></view>
 </view>

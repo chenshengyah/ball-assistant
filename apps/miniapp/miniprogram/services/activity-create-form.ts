@@ -20,6 +20,7 @@ export type FormCourt = {
 
 export type CreateForm = {
   sourceActivityId: string;
+  organizerWechat: string;
   signupMode: ActivitySignupMode;
   title: string;
   chargeAmountYuan: string;
@@ -31,6 +32,131 @@ export type CreateForm = {
   cancelCutoffMinutesBeforeStart: string;
   descriptionRichtext: string;
 };
+
+export type DescriptionBlock =
+  | {
+      id: string;
+      type: "paragraph";
+      text: string;
+    }
+  | {
+      id: string;
+      type: "image";
+      src: string;
+    };
+
+function createDescriptionBlockId(): string {
+  return `description-block-${Date.now()}-${Math.round(Math.random() * 100000)}`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function stripTags(value: string): string {
+  return value.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "");
+}
+
+export function createParagraphBlock(text = ""): DescriptionBlock {
+  return {
+    id: createDescriptionBlockId(),
+    type: "paragraph",
+    text,
+  };
+}
+
+export function createImageBlock(src: string): DescriptionBlock {
+  return {
+    id: createDescriptionBlockId(),
+    type: "image",
+    src,
+  };
+}
+
+export function ensureDescriptionBlocks(blocks: DescriptionBlock[]): DescriptionBlock[] {
+  return blocks.length > 0 ? blocks : [createParagraphBlock()];
+}
+
+export function parseDescriptionRichtext(value: string): DescriptionBlock[] {
+  const source = value.trim();
+
+  if (!source) {
+    return [createParagraphBlock()];
+  }
+
+  const blocks: DescriptionBlock[] = [];
+  const tokenPattern = /<p\b[^>]*>([\s\S]*?)<\/p>|<img\b[^>]*src=(["'])(.*?)\2[^>]*\/?>/gi;
+  let lastIndex = 0;
+
+  const pushPlainText = (segment: string): void => {
+    const normalized = decodeHtml(stripTags(segment)).trim();
+
+    if (normalized) {
+      blocks.push(createParagraphBlock(normalized));
+    }
+  };
+
+  source.replace(tokenPattern, (matched, paragraphContent: string, _quote: string, imageSrc: string, offset: number) => {
+    if (offset > lastIndex) {
+      pushPlainText(source.slice(lastIndex, offset));
+    }
+
+    if (typeof imageSrc === "string" && imageSrc.trim()) {
+      blocks.push(createImageBlock(decodeHtml(imageSrc.trim())));
+    } else if (typeof paragraphContent === "string") {
+      const paragraphText = decodeHtml(stripTags(paragraphContent)).trim();
+
+      if (paragraphText) {
+        blocks.push(createParagraphBlock(paragraphText));
+      }
+    }
+
+    lastIndex = offset + matched.length;
+
+    return matched;
+  });
+
+  if (lastIndex < source.length) {
+    pushPlainText(source.slice(lastIndex));
+  }
+
+  if (blocks.length > 0) {
+    return blocks;
+  }
+
+  return [createParagraphBlock(decodeHtml(stripTags(source)))];
+}
+
+export function serializeDescriptionBlocks(blocks: DescriptionBlock[]): string {
+  return blocks
+    .map((block) => {
+      if (block.type === "image") {
+        const src = block.src.trim();
+
+        return src ? `<img src="${escapeHtml(src)}" />` : "";
+      }
+
+      const text = block.text.trim();
+
+      return text ? `<p>${escapeHtml(text).replace(/\n/g, "<br/>")}</p>` : "";
+    })
+    .filter((item) => item.length > 0)
+    .join("");
+}
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -57,6 +183,7 @@ export function getDefaultCreateForm(): CreateForm {
 
   return {
     sourceActivityId: "",
+    organizerWechat: "",
     signupMode: "USER_SELECT_COURT",
     title: "",
     chargeAmountYuan: "68",
@@ -141,6 +268,7 @@ export function mapDraftToCreateState(
   return {
     createForm: {
       sourceActivityId: draft.sourceActivityId ?? "",
+      organizerWechat: draft.organizerWechat,
       signupMode: draft.signupMode,
       title: draft.title,
       chargeAmountYuan:
@@ -189,6 +317,10 @@ export function buildCreateActivityInput(params: {
 
   if (!createForm.title.trim()) {
     throw new Error("请填写活动名称");
+  }
+
+  if (!createForm.organizerWechat.trim()) {
+    throw new Error("请填写发起人微信号");
   }
 
   const signupMode = createForm.signupMode;
@@ -247,6 +379,7 @@ export function buildCreateActivityInput(params: {
     ownerType: ownerOption.ownerType,
     ownerId: ownerOption.ownerId,
     createdBy: currentUserId,
+    organizerWechat: createForm.organizerWechat.trim(),
     title: createForm.title,
     chargeMode,
     chargeAmountCents: chargeMode === "FREE" ? 0 : chargeAmount * 100,

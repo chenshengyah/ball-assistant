@@ -4,7 +4,12 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.8.0",
   "scripts": {
-    "dev": "turbo run dev --parallel",
+    "dev": "pnpm dev:backend",
+    "dev:all": "turbo run dev --parallel",
+    "dev:backend": "pnpm db:up && pnpm db:migrate && pnpm --filter @ball-assistant/api dev",
+    "db:up": "docker compose -f infra/docker-compose.yml up -d",
+    "db:migrate": "pnpm --dir apps/api exec prisma migrate deploy",
+    "db:down": "docker compose -f infra/docker-compose.yml down",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

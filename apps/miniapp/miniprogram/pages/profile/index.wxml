@@ -1,64 +1,67 @@
-<view class="profile-page">
+<app-nav title="我的" showBack="{{false}}"></app-nav>
+
+<view class="profile-page" style="{{pageTopStyle}}">
   <view class="profile-hero">
-    <view class="profile-hero__avatar">{{initial}}</view>
+    <view class="profile-hero__avatar"><text>{{initial}}</text></view>
     <view class="profile-hero__content">
-      <view class="profile-hero__status">{{statusLabel}}</view>
-      <view class="profile-hero__title">{{nickname}}</view>
-      <view class="profile-hero__summary">{{roleSummary}}</view>
+      <view class="profile-hero__status"><text>{{statusLabel}}</text></view>
+      <view class="profile-hero__title"><text>{{nickname}}</text></view>
+      <view class="profile-hero__summary"><text>{{roleSummary}}</text></view>
     </view>
   </view>
 
-  <view class="profile-card">
-    <view class="profile-card__title">登录策略</view>
-    <view class="profile-card__text">{{hintText}}</view>
-    <view
-      class="profile-card__button"
-      hover-class="profile-card__button--hover"
-      hover-stay-time="80"
-      bindtap="handleOpenRegistration"
-    >{{actionButtonText}}</view>
-  </view>
-
-  <view class="profile-section">
-    <view class="profile-section__title">角色相关入口</view>
-
-    <view
-      class="profile-entry"
-      hover-class="profile-entry--hover"
-      hover-stay-time="80"
-      bindtap="handleOpenMyActivities"
-    >
-      <view>
-        <view class="profile-entry__title">我的活动</view>
-        <view class="profile-entry__text">查看我发布的和我报名的活动集合。</view>
-      </view>
-      <view class="profile-entry__arrow">›</view>
+    <view class="profile-card">
+      <view class="profile-card__title"><text>登录策略</text></view>
+      <view class="profile-card__text"><text>{{hintText}}</text></view>
+      <view class="profile-card__status"><text>{{baseProfileLabel}}</text></view>
+      <view
+        class="profile-card__button"
+        hover-class="profile-card__button--hover"
+        hover-stay-time="80"
+        bindtap="handleOpenRegistration"
+      ><text>{{actionButtonText}}</text></view>
     </view>
 
-    <view
-      class="profile-entry"
-      hover-class="profile-entry--hover"
-      hover-stay-time="80"
-      bindtap="handleOpenCreateActivity"
-    >
-      <view>
-        <view class="profile-entry__title">创建活动</view>
-        <view class="profile-entry__text">仅在动作触发时检查登录和资料完整度。</view>
-      </view>
-      <view class="profile-entry__arrow">›</view>
-    </view>
+    <view class="profile-section">
+      <view class="profile-section__title"><text>角色相关入口</text></view>
 
-    <view
-      class="profile-entry"
-      hover-class="profile-entry--hover"
-      hover-stay-time="80"
-      bindtap="handleOpenClubRegister"
-    >
-      <view>
-        <view class="profile-entry__title">俱乐部入口</view>
-        <view class="profile-entry__text">俱乐部注册和管理动作统一延后到登录后触发。</view>
+      <view
+        class="profile-entry"
+        hover-class="profile-entry--hover"
+        hover-stay-time="80"
+        bindtap="handleOpenMyActivities"
+      >
+        <view>
+          <view class="profile-entry__title"><text>我的活动</text></view>
+          <view class="profile-entry__text"><text>查看我发布的和我报名的活动集合。</text></view>
+        </view>
+        <view class="profile-entry__arrow"><text>›</text></view>
       </view>
-      <view class="profile-entry__arrow">›</view>
+
+      <view
+        class="profile-entry"
+        hover-class="profile-entry--hover"
+        hover-stay-time="80"
+        bindtap="handleOpenCreateActivity"
+      >
+        <view>
+          <view class="profile-entry__title"><text>创建活动</text></view>
+          <view class="profile-entry__text"><text>仅在动作触发时检查登录和资料完整度。</text></view>
+        </view>
+        <view class="profile-entry__arrow"><text>›</text></view>
+      </view>
+
+      <view
+        class="profile-entry"
+        hover-class="profile-entry--hover"
+        hover-stay-time="80"
+        bindtap="handleOpenClubRegister"
+      >
+        <view>
+          <view class="profile-entry__title"><text>俱乐部入口</text></view>
+          <view class="profile-entry__text"><text>俱乐部注册和管理动作统一延后到登录后触发。</text></view>
+        </view>
+        <view class="profile-entry__arrow"><text>›</text></view>
+      </view>
     </view>
-  </view>
 </view>

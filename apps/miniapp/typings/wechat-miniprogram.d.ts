@@ -130,6 +130,7 @@ declare namespace WechatMiniprogram {
 
   interface ComponentInstance<Data extends Record<string, unknown>> {
     data: Data;
+    properties: Record<string, unknown>;
     setData(data: Partial<Data>): void;
   }
 
@@ -138,6 +139,7 @@ declare namespace WechatMiniprogram {
     Methods extends Record<string, (...args: any[]) => unknown>
   > {
     data: Data;
+    properties?: Record<string, unknown>;
     lifetimes?: {
       attached?(): void;
       detached?(): void;

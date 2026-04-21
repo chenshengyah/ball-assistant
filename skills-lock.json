@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "skills": {
+    "skyline-components": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "822e3f1b986922f55c46b1ead41a1088c21464c398253eb8531859f2f1874e96"
+    },
+    "skyline-config": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "9e52ad2d0d10e5ffc0fff117a6adc7e829885297dd92e7d9d4599cf0bfb45a8e"
+    },
+    "skyline-overview": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "94b88b7bc42e080f1d1e2d22fa5fb811beef837804d8cfbf342162c09e738773"
+    },
+    "skyline-route": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "70d9b7be1127b26bb61c254124cc93088083f67bbd0326279e49c18078edd8b8"
+    },
+    "skyline-scroll-api": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "8a794fe67e6b7ce7e8bce6dc61434e280c0e816ab53451f4067fe57b3f0969a3"
+    },
+    "skyline-worklet": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "0ee75be4c721756d0e9d4ff9f8a693332938352c4e5678bde8b4d80f7a8ce9fd"
+    },
+    "skyline-wxss": {
+      "source": "wechat-miniprogram/skyline-skills",
+      "sourceType": "github",
+      "computedHash": "1567378a3b6b7503484ab24315a8fa970e2e75121686ba18618c28516fea60fd"
+    }
+  }
+}

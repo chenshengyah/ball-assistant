@@ -36,6 +36,7 @@ page {
 }
 
 .registration-card__label {
+  display: block;
   font-size: 26rpx;
   font-weight: 600;
   color: #0f172a;
@@ -59,6 +60,47 @@ page {
   box-sizing: border-box;
 }
 
+.registration-avatar {
+  margin-top: 12rpx;
+  padding: 20rpx 24rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20rpx;
+  border-radius: 24rpx;
+  background: #f8fafc;
+  border: 1rpx solid #dbe2ea;
+  color: #0f172a;
+  text-align: left;
+}
+
+.registration-avatar::after,
+.registration-submit::after {
+  border: 0;
+}
+
+.registration-avatar__image,
+.registration-avatar__fallback {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+}
+
+.registration-avatar__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #0f172a);
+  color: #ffffff;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.registration-avatar__text {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
 .registration-card__hint {
   margin-top: 24rpx;
   font-size: 24rpx;
@@ -69,6 +111,7 @@ page {
 .registration-submit {
   margin-top: 28rpx;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   height: 88rpx;

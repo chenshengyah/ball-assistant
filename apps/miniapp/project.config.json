@@ -36,6 +36,7 @@
     "minifyWXSS": true,
     "compileWorklet": false,
     "minifyWXML": true,
+    "skylineRenderEnable": false,
     "localPlugins": false,
     "disableUseStrict": false,
     "useCompilerPlugins": [

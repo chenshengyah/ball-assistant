@@ -128,8 +128,12 @@ export function updateVenue(input: VenueUpdateInput): VenueWithCourts {
 
   venue.name = normalizeText(input.name);
   venue.shortName = normalizeText(input.shortName) || venue.name;
+  venue.province = normalizeText(input.province);
+  venue.city = normalizeText(input.city);
   venue.district = normalizeText(input.district);
   venue.address = normalizeText(input.address);
+  venue.latitude = input.latitude;
+  venue.longitude = input.longitude;
   venue.navigationName = normalizeText(input.navigationName) || venue.name;
 
   return {

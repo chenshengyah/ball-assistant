@@ -1,4 +1,3 @@
-import { requireCompleteProfile } from "../../services/auth";
 import { listActivities } from "../../services/activity-service";
 import type { ActivityView } from "../../types/activity";
 import { getChromeMetrics } from "../../utils/chrome";
@@ -166,17 +165,9 @@ Page({
     });
   },
 
-  async handleCreateActivity(): Promise<void> {
-    const canContinue = await requireCompleteProfile({
-      type: "CREATE_ACTIVITY",
-    });
-
-    if (!canContinue) {
-      return;
-    }
-
+  handleCreateActivity(): void {
     wx.navigateTo({
-      url: "/pages/activity-create/index",
+      url: "/pages/activity-create/index?debugSkipAuth=1",
     });
   },
 

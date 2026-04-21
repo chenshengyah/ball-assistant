@@ -19,23 +19,28 @@ export type SessionUser = {
   gender: UserGender | null;
   avatarUrl: string;
   avatarColor: string;
+  baseProfileComplete: boolean;
+  isProfileComplete: boolean;
 };
 
 type LoginResponse = {
   accessToken: string;
   user: SessionUser;
+  baseProfileComplete: boolean;
   isProfileComplete: boolean;
 };
 
 type UpdateProfileInput = {
   nickname: string;
   gender: UserGender;
+  avatarUrl?: string;
 };
 
 type AuthState = {
   status: AuthStatus;
   accessToken: string;
   user: SessionUser | null;
+  baseProfileComplete: boolean;
   isProfileComplete: boolean;
   pendingIntent: PendingIntent | null;
   didBootstrap: boolean;
@@ -47,31 +52,41 @@ const state: AuthState = {
   status: "ANONYMOUS",
   accessToken: "",
   user: null,
+  baseProfileComplete: false,
   isProfileComplete: false,
   pendingIntent: null,
   didBootstrap: false,
 };
 
-function deriveStatus(isProfileComplete: boolean, user: SessionUser | null): AuthStatus {
+function deriveStatus(baseProfileComplete: boolean, user: SessionUser | null): AuthStatus {
   if (!user) {
     return "ANONYMOUS";
   }
 
-  return isProfileComplete ? "AUTHENTICATED_COMPLETE" : "AUTHENTICATED_INCOMPLETE";
+  return baseProfileComplete ? "AUTHENTICATED_COMPLETE" : "AUTHENTICATED_INCOMPLETE";
 }
 
 function setSession(loginResponse: LoginResponse): void {
   state.accessToken = loginResponse.accessToken;
   state.user = loginResponse.user;
+  state.baseProfileComplete = loginResponse.user.baseProfileComplete;
   state.isProfileComplete = loginResponse.isProfileComplete;
-  state.status = deriveStatus(loginResponse.isProfileComplete, loginResponse.user);
+  state.status = deriveStatus(loginResponse.user.baseProfileComplete, loginResponse.user);
 }
 
 function clearSession(): void {
   state.status = "ANONYMOUS";
   state.accessToken = "";
   state.user = null;
+  state.baseProfileComplete = false;
   state.isProfileComplete = false;
+}
+
+function applyUserProfile(user: SessionUser): void {
+  state.user = user;
+  state.baseProfileComplete = user.baseProfileComplete;
+  state.isProfileComplete = user.isProfileComplete;
+  state.status = deriveStatus(user.baseProfileComplete, user);
 }
 
 function getIntentSource(intent: PendingIntent): string {
@@ -171,7 +186,7 @@ export async function requireCompleteProfile(intent: PendingIntent): Promise<boo
     return false;
   }
 
-  if (state.status === "AUTHENTICATED_INCOMPLETE") {
+  if (!hasRequiredProfileForIntent(intent)) {
     state.pendingIntent = intent;
     navigateToUserRegistration(getIntentSource(intent));
     return false;
@@ -206,16 +221,14 @@ export async function updateCurrentUserProfile(
     data: {
       nickname: input.nickname,
       gender: input.gender,
-      avatarUrl: "",
+      avatarUrl: input.avatarUrl ?? "",
     },
     headers: {
       Authorization: `Bearer ${state.accessToken}`,
     },
   });
 
-  state.user = user;
-  state.isProfileComplete = true;
-  state.status = "AUTHENTICATED_COMPLETE";
+  applyUserProfile(user);
 
   return { ...user };
 }
@@ -230,6 +243,11 @@ export function clearPendingIntent(): void {
 
 export function getPendingIntent(): PendingIntent | null {
   return state.pendingIntent ? { ...state.pendingIntent } : null;
+}
+
+export function hasRequiredProfileForIntent(intent: PendingIntent): boolean {
+  void intent;
+  return state.baseProfileComplete;
 }
 
 export function resumePendingIntent(): void {
@@ -250,7 +268,7 @@ export function resumePendingIntent(): void {
 
   switch (pendingIntent.type) {
     case "CREATE_ACTIVITY":
-      wx.navigateTo({
+      wx.redirectTo({
         url: "/pages/activity-create/index",
       });
       return;

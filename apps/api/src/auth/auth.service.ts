@@ -12,10 +12,13 @@ export class AuthService {
   async loginWithWechatCode(code: string): Promise<{
     accessToken: string;
     user: ReturnType<UsersService["toProfile"]>;
+    baseProfileComplete: boolean;
+    contactProfileComplete: boolean;
     isProfileComplete: boolean;
   }> {
     const openId = this.toWechatOpenId(code);
     const user = await this.usersService.upsertWechatUser(openId);
+    const profile = this.usersService.toProfile(user);
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,
       openId: user.openId
@@ -23,8 +26,10 @@ export class AuthService {
 
     return {
       accessToken,
-      user: this.usersService.toProfile(user),
-      isProfileComplete: Boolean(user.nickname && user.gender)
+      user: profile,
+      baseProfileComplete: profile.baseProfileComplete,
+      contactProfileComplete: profile.contactProfileComplete,
+      isProfileComplete: profile.isProfileComplete
     };
   }
 

@@ -29,12 +29,17 @@ export const CANCEL_CUTOFF_OPTIONS: Array<{
   { value: 1440, label: "活动前 24 小时" },
 ];
 
+export const SIGNUP_MODE_LABELS: Record<ActivitySignupMode, string> = {
+  GENERAL: "统一分配",
+  USER_SELECT_COURT: "自主选场",
+};
+
 export const SIGNUP_MODE_OPTIONS: Array<{
   value: ActivitySignupMode;
   label: string;
 }> = [
-  { value: "USER_SELECT_COURT", label: "按场地报名" },
-  { value: "GENERAL", label: "统一报名" },
+  { value: "USER_SELECT_COURT", label: SIGNUP_MODE_LABELS.USER_SELECT_COURT },
+  { value: "GENERAL", label: SIGNUP_MODE_LABELS.GENERAL },
 ];
 
 export const OWNER_TYPE_LABELS: Record<OwnerType, string> = {

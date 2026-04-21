@@ -1,4 +1,7 @@
-<view class="tab-bar" style="{{tabBarStyle}}">
+<view
+  class="tab-bar"
+  style="{{tabBarStyle}}"
+>
   <view
     wx:for="{{list}}"
     wx:key="pagePath"
@@ -10,7 +13,10 @@
       class="tab-bar__content {{selected === index ? 'tab-bar__content--active' : ''}}"
     >
       <view class="tab-bar__icon">
-        <view wx:if="{{item.icon === 'home'}}" class="tab-icon tab-icon--home">
+        <view
+          wx:if="{{item.icon === 'home'}}"
+          class="tab-icon tab-icon--home"
+        >
           <view class="tab-icon__home-roof"></view>
           <view class="tab-icon__home-body"></view>
         </view>
@@ -34,7 +40,7 @@
         </view>
       </view>
 
-      <view class="tab-bar__text">{{item.text}}</view>
+      <view class="tab-bar__text"><text>{{item.text}}</text></view>
     </view>
   </view>
 </view>

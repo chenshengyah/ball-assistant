@@ -19,6 +19,7 @@ page {
   right: 0;
   z-index: 40;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
@@ -50,6 +51,7 @@ page {
 }
 
 .activity-content {
+  min-height: 100vh;
   box-sizing: border-box;
 }
 
@@ -64,6 +66,7 @@ page {
 
 .activity-hero__profile {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 14px;
 }
@@ -133,6 +136,7 @@ page {
 
 .activity-hero__actions {
   display: flex;
+  flex-direction: row;
   gap: 10px;
   margin-top: 18px;
 }
@@ -165,6 +169,7 @@ page {
 
 .segment-control {
   display: inline-flex;
+  flex-direction: row;
   gap: 8px;
   margin-top: 16px;
   padding: 6px;
@@ -209,6 +214,7 @@ page {
 .activity-card__top,
 .venue-card__top {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
@@ -243,6 +249,7 @@ page {
 
 .activity-card__summary {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;

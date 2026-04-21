@@ -2,6 +2,10 @@ node_modules/
 dist/
 .DS_Store
 .turbo/
+.env
+.env.local
+apps/api/.env
+apps/api/.env.local
 apps/api/dist/
 apps/miniapp/miniprogram/app.js
 apps/miniapp/miniprogram/envList.js

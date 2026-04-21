@@ -90,6 +90,10 @@ Component<CustomTabBarData, CustomTabBarMethods>({
         return;
       }
 
+      if (this.data.list[this.data.selected]?.pagePath === path) {
+        return;
+      }
+
       wx.switchTab({
         url: `/${path}`,
       });

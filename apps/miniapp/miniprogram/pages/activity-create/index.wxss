@@ -53,9 +53,9 @@ page {
 .court-card__top,
 .court-card__switch-row,
 .page-actions,
-.dialog__footer,
 .manager-court__footer {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
@@ -70,6 +70,26 @@ page {
 .section-link {
   color: #2563eb;
   font-size: 24rpx;
+}
+
+.editor-toolbar,
+.description-block__header,
+.description-block__actions,
+.image-block__footer,
+.location-card__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.owner-card__top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
 }
 
 .section-link--muted {
@@ -95,6 +115,7 @@ page {
 
 .form-grid {
   display: flex;
+  flex-direction: row;
   gap: 16rpx;
   margin-top: 20rpx;
 }
@@ -102,6 +123,14 @@ page {
 .form-grid__item {
   flex: 1;
   min-width: 0;
+}
+
+.owner-card-list,
+.mode-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 12rpx;
 }
 
 .picker-field,
@@ -131,6 +160,10 @@ page {
   line-height: 1.6;
 }
 
+.textarea-field--block {
+  height: 180rpx;
+}
+
 .court-list,
 .manager-court-list {
   display: flex;
@@ -145,6 +178,127 @@ page {
   border: 1px solid #e5e7eb;
   border-radius: 20rpx;
   background: #f9fafb;
+}
+
+.owner-card,
+.mode-card {
+  padding: 20rpx;
+  border: 1px solid #e5e7eb;
+  border-radius: 20rpx;
+  background: #f9fafb;
+}
+
+.owner-card--active,
+.mode-card--active {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.owner-card__tag,
+.owner-card__selected {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+}
+
+.owner-card__tag {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.owner-card__selected {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.owner-card__title,
+.mode-card__title {
+  margin-top: 16rpx;
+  color: #111827;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.owner-card__meta,
+.mode-card__meta {
+  margin-top: 8rpx;
+  color: #6b7280;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.description-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.description-block,
+.location-card {
+  padding: 20rpx;
+  border: 1px solid #e5e7eb;
+  border-radius: 20rpx;
+  background: #f9fafb;
+}
+
+.description-block__label {
+  color: #111827;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.block-action {
+  color: #2563eb;
+  font-size: 22rpx;
+}
+
+.block-action--disabled {
+  color: #9ca3af;
+}
+
+.block-action--danger {
+  color: #dc2626;
+}
+
+.image-block {
+  margin-top: 12rpx;
+}
+
+.image-block__preview {
+  width: 100%;
+  height: 240rpx;
+  border-radius: 16rpx;
+  background: #e5e7eb;
+}
+
+.image-block__footer {
+  margin-top: 16rpx;
+}
+
+.location-card {
+  margin-top: 12rpx;
+}
+
+.location-card__row + .location-card__row {
+  margin-top: 12rpx;
+}
+
+.location-card__label {
+  color: #6b7280;
+  font-size: 22rpx;
+}
+
+.location-card__value {
+  max-width: 70%;
+  color: #111827;
+  font-size: 22rpx;
+  line-height: 1.6;
+  text-align: right;
 }
 
 .court-card--active {
@@ -203,43 +357,102 @@ page {
   inset: 0;
   z-index: 40;
   background: rgba(17, 24, 39, 0.3);
+  animation: sheet-mask-fade-in 180ms ease-out;
 }
 
-.dialog {
+.venue-sheet {
   position: fixed;
-  left: 24rpx;
-  right: 24rpx;
-  top: 50%;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 50;
-  padding: 24rpx;
-  border-radius: 24rpx;
-  background: #ffffff;
-  transform: translateY(-50%);
-  box-sizing: border-box;
-  max-height: 84vh;
   display: flex;
   flex-direction: column;
+  height: 82vh;
+  max-height: calc(100vh - 48rpx);
+  min-height: 760rpx;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 32rpx 32rpx 0 0;
+  box-shadow: 0 -12rpx 48rpx rgba(17, 24, 39, 0.16);
+  animation: venue-sheet-slide-up 220ms ease-out;
 }
 
-.dialog__title {
+.venue-sheet__handle {
+  display: flex;
+  justify-content: center;
+  padding: 16rpx 0 8rpx;
+  flex-shrink: 0;
+}
+
+.venue-sheet__handle-bar {
+  width: 88rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: #d1d5db;
+}
+
+.venue-sheet__header {
+  padding: 0 24rpx 20rpx;
+  flex-shrink: 0;
+}
+
+.venue-sheet__title {
   color: #111827;
   font-size: 32rpx;
   font-weight: 700;
 }
 
-.dialog__subtitle {
+.venue-sheet__subtitle {
   margin-top: 8rpx;
   color: #6b7280;
   font-size: 24rpx;
   line-height: 1.6;
 }
 
-.dialog__body {
+.venue-sheet__body {
   flex: 1;
   min-height: 0;
+  height: 100%;
+}
+
+.venue-sheet__section {
+  padding: 0 24rpx;
+}
+
+.venue-sheet__section + .venue-sheet__section {
   margin-top: 20rpx;
 }
 
-.dialog__footer {
-  margin-top: 24rpx;
+.venue-sheet__footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+@keyframes sheet-mask-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes venue-sheet-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(48rpx);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

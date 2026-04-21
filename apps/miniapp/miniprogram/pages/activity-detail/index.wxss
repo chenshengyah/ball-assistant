@@ -29,6 +29,7 @@ page {
 .court-card__footer,
 .detail-actions {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
@@ -58,6 +59,7 @@ page {
 .detail-card__summary {
   margin-top: 20rpx;
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 12rpx;
 }
@@ -93,6 +95,29 @@ page {
   color: #334155;
 }
 
+.detail-card__description--empty {
+  color: #64748b;
+}
+
+.detail-card__richtext {
+  display: block;
+  margin-top: 24rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.detail-card__richtext p {
+  margin: 0 0 16rpx;
+}
+
+.detail-card__richtext image,
+.detail-card__richtext img {
+  width: 100%;
+  margin: 0 0 16rpx;
+  border-radius: 20rpx;
+}
+
 .court-list,
 .detail-actions {
   margin-top: 24rpx;
@@ -116,12 +141,14 @@ page {
 .chip-list {
   margin-top: 20rpx;
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 12rpx;
 }
 
 .chip {
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   gap: 10rpx;
   padding: 12rpx 18rpx;

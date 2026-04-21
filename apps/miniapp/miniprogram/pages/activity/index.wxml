@@ -4,8 +4,8 @@
     style="{{headerStyle}}"
   >
     <view class="activity-header__title-wrap">
-      <view class="activity-header__title">活动工作台</view>
-      <view class="activity-header__subtitle">这里看活动列表、场馆主数据，并进入独立创建页</view>
+      <view class="activity-header__title"><text>活动工作台</text></view>
+      <view class="activity-header__subtitle"><text>这里看活动列表、场馆主数据，并进入独立创建页</text></view>
     </view>
     <view
       class="activity-header__capsule"
@@ -17,169 +17,169 @@
     class="activity-content"
     style="{{contentStyle}}"
   >
-    <view class="activity-hero">
-      <view class="activity-hero__profile">
-        <view
-          class="activity-hero__avatar"
-          style="background: {{currentUserAvatarColor}};"
-        >{{currentUserInitial}}</view>
-        <view class="activity-hero__text">
-          <view class="activity-hero__eyebrow">{{heroEyebrow}}</view>
-          <view class="activity-hero__name">{{currentUserName}}</view>
-          <view class="activity-hero__roles">{{currentUserRoleSummary}}</view>
-        </view>
-      </view>
-
-      <view class="activity-hero__stats">
-        <view class="hero-stat">
-          <view class="hero-stat__value">{{publishedCount}}</view>
-          <view class="hero-stat__label">已发布活动</view>
-        </view>
-        <view class="hero-stat">
-          <view class="hero-stat__value">{{manageableCount}}</view>
-          <view class="hero-stat__label">可管理活动</view>
-        </view>
-        <view class="hero-stat">
-          <view class="hero-stat__value">{{joinedCount}}</view>
-          <view class="hero-stat__label">我的报名</view>
-        </view>
-      </view>
-
-      <view class="activity-hero__actions">
-        <view
-          class="hero-button hero-button--primary"
-          hover-class="hero-button--hover"
-          hover-stay-time="80"
-          bindtap="handleOpenCreate"
-        >新建活动</view>
-      </view>
-      <view class="activity-hero__roles">{{heroSubtitle}}</view>
-    </view>
-
-    <view class="segment-control">
-      <view
-        class="segment-control__item {{activeSegment === 'activities' ? 'segment-control__item--active' : ''}}"
-        data-field="activities"
-        bindtap="handleSegmentChange"
-      >活动看板</view>
-      <view
-        class="segment-control__item {{activeSegment === 'venues' ? 'segment-control__item--active' : ''}}"
-        data-field="venues"
-        bindtap="handleSegmentChange"
-      >场馆主数据</view>
-    </view>
-
-    <view wx:if="{{activeSegment === 'activities'}}">
-      <view
-        wx:if="{{activityCards.length > 0}}"
-        class="activity-list"
-      >
-        <view
-          wx:for="{{activityCards}}"
-          wx:key="id"
-          wx:for-item="activity"
-          class="activity-card"
-        >
-          <view class="activity-card__top">
-            <view>
-              <view class="activity-card__title">{{activity.title}}</view>
-              <view class="activity-card__owner">{{activity.ownerLabel}}</view>
-            </view>
-            <view class="activity-card__status">{{activity.statusLabel}}</view>
-          </view>
-
-          <view class="activity-card__summary">
-            <view class="summary-pill">{{activity.chargeText}}</view>
-            <view class="summary-pill summary-pill--soft">{{activity.signupStatusLabel}}</view>
-            <view class="summary-pill summary-pill--soft">已确认 {{activity.confirmedCount}}</view>
-            <view class="summary-pill summary-pill--soft">候补 {{activity.waitlistCount}}</view>
-          </view>
-
-          <view class="activity-meta">
-            <view class="activity-meta__row">
-              <view class="activity-meta__label">报名模式</view>
-              <view class="activity-meta__value">{{activity.signupModeLabel}}</view>
-            </view>
-            <view class="activity-meta__row">
-              <view class="activity-meta__label">场馆</view>
-              <view class="activity-meta__value">{{activity.venueLabel}}</view>
-            </view>
-            <view class="activity-meta__row">
-              <view class="activity-meta__label">时间</view>
-              <view class="activity-meta__value">{{activity.scheduleText}}</view>
-            </view>
-            <view class="activity-meta__row">
-              <view class="activity-meta__label">报名截止</view>
-              <view class="activity-meta__value">{{activity.cancelDeadlineText}}</view>
-            </view>
-            <view class="activity-meta__row">
-              <view class="activity-meta__label">我的状态</view>
-              <view class="activity-meta__value">{{activity.currentUserSignupLabel}}</view>
-            </view>
-          </view>
-
-          <view class="activity-card__footer">
-            <view
-              class="footer-button footer-button--primary"
-              hover-class="footer-button--hover"
-              hover-stay-time="80"
-              data-activity-id="{{activity.id}}"
-              bindtap="handleOpenDetail"
-            >查看详情</view>
-            <view
-              wx:if="{{activity.isManageable}}"
-              class="footer-button footer-button--secondary"
-              hover-class="footer-button--hover"
-              hover-stay-time="80"
-              data-activity-id="{{activity.id}}"
-              bindtap="handleRepublish"
-            >再次发布</view>
-            <view
-              wx:if="{{!activity.isManageable}}"
-              class="footer-button footer-button--danger"
-            >详情页处理报名动作</view>
-          </view>
-        </view>
-      </view>
-
-      <view
-        wx:else
-        class="empty-state"
-      >
-        <view class="empty-state__title">还没有活动</view>
-        <view class="empty-state__text">先创建一场活动，再开放统一报名或按场地报名。</view>
-      </view>
-    </view>
-
-    <view
-      wx:if="{{activeSegment === 'venues'}}"
-      class="venue-list"
-    >
-      <view
-        wx:for="{{venues}}"
-        wx:key="index"
-        wx:for-item="venueItem"
-        class="venue-card"
-      >
-        <view class="venue-card__top">
-          <view>
-            <view class="venue-card__title">{{venueItem.venue.name}}</view>
-            <view
-              class="venue-card__address"
-            >{{venueItem.venue.district}} · {{venueItem.venue.address}}</view>
-          </view>
-          <view class="venue-card__tag">{{venueItem.courts.length}} 片场地</view>
-        </view>
-
-        <view class="venue-card__courts">
+      <view class="activity-hero">
+        <view class="activity-hero__profile">
           <view
-            wx:for="{{venueItem.courts}}"
+            class="activity-hero__avatar"
+            style="background: {{currentUserAvatarColor}};"
+          ><text>{{currentUserInitial}}</text></view>
+          <view class="activity-hero__text">
+            <view class="activity-hero__eyebrow"><text>{{heroEyebrow}}</text></view>
+            <view class="activity-hero__name"><text>{{currentUserName}}</text></view>
+            <view class="activity-hero__roles"><text>{{currentUserRoleSummary}}</text></view>
+          </view>
+        </view>
+
+        <view class="activity-hero__stats">
+          <view class="hero-stat">
+            <view class="hero-stat__value"><text>{{publishedCount}}</text></view>
+            <view class="hero-stat__label"><text>已发布活动</text></view>
+          </view>
+          <view class="hero-stat">
+            <view class="hero-stat__value"><text>{{manageableCount}}</text></view>
+            <view class="hero-stat__label"><text>可管理活动</text></view>
+          </view>
+          <view class="hero-stat">
+            <view class="hero-stat__value"><text>{{joinedCount}}</text></view>
+            <view class="hero-stat__label"><text>我的报名</text></view>
+          </view>
+        </view>
+
+        <view class="activity-hero__actions">
+          <view
+            class="hero-button hero-button--primary"
+            hover-class="hero-button--hover"
+            hover-stay-time="80"
+            bindtap="handleOpenCreate"
+          ><text>新建活动</text></view>
+        </view>
+        <view class="activity-hero__roles"><text>{{heroSubtitle}}</text></view>
+      </view>
+
+      <view class="segment-control">
+        <view
+          class="segment-control__item {{activeSegment === 'activities' ? 'segment-control__item--active' : ''}}"
+          data-field="activities"
+          bindtap="handleSegmentChange"
+        ><text>活动看板</text></view>
+        <view
+          class="segment-control__item {{activeSegment === 'venues' ? 'segment-control__item--active' : ''}}"
+          data-field="venues"
+          bindtap="handleSegmentChange"
+        ><text>场馆主数据</text></view>
+      </view>
+
+      <view wx:if="{{activeSegment === 'activities'}}">
+        <view
+          wx:if="{{activityCards.length > 0}}"
+          class="activity-list"
+        >
+          <view
+            wx:for="{{activityCards}}"
             wx:key="id"
-            wx:for-item="court"
-            class="venue-court-chip"
-          >{{court.courtName}}</view>
+            wx:for-item="activity"
+            class="activity-card"
+          >
+            <view class="activity-card__top">
+              <view>
+                <view class="activity-card__title"><text>{{activity.title}}</text></view>
+                <view class="activity-card__owner"><text>{{activity.ownerLabel}}</text></view>
+              </view>
+              <view class="activity-card__status"><text>{{activity.statusLabel}}</text></view>
+            </view>
+
+            <view class="activity-card__summary">
+              <view class="summary-pill"><text>{{activity.chargeText}}</text></view>
+              <view class="summary-pill summary-pill--soft"><text>{{activity.signupStatusLabel}}</text></view>
+              <view class="summary-pill summary-pill--soft"><text>已确认 {{activity.confirmedCount}}</text></view>
+              <view class="summary-pill summary-pill--soft"><text>候补 {{activity.waitlistCount}}</text></view>
+            </view>
+
+            <view class="activity-meta">
+              <view class="activity-meta__row">
+                <view class="activity-meta__label"><text>报名模式</text></view>
+                <view class="activity-meta__value"><text>{{activity.signupModeLabel}}</text></view>
+              </view>
+              <view class="activity-meta__row">
+                <view class="activity-meta__label"><text>场馆</text></view>
+                <view class="activity-meta__value"><text>{{activity.venueLabel}}</text></view>
+              </view>
+              <view class="activity-meta__row">
+                <view class="activity-meta__label"><text>时间</text></view>
+                <view class="activity-meta__value"><text>{{activity.scheduleText}}</text></view>
+              </view>
+              <view class="activity-meta__row">
+                <view class="activity-meta__label"><text>报名截止</text></view>
+                <view class="activity-meta__value"><text>{{activity.cancelDeadlineText}}</text></view>
+              </view>
+              <view class="activity-meta__row">
+                <view class="activity-meta__label"><text>我的状态</text></view>
+                <view class="activity-meta__value"><text>{{activity.currentUserSignupLabel}}</text></view>
+              </view>
+            </view>
+
+            <view class="activity-card__footer">
+              <view
+                class="footer-button footer-button--primary"
+                hover-class="footer-button--hover"
+                hover-stay-time="80"
+                data-activity-id="{{activity.id}}"
+                bindtap="handleOpenDetail"
+              ><text>查看详情</text></view>
+              <view
+                wx:if="{{activity.isManageable}}"
+                class="footer-button footer-button--secondary"
+                hover-class="footer-button--hover"
+                hover-stay-time="80"
+                data-activity-id="{{activity.id}}"
+                bindtap="handleRepublish"
+              ><text>再次发布</text></view>
+              <view
+                wx:if="{{!activity.isManageable}}"
+                class="footer-button footer-button--danger"
+              ><text>详情页处理报名动作</text></view>
+            </view>
+          </view>
+        </view>
+
+        <view
+          wx:else
+          class="empty-state"
+        >
+          <view class="empty-state__title"><text>还没有活动</text></view>
+          <view class="empty-state__text"><text>先创建一场活动，再开放统一分配或自主选场。</text></view>
         </view>
       </view>
-    </view>
+
+      <view
+        wx:if="{{activeSegment === 'venues'}}"
+        class="venue-list"
+      >
+        <view
+          wx:for="{{venues}}"
+          wx:key="index"
+          wx:for-item="venueItem"
+          class="venue-card"
+        >
+          <view class="venue-card__top">
+            <view>
+              <view class="venue-card__title"><text>{{venueItem.venue.name}}</text></view>
+              <view
+                class="venue-card__address"
+              ><text>{{venueItem.venue.district}} · {{venueItem.venue.address}}</text></view>
+            </view>
+            <view class="venue-card__tag"><text>{{venueItem.courts.length}} 片场地</text></view>
+          </view>
+
+          <view class="venue-card__courts">
+            <view
+              wx:for="{{venueItem.courts}}"
+              wx:key="id"
+              wx:for-item="court"
+              class="venue-court-chip"
+            ><text>{{court.courtName}}</text></view>
+          </view>
+        </view>
+      </view>
   </view>
 </view>

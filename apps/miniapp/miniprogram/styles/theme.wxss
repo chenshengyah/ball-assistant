@@ -1,0 +1,36 @@
+/* Shared Indigo Zenith theme tokens for pages and custom components. */
+page,
+.tab-bar {
+  --iz-color-primary: #4052b6;
+  --iz-color-tertiary: #923880;
+  --iz-color-success: #1e824c;
+
+  --iz-surface: #f9f5ff;
+  --iz-surface-low: #f3eeff;
+  --iz-surface-high: #e3dfff;
+  --iz-surface-highest: #ddd9ff;
+  --iz-surface-lowest: #ffffff;
+  --iz-surface-on-primary: #f3f1ff;
+
+  --iz-text-primary: #2c2a51;
+  --iz-text-secondary: #595781;
+
+  --iz-meta-icon: #c9c4f2;
+  --iz-meta-icon-strong: #b5b0e5;
+
+  --iz-outline-soft: rgba(172, 168, 215, 0.1);
+  --iz-outline: rgba(172, 168, 215, 0.14);
+  --iz-outline-strong: rgba(172, 168, 215, 0.18);
+  --iz-outline-focus: rgba(172, 168, 215, 0.24);
+
+  --iz-layer-topbar: rgba(249, 245, 255, 0.9);
+  --iz-layer-tabbar: rgba(249, 245, 255, 0.92);
+  --iz-layer-search: rgba(243, 238, 255, 0.92);
+  --iz-layer-empty: rgba(255, 255, 255, 0.88);
+  --iz-layer-glass: rgba(255, 255, 255, 0.95);
+
+  --iz-shadow-soft: rgba(44, 42, 81, 0.06);
+  --iz-shadow-medium: rgba(44, 42, 81, 0.08);
+  --iz-shadow-primary-soft: rgba(64, 82, 182, 0.14);
+  --iz-shadow-primary-strong: rgba(64, 82, 182, 0.22);
+}

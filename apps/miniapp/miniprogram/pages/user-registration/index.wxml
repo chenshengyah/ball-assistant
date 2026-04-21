@@ -1,35 +1,57 @@
-<view class="registration-page">
+<app-nav title="资料完善" fallbackUrl="/pages/profile/index"></app-nav>
+
+<view class="registration-page" style="{{pageTopStyle}}">
   <view class="registration-hero">
-    <view class="registration-hero__eyebrow">{{sourceLabel}}</view>
-    <view class="registration-hero__title">先补齐基础资料</view>
-    <view class="registration-hero__subtitle">目前只需要昵称和性别，保存后会自动回到你刚才的动作。</view>
+    <view class="registration-hero__eyebrow"><text>{{sourceLabel}}</text></view>
+    <view class="registration-hero__title"><text>{{title}}</text></view>
+    <view class="registration-hero__subtitle"><text>{{subtitle}}</text></view>
   </view>
 
-  <view class="registration-card">
-    <view class="registration-card__label">昵称</view>
-    <input
-      class="registration-input"
-      value="{{nickname}}"
-      placeholder="例如：小陈 / Ava / 北北"
-      bindinput="handleNicknameInput"
-    />
+    <view class="registration-card">
+      <view class="registration-card__label"><text>头像</text></view>
+      <button
+        class="registration-avatar"
+        open-type="chooseAvatar"
+        bindchooseavatar="handleChooseAvatar"
+      >
+        <image
+          wx:if="{{avatarUrl}}"
+          class="registration-avatar__image"
+          src="{{avatarUrl}}"
+          mode="aspectFill"
+        />
+        <view
+          wx:else
+          class="registration-avatar__fallback"
+        ><text>{{avatarInitial}}</text></view>
+        <view class="registration-avatar__text"><text>点击选择微信头像</text></view>
+      </button>
 
-    <view class="registration-card__label registration-card__label--top">性别</view>
-    <picker
-      range="{{genderLabels}}"
-      value="{{selectedGenderIndex}}"
-      bindchange="handleGenderChange"
-    >
-      <view class="registration-picker">{{genderLabels[selectedGenderIndex]}}</view>
-    </picker>
+      <view class="registration-card__label"><text>昵称</text></view>
+      <input
+        class="registration-input"
+        type="nickname"
+        value="{{nickname}}"
+        placeholder="例如：小陈 / Ava / 北北"
+        bindinput="handleNicknameInput"
+      />
 
-    <view class="registration-card__hint">{{pendingLabel}}</view>
+      <view class="registration-card__label registration-card__label--top"><text>性别</text></view>
+      <picker
+        range="{{genderLabels}}"
+        value="{{selectedGenderIndex}}"
+        bindchange="handleGenderChange"
+      >
+        <view class="registration-picker"><text>{{genderLabels[selectedGenderIndex]}}</text></view>
+      </picker>
 
-    <view
-      class="registration-submit"
-      hover-class="registration-submit--hover"
-      hover-stay-time="80"
-      bindtap="handleSubmit"
-    >保存并继续</view>
-  </view>
+      <view class="registration-card__hint"><text>{{pendingLabel}}</text></view>
+
+      <view
+        class="registration-submit"
+        hover-class="registration-submit--hover"
+        hover-stay-time="80"
+        bindtap="handleSubmit"
+      ><text>{{submitButtonText}}</text></view>
+    </view>
 </view>

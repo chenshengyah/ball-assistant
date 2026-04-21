@@ -27,7 +27,9 @@ export type UserProfile = {
   id: string;
   nickname: string;
   gender: UserGender;
+  avatarUrl?: string;
   avatarColor: string;
+  baseProfileComplete?: boolean;
 };
 
 export type Venue = {
@@ -56,7 +58,20 @@ export type VenueCourt = {
 export type Club = {
   id: string;
   name: string;
+  logoUrl?: string;
+  contactName?: string;
+  contactPhone?: string;
   status: "ACTIVE" | "INACTIVE";
+};
+
+export type OwnerDisplay = {
+  mode: OwnerType;
+  name: string;
+  avatarUrl?: string;
+  avatarColor?: string;
+  logoUrl?: string;
+  contactName?: string;
+  contactWechat?: string;
 };
 
 export type ClubMember = {
@@ -71,6 +86,7 @@ export type Activity = {
   ownerType: OwnerType;
   ownerId: string;
   createdBy: string;
+  ownerDisplay: OwnerDisplay;
   title: string;
   chargeMode: ChargeMode;
   chargeAmountCents: number;
@@ -146,8 +162,12 @@ export type VenueUpdateInput = {
   venueId: string;
   name: string;
   shortName: string;
+  province: string;
+  city: string;
   district: string;
   address: string;
+  latitude: number;
+  longitude: number;
   navigationName: string;
 };
 
@@ -173,6 +193,7 @@ export type CreateActivityInput = {
   ownerType: OwnerType;
   ownerId: string;
   createdBy: string;
+  organizerWechat: string;
   title: string;
   chargeMode: ChargeMode;
   chargeAmountCents: number;
@@ -215,6 +236,7 @@ export type ActivityView = {
   title: string;
   ownerLabel: string;
   ownerType: OwnerType;
+  ownerDisplay: OwnerDisplay;
   signupMode: ActivitySignupMode;
   venueLabel: string;
   chargeText: string;
@@ -253,6 +275,7 @@ export type ActivityDraft = {
   sourceActivityId?: string;
   ownerType: OwnerType;
   ownerId: string;
+  organizerWechat: string;
   signupMode: ActivitySignupMode;
   title: string;
   chargeMode: ChargeMode;

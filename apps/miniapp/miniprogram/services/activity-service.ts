@@ -2,6 +2,7 @@ import {
   CHARGE_MODE_OPTIONS,
   CLUB_ROLE_LABELS,
   OWNER_TYPE_LABELS,
+  SIGNUP_MODE_LABELS,
   SIGNUP_STATUS_LABELS,
 } from "../constants/activity";
 import type {
@@ -11,6 +12,7 @@ import type {
   ActivityView,
   ClubMember,
   CreateActivityInput,
+  OwnerDisplay,
   OwnerOption,
   Registration,
   RegistrationLog,
@@ -170,23 +172,45 @@ function getOwnerLabel(
   memberships: ClubMember[],
   currentUserId: string
 ): string {
-  const store = getActivityStore();
+  const ownerName = activity.ownerDisplay.name;
 
   if (activity.ownerType === "PERSONAL") {
-    const owner = store.users.find((user) => user.id === activity.ownerId);
-
-    return owner?.nickname
-      ? `${OWNER_TYPE_LABELS.PERSONAL} · ${owner.nickname}`
-      : OWNER_TYPE_LABELS.PERSONAL;
+    return ownerName ? `${OWNER_TYPE_LABELS.PERSONAL} · ${ownerName}` : OWNER_TYPE_LABELS.PERSONAL;
   }
 
-  const club = store.clubs.find((item) => item.id === activity.ownerId);
   const currentMembership = memberships.find(
     (item) => item.clubId === activity.ownerId && item.userId === currentUserId
   );
   const roleSuffix = currentMembership ? ` · ${CLUB_ROLE_LABELS[currentMembership.role]}` : "";
 
-  return `${club?.name ?? "俱乐部"}${roleSuffix}`;
+  return `${ownerName || "俱乐部"}${roleSuffix}`;
+}
+
+function buildOwnerDisplay(ownerType: Activity["ownerType"], ownerId: string): OwnerDisplay {
+  const store = getActivityStore();
+
+  if (ownerType === "PERSONAL") {
+    const currentUser = getCurrentUser();
+    const owner =
+      currentUser?.id === ownerId ? currentUser : store.users.find((user) => user.id === ownerId);
+
+    return {
+      mode: "PERSONAL",
+      name: owner?.nickname ?? "个人发起人",
+      avatarUrl: owner?.avatarUrl,
+      avatarColor: owner?.avatarColor ?? "#4C7CF0",
+      contactName: owner?.nickname ?? "活动发起人",
+    };
+  }
+
+  const club = store.clubs.find((item) => item.id === ownerId);
+
+  return {
+    mode: "CLUB",
+    name: club?.name ?? "俱乐部",
+    logoUrl: club?.logoUrl,
+    contactName: club?.contactName,
+  };
 }
 
 function getManageable(activity: Activity, currentUserId: string): boolean {
@@ -360,7 +384,7 @@ function toActivityView(activity: Activity, currentUserId: string): ActivityView
       : currentUserRegistration
         ? activity.signupMode === "USER_SELECT_COURT"
           ? `${currentCourt?.label ?? "场地"} · ${SIGNUP_STATUS_LABELS[currentUserRegistration.signupStatus]}`
-          : `统一报名 · ${SIGNUP_STATUS_LABELS[currentUserRegistration.signupStatus]}`
+          : `${SIGNUP_MODE_LABELS.GENERAL} · ${SIGNUP_STATUS_LABELS[currentUserRegistration.signupStatus]}`
         : "未报名";
 
   return {
@@ -368,6 +392,7 @@ function toActivityView(activity: Activity, currentUserId: string): ActivityView
     title: activity.title,
     ownerLabel: getOwnerLabel(activity, memberships, currentUserId),
     ownerType: activity.ownerType,
+    ownerDisplay: activity.ownerDisplay,
     signupMode: activity.signupMode,
     venueLabel: venue?.name ?? activity.venueSnapshotName,
     chargeText: getChargeText(activity),
@@ -412,7 +437,10 @@ export function getCurrentUser(): UserProfile | null {
     id: currentUserId,
     nickname: authSnapshot.user?.nickname || storeUser?.nickname || "当前用户",
     gender: authSnapshot.user?.gender || storeUser?.gender || "MALE",
+    avatarUrl: authSnapshot.user?.avatarUrl || storeUser?.avatarUrl || "",
     avatarColor: authSnapshot.user?.avatarColor || storeUser?.avatarColor || "#4C7CF0",
+    baseProfileComplete:
+      authSnapshot.user?.baseProfileComplete ?? storeUser?.baseProfileComplete ?? false,
   };
 }
 
@@ -453,6 +481,7 @@ export function listActivities(currentUserId?: string | null): ActivityView[] {
 export function createActivity(input: CreateActivityInput): ActivityView {
   const store = getActivityStore();
   const venue = store.venues.find((item) => item.id === input.venueId);
+  const ownerDisplay = buildOwnerDisplay(input.ownerType, input.ownerId);
 
   if (!venue) {
     throw new Error("请选择有效场馆");
@@ -490,12 +519,20 @@ export function createActivity(input: CreateActivityInput): ActivityView {
     throw new Error("停止取消时间不能晚于活动开始时间");
   }
 
+  if (!input.organizerWechat.trim()) {
+    throw new Error("请填写发起人微信号");
+  }
+
   const activityId = createId("activity");
   const activity: Activity = {
     id: activityId,
     ownerType: input.ownerType,
     ownerId: input.ownerId,
     createdBy: input.createdBy,
+    ownerDisplay: {
+      ...ownerDisplay,
+      contactWechat: input.organizerWechat.trim(),
+    },
     title: input.title.trim(),
     chargeMode: input.chargeMode,
     chargeAmountCents: input.chargeAmountCents,
@@ -564,6 +601,7 @@ export function buildRepublishDraft(activityId: string, currentUserId: string): 
     sourceActivityId: activity.id,
     ownerType: matchedOwner?.ownerType ?? fallbackOwner.ownerType,
     ownerId: matchedOwner?.ownerId ?? fallbackOwner.ownerId,
+    organizerWechat: activity.ownerDisplay.contactWechat ?? "",
     signupMode: activity.signupMode,
     title: `${activity.title} · 再次发布`,
     chargeMode: activity.chargeMode,
@@ -778,7 +816,7 @@ export function moveRegistration(
   }
 
   if (activity.signupMode !== "USER_SELECT_COURT") {
-    throw new Error("当前活动不是按场地报名");
+    throw new Error("当前活动不是自主选场");
   }
 
   if (activity.status !== "PUBLISHED" || isActivityFinished(activity, new Date())) {

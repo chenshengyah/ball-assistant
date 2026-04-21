@@ -4,6 +4,7 @@ import {
   requireCompleteProfile,
 } from "../../services/auth";
 import { listMyActivities } from "../../services/activity-service";
+import { getPageTopStyle } from "../../utils/chrome";
 
 type ActivityCard = {
   id: string;
@@ -16,6 +17,7 @@ type ActivityCard = {
 type MyActivitiesPageData = {
   isReady: boolean;
   joined: ActivityCard[];
+  pageTopStyle: string;
   published: ActivityCard[];
 };
 
@@ -39,17 +41,26 @@ Page({
   data: {
     isReady: false,
     joined: [],
+    pageTopStyle: "",
     published: [],
   } as MyActivitiesPageData,
 
   onLoad(): void {
+    this.syncPageChrome();
     void this.ensureReady();
   },
 
   onShow(): void {
-    if (getAuthSnapshot().status === "AUTHENTICATED_COMPLETE") {
+    this.syncPageChrome();
+    if (getAuthSnapshot().baseProfileComplete) {
       this.hydratePage();
     }
+  },
+
+  syncPageChrome(): void {
+    this.setData({
+      pageTopStyle: getPageTopStyle(20),
+    });
   },
 
   async ensureReady(): Promise<void> {
@@ -67,7 +78,7 @@ Page({
   hydratePage(): void {
     const authSnapshot = getAuthSnapshot();
 
-    if (authSnapshot.status !== "AUTHENTICATED_COMPLETE") {
+    if (!authSnapshot.baseProfileComplete) {
       return;
     }
 

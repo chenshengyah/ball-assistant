@@ -83,3 +83,7 @@ export function getChromeMetrics(): ChromeMetrics {
     tabBarBottomInset,
   };
 }
+
+export function getPageTopStyle(extraTop = 0): string {
+  return `padding-top:${getChromeMetrics().navBarHeight + extraTop}px;`;
+}

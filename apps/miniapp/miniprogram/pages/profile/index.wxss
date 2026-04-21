@@ -10,6 +10,7 @@ page {
 
 .profile-hero {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 24rpx;
   padding: 32rpx;
@@ -75,9 +76,16 @@ page {
   color: #475569;
 }
 
+.profile-card__status {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #64748b;
+}
+
 .profile-card__button {
   margin-top: 24rpx;
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   min-width: 240rpx;
@@ -99,6 +107,7 @@ page {
   margin-top: 20rpx;
   padding: 24rpx 0;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1rpx solid #e2e8f0;

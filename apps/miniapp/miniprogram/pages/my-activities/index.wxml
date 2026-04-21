@@ -1,52 +1,54 @@
-<view class="my-activities-page">
-  <view class="page-title">我的活动</view>
-  <view class="page-subtitle">这里收口“我发布的”和“我报名的”活动，点进去统一进入活动详情。</view>
+<app-nav title="我的活动" fallbackUrl="/pages/profile/index"></app-nav>
 
-  <view
-    wx:if="{{published.length > 0}}"
-    class="section-card"
-  >
-    <view class="section-card__title">我发布的</view>
+<view class="my-activities-page" style="{{pageTopStyle}}">
+  <view class="page-title"><text>我的活动</text></view>
+  <view class="page-subtitle"><text>这里收口“我发布的”和“我报名的”活动，点进去统一进入活动详情。</text></view>
+
     <view
-      wx:for="{{published}}"
-      wx:key="id"
-      class="activity-row"
-      data-activity-id="{{item.id}}"
-      bindtap="handleOpenDetail"
+      wx:if="{{published.length > 0}}"
+      class="section-card"
     >
-      <view>
-        <view class="activity-row__title">{{item.title}}</view>
-        <view class="activity-row__meta">{{item.ownerLabel}} · {{item.scheduleText}}</view>
+      <view class="section-card__title"><text>我发布的</text></view>
+      <view
+        wx:for="{{published}}"
+        wx:key="id"
+        class="activity-row"
+        data-activity-id="{{item.id}}"
+        bindtap="handleOpenDetail"
+      >
+        <view>
+          <view class="activity-row__title"><text>{{item.title}}</text></view>
+          <view class="activity-row__meta"><text>{{item.ownerLabel}} · {{item.scheduleText}}</text></view>
+        </view>
+        <view class="activity-row__arrow"><text>›</text></view>
       </view>
-      <view class="activity-row__arrow">›</view>
     </view>
-  </view>
 
-  <view
-    wx:if="{{joined.length > 0}}"
-    class="section-card"
-  >
-    <view class="section-card__title">我报名的</view>
     <view
-      wx:for="{{joined}}"
-      wx:key="id"
-      class="activity-row"
-      data-activity-id="{{item.id}}"
-      bindtap="handleOpenDetail"
+      wx:if="{{joined.length > 0}}"
+      class="section-card"
     >
-      <view>
-        <view class="activity-row__title">{{item.title}}</view>
-        <view class="activity-row__meta">{{item.signupLabel}} · {{item.scheduleText}}</view>
+      <view class="section-card__title"><text>我报名的</text></view>
+      <view
+        wx:for="{{joined}}"
+        wx:key="id"
+        class="activity-row"
+        data-activity-id="{{item.id}}"
+        bindtap="handleOpenDetail"
+      >
+        <view>
+          <view class="activity-row__title"><text>{{item.title}}</text></view>
+          <view class="activity-row__meta"><text>{{item.signupLabel}} · {{item.scheduleText}}</text></view>
+        </view>
+        <view class="activity-row__arrow"><text>›</text></view>
       </view>
-      <view class="activity-row__arrow">›</view>
     </view>
-  </view>
 
-  <view
-    wx:if="{{published.length === 0 && joined.length === 0}}"
-    class="empty-card"
-  >
-    <view class="empty-card__title">还没有可回收的活动</view>
-    <view class="empty-card__text">后续你发布或报名的活动，会统一沉淀在这里。</view>
-  </view>
+    <view
+      wx:if="{{published.length === 0 && joined.length === 0}}"
+      class="empty-card"
+    >
+      <view class="empty-card__title"><text>还没有可回收的活动</text></view>
+      <view class="empty-card__text"><text>后续你发布或报名的活动，会统一沉淀在这里。</text></view>
+    </view>
 </view>

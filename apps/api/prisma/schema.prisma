@@ -66,6 +66,9 @@ model User {
   gender         UserGender?
   avatarUrl      String?
   avatarColor    String              @default("#4C7CF0")
+  phoneNumber    String?
+  phoneCountryCode String?
+  phoneVerifiedAt DateTime?
   status         RecordStatus        @default(ACTIVE)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
@@ -85,6 +88,8 @@ model Club {
   coverUrl    String?
   description String?
   city        String?
+  contactName String?
+  contactPhone String?
   creatorId   String
   status      RecordStatus @default(ACTIVE)
   createdAt   DateTime     @default(now())
@@ -158,6 +163,13 @@ model Activity {
   createdByUserId                String
   clubId                         String?
   personalOwnerId                String?
+  ownerDisplayMode               OwnerType?
+  ownerDisplayName               String?
+  ownerDisplayAvatarUrl          String?
+  ownerDisplayAvatarColor        String?
+  ownerDisplayLogoUrl            String?
+  ownerDisplayContactName        String?
+  ownerDisplayContactPhone       String?
   title                          String
   chargeMode                     ChargeMode
   chargeAmountCents              Int                 @default(0)

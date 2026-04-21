@@ -9,13 +9,20 @@
 | gender      | enum   |   是 | `MALE / FEMALE`              |
 | avatarUrl   | string |   否 | 用户头像 URL                 |
 | avatarColor | string |   否 | 占位头像色值，用于无头像场景 |
+| phoneNumber | string |   否 | 已验证手机号                 |
+| phoneCountryCode | string | 否 | 手机区号，如 `86`          |
+| phoneVerifiedAt | string | 否 | 手机号验证时间             |
+| baseProfileComplete | boolean | 否 | 基础资料是否已完善        |
+| contactProfileComplete | boolean | 否 | 联系方式是否已完善       |
+| isProfileComplete | boolean | 否 | 基础资料与联系方式是否都齐 |
 | status      | enum   |   否 | ACTIVE / INACTIVE            |
 | createdAt   | string |   否 | 创建时间                     |
 | updatedAt   | string |   否 | 更新时间                     |
 
 说明：
 
-- 当前版本 `gender` 为必填字段，不提供“未设置”状态
+- `baseProfileComplete` 当前按 `nickname + gender` 判定，头像属于推荐采集项
+- `contactProfileComplete` 表示当前用户已完成手机号验证
 - 活动报名、发布身份、俱乐部成员等业务对象只引用 `userId`，展示资料以 `UserProfile` 为准
 
 ## PublishIdentity
@@ -44,6 +51,8 @@
 | logo          | string |   否 | 俱乐部头像/Logo   |
 | description   | string |   否 | 简介              |
 | city          | string |   否 | 城市              |
+| contactName   | string |   否 | 联系人            |
+| contactPhone  | string |   否 | 联系电话          |
 | creatorUserId | string |   是 | 创建人            |
 | status        | enum   |   是 | ACTIVE / DISABLED |
 | createdAt     | string |   是 | 创建时间          |
@@ -56,11 +65,25 @@
 | venueId      | string |   是 | 场馆ID            |
 | clubId       | string |   是 | 所属俱乐部        |
 | venueName    | string |   是 | 场馆名称          |
+| poiName      | string |   否 | 地图选点返回的地点名 |
+| province     | string |   否 | 省份，可由选点补充或手填 |
+| city         | string |   否 | 城市，可由选点补充或手填 |
+| district     | string |   否 | 区县，可由选点补充或手填 |
 | address      | string |   是 | 场馆地址          |
+| latitude     | number |   否 | 纬度              |
+| longitude    | number |   否 | 经度              |
+| navigationName | string | 否 | 导航名称，默认同场馆名称 |
 | contactName  | string |   否 | 联系人            |
 | contactPhone | string |   否 | 联系电话          |
 | remark       | string |   否 | 备注              |
 | status       | enum   |   是 | ACTIVE / DISABLED |
+
+说明：
+
+- MVP 推荐使用微信小程序原生 `wx.chooseLocation` 做地图选点
+- `poiName / address / latitude / longitude` 是定位结果的基础回填字段
+- `province / city / district` 作为可选结构化字段保留，可由选点结果补充或手动修正
+- `Venue` 是低频复用的场馆主数据，创建活动时允许直接选择、新增或编辑
 
 ## Court
 
@@ -75,6 +98,12 @@
 | description     | string |   否 | 场地说明                        |
 | status          | enum   |   是 | ACTIVE / DISABLED               |
 | sort            | number |   否 | 排序                            |
+
+说明：
+
+- `Court` 保留为可复用场地主数据
+- MVP 对外主操作统一表达为“新增 / 编辑 / 删除”
+- `status = ACTIVE / DISABLED` 保留为实现兼容字段，不作为用户主要心智
 
 ## Activity
 
@@ -96,7 +125,7 @@
 | chargeDesc          | string  |   否 | 收费说明                                          |
 | capacity            | number  |   是 | 总人数上限                                        |
 | allowWaitlist       | boolean |   是 | 是否允许候补                                      |
-| description         | string  |   否 | 活动说明                                          |
+| descriptionRichtext | string  |   否 | 活动图文详情富文本内容                            |
 | status              | enum    |   是 | DRAFT / PUBLISHED / CANCELLED                     |
 | createdBy           | string  |   是 | 创建人ID                                          |
 | createdAt           | string  |   是 | 创建时间                                          |
@@ -106,7 +135,11 @@
 
 - `status` 只表示活动持久状态，不直接等同于页面展示生命周期
 - `进行中` 和 `已结束` 由 `activityStartAt / activityEndAt / cancelDeadlineAt` 派生，不单独写回 `status`
-- 当前前端实现中，活动域还会使用 `ownerType / ownerId / activityStartAt / activityEndAt / cancelCutoffMinutesBeforeStart / cancelDeadlineAt / descriptionRichtext / totalCapacity` 等更贴近页面和类型的字段命名，后续正式接口定稿时应收敛为统一一套口径
+- `descriptionRichtext` 用于承载活动图文混排详情，支持文字段落与图片顺序展示，不等同于纯文本说明
+- `signupMode = GENERAL` 对外显示为 `统一分配`，只统计报名与候补，不落具体场地
+- `signupMode = USER_SELECT_COURT` 对外显示为 `自主选场`，报名记录需要落到具体活动场地
+- 创建活动时允许在当前流程内直接维护本次活动开放报名的场地列表
+- 当前前端实现中，活动域还会使用 `ownerType / ownerId / activityStartAt / activityEndAt / cancelCutoffMinutesBeforeStart / cancelDeadlineAt / totalCapacity` 等更贴近页面和类型的字段命名，后续正式接口定稿时应收敛为统一一套口径
 
 ## ActivityView / ActivityDetailView
 
@@ -123,12 +156,33 @@
 | currentUserSignupLabel       | string  |   是 | 当前用户报名展示文案                 |
 | canCancelCurrentUserRegistration | boolean | 是 | 当前用户是否仍可取消报名             |
 | isManageable                 | boolean |   是 | 当前用户是否可管理该活动             |
+| descriptionRichtext          | string  |   否 | 活动图文详情富文本内容               |
+| ownerDisplay                 | object  |   是 | 发布主体展示快照                     |
+| permissions.canEditDetailContent | boolean | 否 | 当前用户是否可编辑图文详情          |
 
 说明：
 
 - `ActivityView / ActivityDetailView` 是页面展示层对象，不替代活动主数据
 - 展示态字段由活动持久状态、时间字段和当前用户关系共同推导
 - 动作可用性字段应由统一状态机规则推导，不应由页面各自硬编码
+- `ActivityDetailView` 需要返回 `descriptionRichtext`，用于详情页展示和主办方编辑后的即时回显
+
+## OwnerDisplay
+
+| 字段名             | 类型   | 必填 | 说明                         |
+| ------------------ | ------ | ---: | ---------------------------- |
+| mode               | enum   |   是 | PERSONAL / CLUB              |
+| name               | string |   是 | 发布主体显示名               |
+| avatarUrl          | string |   否 | 个人头像                     |
+| avatarColor        | string |   否 | 个人默认头像色               |
+| logoUrl            | string |   否 | 俱乐部 Logo                  |
+| contactName        | string |   否 | 对外联系人                   |
+| contactPhoneMasked | string |   否 | 脱敏联系电话                 |
+
+说明：
+
+- `OwnerDisplay` 在活动发布时写入快照，避免活动历史展示随资料修改漂移
+- 联系电话默认以脱敏形式展示，不直接公开明文手机号
 
 ## ActivityCourtSnapshot
 
@@ -142,6 +196,11 @@
 | feeSnapshot         | number |   否 | 场地费用快照 |
 | descriptionSnapshot | string |   否 | 场地描述快照 |
 | sort                | number |   否 | 排序         |
+
+说明：
+
+- `ActivityCourtSnapshot` 来源于创建活动时确认的本次活动场地列表
+- 场地主数据后续被删除或停用，不影响历史活动快照展示
 
 ## ActivitySignup
 
@@ -160,6 +219,7 @@
 
 - 报名、候补、取消报名全部按 `userId` 维度记录
 - 当前 MVP 不支持“以俱乐部身份报名”
+- `GENERAL / 统一分配` 下 `activityCourtId` 允许为空，表示当前版本不在系统内落具体场地
 
 ## MyActivitiesCollection
 

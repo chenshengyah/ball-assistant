@@ -1,3 +1,4 @@
+import { SIGNUP_MODE_LABELS } from "../../constants/activity";
 import {
   getActivityStats,
   getCurrentUser,
@@ -59,7 +60,7 @@ function mapActivitiesToCards(activities: ActivityView[]): ActivityCard[] {
     ownerLabel: activity.ownerLabel,
     statusLabel: activity.lifecycleStatusLabel,
     signupStatusLabel: activity.signupStatusLabel,
-    signupModeLabel: activity.signupMode === "GENERAL" ? "统一报名" : "按场地报名",
+    signupModeLabel: SIGNUP_MODE_LABELS[activity.signupMode],
     venueLabel: activity.venueLabel,
     scheduleText: activity.scheduleText,
     chargeText: activity.chargeText,

@@ -1,13 +1,18 @@
+import { SIGNUP_MODE_LABELS } from "../../constants/activity";
 import {
   cancelRegistration,
   getActivityById,
-  getCurrentUser,
   moveRegistration,
   signUpForActivity,
   signUpForCourt,
   updateActivityCourtCapacity,
 } from "../../services/activity-service";
-import { getAuthSnapshot, getCurrentMockUserId, requireCompleteProfile } from "../../services/auth";
+import {
+  getCurrentMockUserId,
+  hasRequiredProfileForIntent,
+  requireCompleteProfile,
+} from "../../services/auth";
+import { getPageTopStyle } from "../../utils/chrome";
 
 type ActivityDetailRegistration = {
   isCurrentUser: boolean;
@@ -46,10 +51,13 @@ type ActivityDetailPageData = {
   isGuest: boolean;
   isMissing: boolean;
   ownerLabel: string;
+  ownerContactName: string;
+  ownerContactWechat: string;
   pendingActionType: string;
   pendingActivityCourtId: string;
   pendingRegistrationId: string;
   scheduleText: string;
+  pageTopStyle: string;
   signupMode: string;
   signupModeLabel: string;
   signupStatusLabel: string;
@@ -92,9 +100,12 @@ Page({
     isGuest: true,
     isMissing: false,
     ownerLabel: "",
+    ownerContactName: "",
+    ownerContactWechat: "",
     pendingActionType: "",
     pendingActivityCourtId: "",
     pendingRegistrationId: "",
+    pageTopStyle: "",
     scheduleText: "",
     signupMode: "",
     signupModeLabel: "",
@@ -107,6 +118,7 @@ Page({
   } as ActivityDetailPageData,
 
   onLoad(options: Record<string, string | undefined>): void {
+    this.syncPageChrome();
     const activityId =
       typeof options.activityId === "string" && options.activityId.length > 0
         ? decodeURIComponent(options.activityId)
@@ -128,8 +140,15 @@ Page({
   },
 
   onShow(): void {
+    this.syncPageChrome();
     this.hydratePage();
     void this.tryResumePendingAction();
+  },
+
+  syncPageChrome(): void {
+    this.setData({
+      pageTopStyle: getPageTopStyle(16),
+    });
   },
 
   hydratePage(): void {
@@ -181,9 +200,11 @@ Page({
       isGuest: !currentUserId,
       isMissing: false,
       ownerLabel: activity.ownerLabel,
+      ownerContactName: activity.ownerDisplay.contactName ?? "",
+      ownerContactWechat: activity.ownerDisplay.contactWechat ?? "",
       scheduleText: activity.scheduleText,
       signupMode: activity.signupMode,
-      signupModeLabel: activity.signupMode === "GENERAL" ? "统一报名" : "按场地报名",
+      signupModeLabel: SIGNUP_MODE_LABELS[activity.signupMode],
       signupStatusLabel: activity.signupStatusLabel,
       statusLabel: activity.lifecycleStatusLabel,
       title: activity.title,
@@ -197,11 +218,26 @@ Page({
   },
 
   async tryResumePendingAction(): Promise<void> {
-    if (
-      getAuthSnapshot().status !== "AUTHENTICATED_COMPLETE" ||
-      !this.data.pendingActionType ||
-      !this.data.activityId
-    ) {
+    if (!this.data.pendingActionType || !this.data.activityId) {
+      return;
+    }
+
+    const pendingIntent =
+      this.data.pendingActionType === "SIGN_UP_ACTIVITY"
+        ? {
+            type: "SIGN_UP_ACTIVITY" as const,
+            activityId: this.data.activityId,
+            activityCourtId: this.data.pendingActivityCourtId || undefined,
+          }
+        : this.data.pendingActionType === "CANCEL_SIGNUP" && this.data.pendingRegistrationId
+          ? {
+              type: "CANCEL_SIGNUP" as const,
+              activityId: this.data.activityId,
+              registrationId: this.data.pendingRegistrationId,
+            }
+          : null;
+
+    if (!pendingIntent || !hasRequiredProfileForIntent(pendingIntent)) {
       return;
     }
 
