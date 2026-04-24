@@ -11,7 +11,9 @@
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "image:build": "node ./scripts/docker-image.mjs",
+    "image:push": "API_PUSH_IMAGE=1 node ./scripts/docker-image.mjs"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",

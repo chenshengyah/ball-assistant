@@ -1,8 +1,11 @@
-// Use the host machine's LAN IP so real-device debugging can reach the local API server.
-const API_BASE_URL = "http://192.168.5.49:3000/api";
+import { miniappRuntimeEnvironment } from "../config/env";
+
+function normalizeApiBaseUrl(apiBaseUrl: string): string {
+  return apiBaseUrl.replace(/\/+$/, "");
+}
 
 export function getApiBaseUrl(): string {
-  return API_BASE_URL;
+  return normalizeApiBaseUrl(miniappRuntimeEnvironment.apiBaseUrl);
 }
 
 export function requestApi<T>(params: {
@@ -12,10 +15,19 @@ export function requestApi<T>(params: {
   headers?: Record<string, string>;
 }): Promise<T> {
   const { path, method = "GET", data, headers } = params;
+  const apiBaseUrl = getApiBaseUrl();
+
+  if (!/^https?:\/\//.test(apiBaseUrl)) {
+    return Promise.reject(
+      new Error(
+        `未配置可用的 API 地址，请先设置 miniprogram/config/private.ts 或在 CI 中注入 MINIAPP_PRODUCTION_API_BASE_URL。当前环境：${miniappRuntimeEnvironment.currentEnv}`
+      )
+    );
+  }
 
   return new Promise((resolve, reject) => {
     wx.request<T>({
-      url: `${API_BASE_URL}${path}`,
+      url: `${apiBaseUrl}${path}`,
       method,
       data,
       header: headers,

@@ -9,9 +9,14 @@
     "typecheck": "node -e \"console.log('Miniapp typecheck is temporarily tracked in WeChat DevTools until the local typings are upgraded')\"",
     "typecheck:strict": "tsc -p tsconfig.json --noEmit",
     "test": "node -e \"console.log('No miniapp automated tests yet')\"",
-    "codegen:api": "openapi-typescript http://192.168.5.49:3000/api/openapi-json -o miniprogram/generated/api-types.d.ts"
+    "codegen:api": "node ./scripts/codegen-api.mjs",
+    "env:generate": "node ./scripts/generate-miniapp-env.mjs",
+    "ci:upload": "node ./scripts/upload-miniapp.mjs",
+    "upload:dev": "MINIAPP_UPLOAD_TARGET=dev node ./scripts/upload-miniapp.mjs",
+    "upload:experience": "MINIAPP_UPLOAD_TARGET=experience node ./scripts/upload-miniapp.mjs"
   },
   "devDependencies": {
+    "miniprogram-ci": "^1.9.11",
     "openapi-typescript": "^7.7.0"
   }
 }

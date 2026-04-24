@@ -68,15 +68,6 @@ declare namespace WechatMiniprogram {
     route: string;
   }
 
-  interface CloudConfig {
-    env?: string;
-    traceUser?: boolean;
-  }
-
-  interface Cloud {
-    init(config: CloudConfig): void;
-  }
-
   interface SwitchTabOption {
     url: string;
   }
@@ -89,7 +80,6 @@ declare namespace WechatMiniprogram {
   }
 
   interface Wx {
-    cloud?: Cloud;
     switchTab(options: SwitchTabOption): void;
     navigateTo(options: NavigateToOption): void;
     redirectTo(options: RedirectToOption): void;

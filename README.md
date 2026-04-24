@@ -67,6 +67,14 @@ pnpm --filter @ball-assistant/miniapp codegen:api
 
 使用微信开发者工具打开 `apps/miniapp`。
 
+### 7. 远程上传
+
+仓库现在支持“小程序本地上传开发版 + GitHub Actions 上传共享包 + API 本地镜像构建”工作流。
+
+- 说明文档：[`docs/remote-upload.md`](./docs/remote-upload.md)
+- 小程序运行时配置示例：`apps/miniapp/miniprogram/config/private.example.ts`
+- 共享上传工作流：`.github/workflows/miniapp-experience-upload.yml`
+
 ## 常用命令
 
 ```bash

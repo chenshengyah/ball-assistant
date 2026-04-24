@@ -1,0 +1,100 @@
+name: Miniapp Experience Upload
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "apps/miniapp/**"
+      - ".github/workflows/miniapp-experience-upload.yml"
+  workflow_dispatch:
+    inputs:
+      upload_desc:
+        description: Upload description shown in WeChat DevTools upload history
+        required: false
+        default: ""
+      upload_version:
+        description: Optional upload version override
+        required: false
+        default: ""
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Validate upload secrets
+        env:
+          MINIAPP_CI_PRIVATE_KEY: ${{ secrets.MINIAPP_CI_PRIVATE_KEY }}
+          MINIAPP_TEST_API_BASE_URL: ${{ secrets.MINIAPP_TEST_API_BASE_URL }}
+        run: |
+          if [ -z "$MINIAPP_CI_PRIVATE_KEY" ]; then
+            echo "Missing required secret: MINIAPP_CI_PRIVATE_KEY" >&2
+            exit 1
+          fi
+          if [ -z "$MINIAPP_TEST_API_BASE_URL" ]; then
+            echo "Missing required secret: MINIAPP_TEST_API_BASE_URL" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare miniapp runtime config
+        env:
+          MINIAPP_RUNTIME_ENV: test
+          MINIAPP_TEST_API_BASE_URL: ${{ secrets.MINIAPP_TEST_API_BASE_URL }}
+        run: pnpm --filter @ball-assistant/miniapp env:generate
+
+      - name: Write CI private key
+        env:
+          MINIAPP_CI_PRIVATE_KEY: ${{ secrets.MINIAPP_CI_PRIVATE_KEY }}
+        run: |
+          mkdir -p apps/miniapp/.private
+          printf '%s' "$MINIAPP_CI_PRIVATE_KEY" > apps/miniapp/.private/miniapp-ci.key
+
+      - name: Upload WeChat package
+        env:
+          MINIAPP_UPLOAD_TARGET: experience
+          MINIAPP_ROBOT: 30
+          MINIAPP_UPLOAD_DESC: ${{ github.event.inputs.upload_desc || format('GitHub experience upload {0}', github.sha) }}
+          MINIAPP_UPLOAD_VERSION: ${{ github.event.inputs.upload_version || format('exp-{0}', github.run_number) }}
+        run: pnpm --filter @ball-assistant/miniapp ci:upload
+
+      - name: Upload metadata artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: miniapp-upload-${{ github.run_number }}
+          path: |
+            apps/miniapp/artifacts/miniapp-upload.json
+
+      - name: Publish workflow summary
+        run: |
+          {
+            echo "## Miniapp Upload Completed"
+            echo ""
+            echo "- Artifact: \`miniapp-upload-${{ github.run_number }}\`"
+            echo "- Branch: \`${{ github.ref_name }}\`"
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Target: \`experience\`"
+            echo "- Robot: \`30\`"
+            echo "- API source: \`MINIAPP_TEST_API_BASE_URL\` repository secret"
+            echo ""
+            echo "Use the uploaded package in the Mini Program assistant or WeChat admin."
+          } >> "$GITHUB_STEP_SUMMARY"

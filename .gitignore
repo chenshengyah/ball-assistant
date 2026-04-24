@@ -7,6 +7,10 @@ dist/
 apps/api/.env
 apps/api/.env.local
 apps/api/dist/
+apps/api/artifacts/
+apps/miniapp/.private/
+apps/miniapp/artifacts/
+apps/miniapp/miniprogram/config/private.ts
 apps/miniapp/miniprogram/app.js
 apps/miniapp/miniprogram/envList.js
 apps/miniapp/miniprogram/custom-tab-bar/index.js
