@@ -1,45 +1,53 @@
+@import "../../styles/theme.wxss";
+
 page {
-  background: #f8fafc;
+  background: var(--iz-surface);
 }
 
 .registration-page {
   min-height: 100vh;
   padding: 40rpx 32rpx;
   box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(112, 127, 228, 0.14), transparent 26%),
+    var(--iz-surface);
 }
 
 .registration-hero__eyebrow {
   font-size: 24rpx;
-  color: #2563eb;
+  color: var(--iz-color-primary);
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .registration-hero__title {
   margin-top: 8rpx;
   font-size: 48rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .registration-hero__subtitle {
   margin-top: 12rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: #475569;
+  color: var(--iz-text-secondary);
 }
 
 .registration-card {
   margin-top: 32rpx;
   padding: 32rpx;
   border-radius: 32rpx;
-  background: #ffffff;
-  box-shadow: 0 20rpx 48rpx rgba(15, 23, 42, 0.08);
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 20rpx 48rpx var(--iz-shadow-soft);
 }
 
 .registration-card__label {
   display: block;
   font-size: 26rpx;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .registration-card__label--top {
@@ -52,11 +60,11 @@ page {
   height: 88rpx;
   padding: 0 24rpx;
   border-radius: 24rpx;
-  background: #f8fafc;
-  border: 1rpx solid #dbe2ea;
+  background: var(--iz-surface-low);
+  border: 1rpx solid var(--iz-outline);
   font-size: 28rpx;
   line-height: 88rpx;
-  color: #0f172a;
+  color: var(--iz-text-primary);
   box-sizing: border-box;
 }
 
@@ -68,9 +76,9 @@ page {
   align-items: center;
   gap: 20rpx;
   border-radius: 24rpx;
-  background: #f8fafc;
-  border: 1rpx solid #dbe2ea;
-  color: #0f172a;
+  background: var(--iz-surface-low);
+  border: 1rpx solid var(--iz-outline);
+  color: var(--iz-text-primary);
   text-align: left;
 }
 
@@ -90,8 +98,8 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #2563eb, #0f172a);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--iz-color-primary), var(--iz-color-primary-strong));
+  color: var(--iz-surface-on-primary);
   font-size: 36rpx;
   font-weight: 700;
 }
@@ -101,11 +109,39 @@ page {
   font-weight: 600;
 }
 
+.registration-phone-card {
+  margin-top: 12rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 24rpx;
+  background: var(--iz-surface-low);
+  border: 1rpx solid var(--iz-outline);
+}
+
+.registration-phone-card__text {
+  font-size: 26rpx;
+  line-height: 1.6;
+  color: var(--iz-text-primary);
+}
+
+.registration-phone-card__button {
+  margin-top: 16rpx;
+  height: 72rpx;
+  border-radius: 999rpx;
+  background: var(--iz-surface-high);
+  color: var(--iz-color-primary);
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.registration-phone-card__button::after {
+  border: 0;
+}
+
 .registration-card__hint {
   margin-top: 24rpx;
   font-size: 24rpx;
   line-height: 1.7;
-  color: #64748b;
+  color: var(--iz-text-tertiary);
 }
 
 .registration-submit {
@@ -116,10 +152,11 @@ page {
   justify-content: center;
   height: 88rpx;
   border-radius: 999rpx;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
   font-size: 28rpx;
   font-weight: 600;
+  box-shadow: 0 16rpx 40rpx var(--iz-shadow-primary-soft);
 }
 
 .registration-submit--hover {

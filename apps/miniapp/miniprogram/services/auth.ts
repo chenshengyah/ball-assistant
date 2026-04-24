@@ -11,7 +11,8 @@ export type PendingIntent =
   | { type: "SIGN_UP_ACTIVITY"; activityId: string; activityCourtId?: string }
   | { type: "CANCEL_SIGNUP"; activityId: string; registrationId: string }
   | { type: "OPEN_MY_ACTIVITIES" }
-  | { type: "OPEN_CLUB_REGISTER" };
+  | { type: "OPEN_CLUB_REGISTER"; source?: string; clubId?: string }
+  | { type: "OPEN_CLUB_MANAGEMENT"; source?: string };
 
 export type SessionUser = {
   userId: string;
@@ -19,7 +20,11 @@ export type SessionUser = {
   gender: UserGender | null;
   avatarUrl: string;
   avatarColor: string;
+  phoneNumber: string;
+  phoneCountryCode: string;
+  phoneVerifiedAt: string;
   baseProfileComplete: boolean;
+  contactProfileComplete: boolean;
   isProfileComplete: boolean;
 };
 
@@ -27,6 +32,7 @@ type LoginResponse = {
   accessToken: string;
   user: SessionUser;
   baseProfileComplete: boolean;
+  contactProfileComplete: boolean;
   isProfileComplete: boolean;
 };
 
@@ -41,6 +47,7 @@ type AuthState = {
   accessToken: string;
   user: SessionUser | null;
   baseProfileComplete: boolean;
+  contactProfileComplete: boolean;
   isProfileComplete: boolean;
   pendingIntent: PendingIntent | null;
   didBootstrap: boolean;
@@ -53,6 +60,7 @@ const state: AuthState = {
   accessToken: "",
   user: null,
   baseProfileComplete: false,
+  contactProfileComplete: false,
   isProfileComplete: false,
   pendingIntent: null,
   didBootstrap: false,
@@ -70,6 +78,7 @@ function setSession(loginResponse: LoginResponse): void {
   state.accessToken = loginResponse.accessToken;
   state.user = loginResponse.user;
   state.baseProfileComplete = loginResponse.user.baseProfileComplete;
+  state.contactProfileComplete = loginResponse.user.contactProfileComplete;
   state.isProfileComplete = loginResponse.isProfileComplete;
   state.status = deriveStatus(loginResponse.user.baseProfileComplete, loginResponse.user);
 }
@@ -79,12 +88,14 @@ function clearSession(): void {
   state.accessToken = "";
   state.user = null;
   state.baseProfileComplete = false;
+  state.contactProfileComplete = false;
   state.isProfileComplete = false;
 }
 
 function applyUserProfile(user: SessionUser): void {
   state.user = user;
   state.baseProfileComplete = user.baseProfileComplete;
+  state.contactProfileComplete = user.contactProfileComplete;
   state.isProfileComplete = user.isProfileComplete;
   state.status = deriveStatus(user.baseProfileComplete, user);
 }
@@ -99,7 +110,9 @@ function getIntentSource(intent: PendingIntent): string {
     case "OPEN_MY_ACTIVITIES":
       return "my-activities";
     case "OPEN_CLUB_REGISTER":
-      return "club-register";
+      return intent.source || "club-register";
+    case "OPEN_CLUB_MANAGEMENT":
+      return intent.source || "club-management";
   }
 }
 
@@ -139,6 +152,10 @@ export function getAuthSnapshot(): AuthState {
     user: state.user ? { ...state.user } : null,
     pendingIntent: state.pendingIntent ? { ...state.pendingIntent } : null,
   };
+}
+
+export function getAccessToken(): string {
+  return state.accessToken;
 }
 
 export async function bootstrapAuth(): Promise<AuthState> {
@@ -233,6 +250,27 @@ export async function updateCurrentUserProfile(
   return { ...user };
 }
 
+export async function updateCurrentUserPhoneNumber(code: string): Promise<SessionUser | null> {
+  if (!state.accessToken) {
+    return null;
+  }
+
+  const user = await requestApi<SessionUser>({
+    path: "/users/me/phone-number",
+    method: "POST",
+    data: {
+      code,
+    },
+    headers: {
+      Authorization: `Bearer ${state.accessToken}`,
+    },
+  });
+
+  applyUserProfile(user);
+
+  return { ...user };
+}
+
 export function getCurrentMockUserId(): string | null {
   return state.status === "ANONYMOUS" ? null : MOCK_CURRENT_USER_ID;
 }
@@ -246,8 +284,13 @@ export function getPendingIntent(): PendingIntent | null {
 }
 
 export function hasRequiredProfileForIntent(intent: PendingIntent): boolean {
-  void intent;
-  return state.baseProfileComplete;
+  if (!state.baseProfileComplete) {
+    return false;
+  }
+
+  return intent.type === "CREATE_ACTIVITY" || intent.type === "SIGN_UP_ACTIVITY"
+    ? state.contactProfileComplete
+    : true;
 }
 
 export function resumePendingIntent(): void {
@@ -278,9 +321,17 @@ export function resumePendingIntent(): void {
       });
       return;
     case "OPEN_CLUB_REGISTER":
-      wx.showToast({
-        title: "俱乐部页面建设中",
-        icon: "none",
+      wx.navigateTo({
+        url: `/pages/club-register/index?source=${encodeURIComponent(
+          pendingIntent.source || "profile"
+        )}${pendingIntent.clubId ? `&clubId=${encodeURIComponent(pendingIntent.clubId)}` : ""}`,
+      });
+      return;
+    case "OPEN_CLUB_MANAGEMENT":
+      wx.navigateTo({
+        url: `/pages/club-management/index?source=${encodeURIComponent(
+          pendingIntent.source || "profile"
+        )}`,
       });
       return;
     case "SIGN_UP_ACTIVITY":

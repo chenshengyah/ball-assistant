@@ -20,7 +20,7 @@ export function requestApi<T>(params: {
   if (!/^https?:\/\//.test(apiBaseUrl)) {
     return Promise.reject(
       new Error(
-        `未配置可用的 API 地址，请先设置 miniprogram/config/private.ts 或在 CI 中注入 MINIAPP_PRODUCTION_API_BASE_URL。当前环境：${miniappRuntimeEnvironment.currentEnv}`
+        `未配置可用的 API 地址，请先生成或更新 miniprogram/config/private.ts。可通过 MINIAPP_PRODUCTION_API_BASE_URL 等环境变量执行 miniapp:env:production 或 miniapp:env:local。当前环境：${miniappRuntimeEnvironment.currentEnv}`
       )
     );
   }

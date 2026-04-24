@@ -1,4 +1,5 @@
 import { getChromeMetrics } from "../../utils/chrome";
+import { isTabRoute, normalizeRoute } from "../../utils/navigation";
 
 type AppNavData = {
   barStyle: string;
@@ -11,12 +12,6 @@ type AppNavMethods = {
   handleBack(): void;
   syncChromeMetrics(): void;
 };
-
-const TAB_PAGE_ROUTES = new Set([
-  "/pages/home/index",
-  "/pages/activity/index",
-  "/pages/profile/index",
-]);
 
 Component<AppNavData, AppNavMethods>({
   properties: {
@@ -87,9 +82,9 @@ Component<AppNavData, AppNavMethods>({
         return;
       }
 
-      const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+      const normalizedUrl = normalizeRoute(url);
 
-      if (TAB_PAGE_ROUTES.has(normalizedUrl)) {
+      if (isTabRoute(normalizedUrl)) {
         wx.switchTab({
           url: normalizedUrl,
         });

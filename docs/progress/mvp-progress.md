@@ -6,7 +6,7 @@
 
 ## 当前阶段
 
-页面 PRD 已按主链路收口，原型补齐中。
+页面 PRD 已覆盖当前小程序核心路由，原型与真实接口联调补齐中。
 
 ## 状态说明
 
@@ -53,23 +53,23 @@
 
 - 目标：把核心页面的字段、交互、边界和异常情况明确到可开发程度。
 - 当前状态：`[x] 已完成`
-- 依据：现已按主链路收口 `docs/pages/user-registration/README.md`、`docs/pages/club-register/README.md`、`docs/pages/venue-court-management/README.md`、`docs/pages/activity-create/README.md`，并补齐 `docs/pages/activity-detail/README.md` 与 `docs/pages/my-activities/README.md`。
+- 依据：现已按主链路收口 `docs/pages/home/README.md`、`docs/pages/activity/README.md`、`docs/pages/activity-detail/README.md`、`docs/pages/user-registration/README.md`、`docs/pages/activity-create/README.md`、`docs/pages/club-register/README.md`、`docs/pages/club-management/README.md`、`docs/pages/venue-court-management/README.md`、`docs/pages/my-activities/README.md` 与 `docs/pages/profile/README.md`。
 - 完成标准：MVP 范围内的核心页面都有对应 PRD，且页面职责已按主链路统一，不再把活动详情职责混进创建页或列表卡片。
-- 下一步：按页面 PRD 补前端原型和页面实现，并在实现过程中只回填字段级补充，不再打散页面职责。
+- 下一步：实现过程中只回填字段级补充，不再打散页面职责。
 
 ### 6. 数据字典与接口口径对齐
 
 - 目标：确保文档中的领域对象、字段定义和接口契约能够支持后续开发，不在实现阶段频繁返工。
 - 当前状态：`[~] 进行中`
-- 依据：`docs/global/api-contract.md` 与 `docs/global/data-dictionary.md` 已存在，且已补充活动详情和“我的活动”的最小能力；但当前代码仍主要依赖 `miniprogram/services/activity-store.ts` 的本地 mock 数据，文档与前端类型仍存在命名差异。
+- 依据：`docs/global/api-contract.md` 与 `docs/global/data-dictionary.md` 已存在，且已按“已实现 / P0 待补 / P1 暂缓”拆分接口状态；但报名、取消报名、我的活动、活动列表和主办方管理动作的真实接口仍待补齐，当前小程序部分能力仍依赖 `miniprogram/services/activity-store.ts` 的本地 mock 数据。
 - 完成标准：文档中的核心字段、枚举和资源边界能映射到后续真实接口与前端类型，不再出现明显冲突。
-- 下一步：对照 `docs/global/*`、`docs/global/activity-state-machine.md` 与 `miniprogram/types/activity.ts` 做一次字段命名、动作权限和枚举值清单核对。
+- 下一步：优先按 `docs/global/api-contract.md` 的 P0 待补接口替换本地 mock，并对照 `miniprogram/types/activity.ts` 做字段命名、动作权限和枚举值清单核对。
 
 ### 7. 页面信息架构与跳转关系整理
 
 - 目标：明确页面入口、路由关系、页面回跳和信息承接，避免开发时边做边补。
 - 当前状态：`[x] 已完成`
-- 依据：`docs/README.md` 已补主链路页面地图摘要，各页面 PRD 已统一补齐“入口与回跳”章节，并明确 `user-registration / club-register / venue-court-management / activity-create / activity-detail / my-activities` 的关系与 `profile` 的导航容器定位。
+- 依据：`docs/README.md` 已补主链路页面地图摘要，各页面 PRD 已统一补齐“入口与回跳”章节，并明确 `home / activity-detail / user-registration / activity-create / club-register / club-management / venue-court-management / my-activities / profile` 的页面关系；`activity` 已并入首页承接浏览。
 - 完成标准：MVP 页面清单、入口位置、跳转关系和来源页回跳规则都已明确，且路由设计能覆盖主链路。
 - 下一步：把当前文档中的页面地图落成实际小程序页面与路由实现。
 
@@ -77,20 +77,27 @@
 
 - 目标：在进入正式开发前，用页面原型或交互稿验证主要页面结构和核心操作路径。
 - 当前状态：`[~] 进行中`
-- 依据：`miniprogram/pages/activity/index.ts`、`miniprogram/pages/activity-create/index.ts`、`miniprogram/pages/home/index.ts` 已具备原型页面能力，但 `profile` 仍基本为空，完善信息、俱乐部注册、活动详情和我的活动页面原型仍未补齐。
+- 依据：`miniprogram/pages/home/index.ts`、`miniprogram/pages/activity-detail/index.ts`、`miniprogram/pages/activity-create/index.ts`、`miniprogram/pages/user-registration/index.ts`、`miniprogram/pages/my-activities/index.ts`、`miniprogram/pages/profile/index.ts`、`miniprogram/pages/club-register/index.ts`、`miniprogram/pages/club-management/index.ts` 与 `miniprogram/pages/venue-court-management/index.ts` 已具备基础页面能力；首页已承接原活动页浏览结构，俱乐部注册/管理与场馆管理均已落地为真实页面。
 - 完成标准：MVP 关键页面都有可演示的原型或交互说明，能支撑评审和开发排期。
-- 下一步：优先补齐完善信息、活动详情、我的活动和“我的”入口页原型，再回填俱乐部注册原型。
+- 下一步：优先补齐俱乐部注册/完善、俱乐部管理详情编辑、场馆与场地管理的页面或半屏真实实现，并把报名、取消报名和主办方管理动作从 mock 逐步切到真实接口。
 
 ### 9. 开发范围冻结与首批开发清单
 
 - 目标：把“先做什么、后做什么”明确下来，形成真正可以执行的首批开发任务。
 - 当前状态：`[~] 进行中`
-- 依据：`docs/progress/planning-order.md` 已定义阶段顺序，本轮已完成页面文档与信息架构收口，但尚未形成一份可直接执行的 P0 任务板。
+- 依据：`docs/progress/planning-order.md` 已定义阶段顺序，本轮已完成页面文档与信息架构收口，并在 `docs/global/api-contract.md` 标记 P0 待补接口；但尚未形成一份可直接执行的 P0 任务板。
 - 完成标准：形成第一批开发清单，至少明确先做哪些页面、依赖哪些文档、哪些项必须先补齐再进入开发。
-- 下一步：基于当前 PRD 和原型现状，整理 P0 开发顺序，优先考虑完善信息、创建活动前置能力、活动详情、我的活动与“我的”入口回收。
+- 下一步：基于当前 PRD、原型现状和 P0 接口缺口，整理 P0 开发顺序，优先考虑活动列表真实接口、报名/取消报名、我的活动、俱乐部注册/完善和场馆管理承接；俱乐部管理详情编辑按 P0.5 跟进，俱乐部成员管理、审核后台和主页装修归入 P1。
 
 ## 最近更新记录
 
+- 2026-04-24：新增 `docs/pages/club-management/README.md`，补齐“我的 -> 俱乐部入口 -> 注册 / 管理 -> 编辑资料 / 管理场馆”的维护闭环。
+- 2026-04-24：小程序导航调整为仅保留 `home / profile` 两个 tab，`activity` 页退出实际路由，活动浏览并入首页。
+- 2026-04-24：落地 `club-register / club-management / venue-court-management` 真实小程序页面，并接入俱乐部与场馆接口。
+- 2026-04-24：新增 `home / activity / profile` 轻量页面 PRD，使文档导航覆盖当前小程序核心路由。
+- 2026-04-24：将 `docs/global/user-flow.md` 的主流程改为编号步骤，并补充游客浏览、报名、取消报名、主办方管理动作和我的活动回收流程。
+- 2026-04-24：将 `docs/global/api-contract.md` 的未落地接口拆分为“已实现 / P0 待补 / P1 暂缓”，明确活动列表、报名、我的活动和管理动作的接口优先级。
+- 2026-04-24：补充 `docs/remote-upload.md` 的完整测试发布流程，串起 API 环境、小程序环境生成、开发版上传、共享体验包、验收和回滚。
 - 2026-04-13：按主链路重排页面 PRD，统一 `user-registration -> club-register -> venue-court-management -> activity-create -> activity-detail -> my-activities` 的页面顺序与职责边界。
 - 2026-04-13：新增 `docs/pages/activity-detail/README.md`，统一活动发布后的详情承接、报名、取消报名、调场、调容量、取消活动和再次发布。
 - 2026-04-13：新增 `docs/pages/my-activities/README.md`，统一“我发布的 / 我报名的”活动集合回收口径。

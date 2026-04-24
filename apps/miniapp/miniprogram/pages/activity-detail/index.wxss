@@ -1,5 +1,7 @@
+@import "../../styles/theme.wxss";
+
 page {
-  background: #f8fafc;
+  background: var(--iz-surface);
 }
 
 .detail-page,
@@ -7,6 +9,9 @@ page {
   min-height: 100vh;
   padding: 32rpx;
   box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(112, 127, 228, 0.14), transparent 24%),
+    var(--iz-surface);
 }
 
 .detail-card,
@@ -14,8 +19,9 @@ page {
 .guest-tip,
 .missing-page {
   border-radius: 28rpx;
-  background: #ffffff;
-  box-shadow: 0 20rpx 48rpx rgba(15, 23, 42, 0.06);
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 20rpx 48rpx var(--iz-shadow-soft);
 }
 
 .detail-card,
@@ -38,22 +44,22 @@ page {
 .detail-card__title {
   font-size: 40rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .detail-card__owner {
   margin-top: 10rpx;
   font-size: 24rpx;
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }
 
 .detail-card__status,
 .summary-pill {
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  background: #dbeafe;
+  background: var(--iz-surface-high);
   font-size: 22rpx;
-  color: #1d4ed8;
+  color: var(--iz-color-primary);
 }
 
 .detail-card__summary {
@@ -65,7 +71,7 @@ page {
 }
 
 .summary-pill--soft {
-  background: #eff6ff;
+  background: var(--iz-color-primary-soft);
 }
 
 .detail-meta {
@@ -77,14 +83,14 @@ page {
 
 .detail-meta__label {
   font-size: 24rpx;
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }
 
 .detail-meta__value {
   max-width: 70%;
   font-size: 24rpx;
   line-height: 1.6;
-  color: #0f172a;
+  color: var(--iz-text-primary);
   text-align: right;
 }
 
@@ -92,11 +98,11 @@ page {
   margin-top: 24rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: #334155;
+  color: var(--iz-text-primary);
 }
 
 .detail-card__description--empty {
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }
 
 .detail-card__richtext {
@@ -104,7 +110,7 @@ page {
   margin-top: 24rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: #334155;
+  color: var(--iz-text-primary);
 }
 
 .detail-card__richtext p {
@@ -130,12 +136,12 @@ page {
 .court-card__title {
   font-size: 30rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .court-card__counts {
   font-size: 22rpx;
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }
 
 .chip-list {
@@ -153,17 +159,17 @@ page {
   gap: 10rpx;
   padding: 12rpx 18rpx;
   border-radius: 999rpx;
-  background: #eff6ff;
-  color: #1e293b;
+  background: var(--iz-color-primary-soft);
+  color: var(--iz-text-primary);
   font-size: 22rpx;
 }
 
 .chip--mine {
-  background: #dbeafe;
+  background: var(--iz-surface-high);
 }
 
 .chip__tag {
-  color: #2563eb;
+  color: var(--iz-color-primary);
 }
 
 .court-card__footer {
@@ -184,18 +190,18 @@ page {
 }
 
 .action-button--primary {
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
 }
 
 .action-button--secondary {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: var(--iz-surface-high);
+  color: var(--iz-color-primary);
 }
 
 .action-button--danger {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(190, 61, 91, 0.12);
+  color: var(--iz-color-danger);
 }
 
 .stepper {
@@ -211,8 +217,8 @@ page {
   width: 60rpx;
   height: 60rpx;
   border-radius: 50%;
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--iz-surface-high);
+  color: var(--iz-text-primary);
   font-size: 32rpx;
 }
 
@@ -222,7 +228,7 @@ page {
 
 .stepper__text {
   font-size: 24rpx;
-  color: #475569;
+  color: var(--iz-text-secondary);
 }
 
 .guest-tip {
@@ -230,7 +236,7 @@ page {
   padding: 24rpx;
   font-size: 24rpx;
   line-height: 1.7;
-  color: #475569;
+  color: var(--iz-text-secondary);
 }
 
 .missing-page {
@@ -240,12 +246,12 @@ page {
 .missing-page__title {
   font-size: 40rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .missing-page__text {
   margin-top: 12rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }

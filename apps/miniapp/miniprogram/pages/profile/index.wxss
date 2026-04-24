@@ -1,11 +1,16 @@
+@import "../../styles/theme.wxss";
+
 page {
-  background: #f4f7fb;
+  background: var(--iz-surface);
 }
 
 .profile-page {
   min-height: 100vh;
   padding: 32rpx 32rpx calc(176rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(112, 127, 228, 0.16), transparent 32%),
+    var(--iz-surface);
 }
 
 .profile-hero {
@@ -15,8 +20,9 @@ page {
   gap: 24rpx;
   padding: 32rpx;
   border-radius: 32rpx;
-  background: linear-gradient(135deg, #0f172a, #1d4ed8);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--iz-color-primary-strong), var(--iz-color-primary));
+  color: var(--iz-surface-on-primary);
+  box-shadow: 0 24rpx 56rpx var(--iz-shadow-primary-soft);
 }
 
 .profile-hero__avatar {
@@ -26,7 +32,7 @@ page {
   width: 104rpx;
   height: 104rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--iz-layer-glass-strong);
   font-size: 42rpx;
   font-weight: 700;
 }
@@ -58,28 +64,37 @@ page {
   margin-top: 24rpx;
   padding: 28rpx;
   border-radius: 28rpx;
-  background: #ffffff;
-  box-shadow: 0 20rpx 48rpx rgba(15, 23, 42, 0.06);
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 20rpx 48rpx var(--iz-shadow-soft);
+}
+
+.profile-card__eyebrow {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--iz-color-primary);
 }
 
 .profile-card__title,
 .profile-section__title {
+  margin-top: 8rpx;
   font-size: 30rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .profile-card__text {
   margin-top: 12rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: #475569;
+  color: var(--iz-text-secondary);
 }
 
 .profile-card__status {
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: #64748b;
+  color: var(--iz-text-tertiary);
 }
 
 .profile-card__button {
@@ -92,15 +107,45 @@ page {
   height: 80rpx;
   padding: 0 28rpx;
   border-radius: 999rpx;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
   font-size: 28rpx;
   font-weight: 600;
+  box-shadow: 0 14rpx 36rpx var(--iz-shadow-primary-soft);
 }
 
 .profile-card__button--hover,
 .profile-entry--hover {
   opacity: 0.88;
+}
+
+.profile-summary-grid {
+  margin-top: 24rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20rpx;
+}
+
+.profile-summary-card {
+  min-height: 160rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: var(--iz-surface-high);
+  border: 1rpx solid var(--iz-outline);
+  box-sizing: border-box;
+}
+
+.profile-summary-card__label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--iz-color-primary);
+}
+
+.profile-summary-card__text {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: var(--iz-text-primary);
 }
 
 .profile-entry {
@@ -110,7 +155,7 @@ page {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1rpx solid #e2e8f0;
+  border-bottom: 1rpx solid var(--iz-outline-soft);
 }
 
 .profile-entry:last-child {
@@ -121,17 +166,17 @@ page {
 .profile-entry__title {
   font-size: 28rpx;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .profile-entry__text {
   margin-top: 8rpx;
   font-size: 24rpx;
   line-height: 1.6;
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }
 
 .profile-entry__arrow {
   font-size: 36rpx;
-  color: #94a3b8;
+  color: var(--iz-text-tertiary);
 }

@@ -1,0 +1,188 @@
+@import "../../styles/theme.wxss";
+
+page {
+  background: var(--iz-surface);
+}
+
+.club-register-page {
+  min-height: 100vh;
+  padding: 32rpx 32rpx calc(160rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(112, 127, 228, 0.16), transparent 30%),
+    var(--iz-surface);
+}
+
+.club-register-hero__eyebrow {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--iz-color-primary);
+}
+
+.club-register-hero__title {
+  margin-top: 10rpx;
+  font-size: 48rpx;
+  font-weight: 700;
+  line-height: 1.18;
+  color: var(--iz-text-primary);
+}
+
+.club-register-hero__subtitle {
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: var(--iz-text-secondary);
+}
+
+.club-register-card {
+  margin-top: 28rpx;
+  padding: 28rpx;
+  border-radius: 32rpx;
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 24rpx 56rpx var(--iz-shadow-soft);
+}
+
+.club-register-section + .club-register-section {
+  margin-top: 32rpx;
+  padding-top: 32rpx;
+  border-top: 1rpx solid var(--iz-outline-soft);
+}
+
+.club-register-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.club-register-section__title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.club-register-link {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--iz-color-primary);
+}
+
+.club-register-media-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20rpx;
+  margin-top: 18rpx;
+}
+
+.club-register-upload-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200rpx;
+  border-radius: 28rpx;
+  overflow: hidden;
+  border: 1rpx dashed var(--iz-outline-strong);
+  background: var(--iz-surface-low);
+}
+
+.club-register-upload-card--logo {
+  min-height: 200rpx;
+}
+
+.club-register-upload-card__image {
+  width: 100%;
+  height: 100%;
+}
+
+.club-register-upload-card__placeholder {
+  color: var(--iz-text-secondary);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.club-register-field {
+  margin-top: 20rpx;
+}
+
+.club-register-field__label {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.club-register-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.club-register-input,
+.club-register-textarea {
+  width: 100%;
+  margin-top: 12rpx;
+  padding: 0 24rpx;
+  border-radius: 24rpx;
+  border: 1rpx solid var(--iz-outline);
+  background: var(--iz-surface-low);
+  color: var(--iz-text-primary);
+  box-sizing: border-box;
+}
+
+.club-register-input {
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+}
+
+.club-register-textarea {
+  min-height: 180rpx;
+  padding-top: 20rpx;
+  padding-bottom: 20rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+.club-register-location-card {
+  margin-top: 18rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: var(--iz-surface-high);
+}
+
+.club-register-location-card__label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--iz-color-primary);
+}
+
+.club-register-location-card__value {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  line-height: 1.6;
+  color: var(--iz-text-primary);
+}
+
+.club-register-footer {
+  position: sticky;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
+  margin-top: 28rpx;
+}
+
+.club-register-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92rpx;
+  border-radius: 999rpx;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
+  font-size: 28rpx;
+  font-weight: 700;
+  box-shadow: 0 18rpx 40rpx var(--iz-shadow-primary-soft);
+}
+
+.club-register-submit--hover {
+  opacity: 0.88;
+}

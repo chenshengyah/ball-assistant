@@ -1,12 +1,14 @@
 {
   "pages": [
     "pages/home/index",
-    "pages/activity/index",
     "pages/activity-detail/index",
     "pages/activity-create/index",
     "pages/user-registration/index",
     "pages/my-activities/index",
-    "pages/profile/index"
+    "pages/profile/index",
+    "pages/club-register/index",
+    "pages/club-management/index",
+    "pages/venue-court-management/index"
   ],
   "usingComponents": {
     "app-nav": "/components/app-nav/index"
@@ -21,10 +23,6 @@
       {
         "pagePath": "pages/home/index",
         "text": "首页"
-      },
-      {
-        "pagePath": "pages/activity/index",
-        "text": "活动"
       },
       {
         "pagePath": "pages/profile/index",

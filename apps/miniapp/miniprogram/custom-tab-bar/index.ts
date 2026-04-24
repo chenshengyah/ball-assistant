@@ -1,19 +1,19 @@
 import { getChromeMetrics } from "../utils/chrome";
+import {
+  getOwningTabForPage,
+  HOME_TAB_ROUTE,
+  PROFILE_TAB_ROUTE,
+} from "../utils/navigation";
 
 const TAB_ITEMS = [
   {
     text: "首页",
-    pagePath: "pages/home/index",
+    pagePath: HOME_TAB_ROUTE.slice(1),
     icon: "home",
   },
   {
-    text: "活动",
-    pagePath: "pages/activity/index",
-    icon: "activity",
-  },
-  {
     text: "我的",
-    pagePath: "pages/profile/index",
+    pagePath: PROFILE_TAB_ROUTE.slice(1),
     icon: "profile",
   },
 ];
@@ -73,9 +73,9 @@ Component<CustomTabBarData, CustomTabBarMethods>({
         return;
       }
 
-      const currentRoute = currentPage.route;
+      const currentRoute = getOwningTabForPage(currentPage);
       const selected = this.data.list.findIndex(
-        (item) => item.pagePath === currentRoute
+        (item) => `/${item.pagePath}` === currentRoute
       );
 
       if (selected >= 0 && selected !== this.data.selected) {

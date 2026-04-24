@@ -1,4 +1,5 @@
 import type {
+  OwnerType,
   VenueCourt,
   VenueCourtCreateInput,
   VenueCourtUpdateInput,
@@ -7,10 +8,25 @@ import type {
   VenueWithCourts,
 } from "../types/activity";
 import { getActivityStore } from "./activity-store";
-import { createId } from "./id";
+import { getAccessToken } from "./auth";
+import { requestApi } from "./api";
 
 function normalizeText(value: string): string {
   return value.trim();
+}
+
+type VenueApiResponse = VenueWithCourts;
+
+function getAuthHeaders(): Record<string, string> {
+  const accessToken = getAccessToken();
+
+  if (!accessToken) {
+    throw new Error("请先登录后再继续");
+  }
+
+  return {
+    Authorization: `Bearer ${accessToken}`,
+  };
 }
 
 function normalizeCourtCodes(courtCodes: string[]): string[] {
@@ -47,19 +63,34 @@ function assertUniqueCourtCode(venueId: string, courtCode: string, excludeCourtI
   }
 }
 
-export function listVenuesForManagement(): VenueWithCourts[] {
+function matchesOwner(
+  venue: VenueWithCourts["venue"],
+  ownerType?: OwnerType,
+  ownerId?: string
+): boolean {
+  if (!ownerType || !ownerId) {
+    return true;
+  }
+
+  return venue.ownerType === ownerType && venue.ownerId === ownerId;
+}
+
+export function listVenuesForManagement(
+  ownerType?: OwnerType,
+  ownerId?: string
+): VenueWithCourts[] {
   const store = getActivityStore();
 
   return store.venues
-    .filter((venue) => venue.status === "ACTIVE")
+    .filter((venue) => venue.status === "ACTIVE" && matchesOwner(venue, ownerType, ownerId))
     .map((venue) => ({
       venue: { ...venue },
       courts: getSortedCourts(venue.id, true),
     }));
 }
 
-export function listVenues(): VenueWithCourts[] {
-  return listVenuesForManagement().map((item) => ({
+export function listVenues(ownerType?: OwnerType, ownerId?: string): VenueWithCourts[] {
+  return listVenuesForManagement(ownerType, ownerId).map((item) => ({
     venue: { ...item.venue },
     courts: item.courts.filter((court) => court.status === "ACTIVE").map((court) => ({ ...court })),
   }));
@@ -69,143 +100,197 @@ export function listVenueCourts(venueId: string, includeInactive = false): Venue
   return getSortedCourts(venueId, includeInactive);
 }
 
-export function createVenue(input: VenueCreateInput): VenueWithCourts {
+function syncVenueSnapshot(snapshot: VenueWithCourts): VenueWithCourts {
   const store = getActivityStore();
-  const venueId = createId("venue");
-  const courtCodes = normalizeCourtCodes(input.courtCodes);
+  const venueIndex = store.venues.findIndex((item) => item.id === snapshot.venue.id);
 
+  if (venueIndex >= 0) {
+    store.venues.splice(venueIndex, 1, { ...store.venues[venueIndex], ...snapshot.venue });
+  } else {
+    store.venues.push({ ...snapshot.venue });
+  }
+
+  store.venueCourts = store.venueCourts.filter((court) => court.venueId !== snapshot.venue.id);
+  store.venueCourts.push(...snapshot.courts.map((court) => ({ ...court })));
+
+  return {
+    venue: { ...snapshot.venue },
+    courts: snapshot.courts.map((court) => ({ ...court })),
+  };
+}
+
+function syncVenueSnapshots(snapshots: VenueWithCourts[]): VenueWithCourts[] {
+  return snapshots.map((snapshot) => syncVenueSnapshot(snapshot));
+}
+
+export async function fetchVenuesForOwner(
+  ownerType: OwnerType,
+  ownerId: string
+): Promise<VenueWithCourts[]> {
+  const response = await requestApi<VenueApiResponse[]>({
+    path: `/venues?ownerType=${encodeURIComponent(ownerType)}&ownerId=${encodeURIComponent(ownerId)}`,
+    headers: getAuthHeaders(),
+  });
+
+  return syncVenueSnapshots(response);
+}
+
+export async function createVenue(input: VenueCreateInput): Promise<VenueWithCourts> {
   if (!normalizeText(input.name)) {
     throw new Error("请填写场馆名称");
   }
+
+  const createdVenue = await requestApi<VenueApiResponse>({
+    path: "/venues",
+    method: "POST",
+    data: {
+      ownerType: input.ownerType,
+      ownerId: input.ownerId,
+      name: normalizeText(input.name),
+      shortName: normalizeText(input.shortName) || normalizeText(input.name),
+      province: normalizeText(input.province),
+      city: normalizeText(input.city),
+      district: normalizeText(input.district),
+      address: normalizeText(input.address),
+      latitude: input.latitude,
+      longitude: input.longitude,
+      navigationName: normalizeText(input.navigationName) || normalizeText(input.name),
+    },
+    headers: getAuthHeaders(),
+  });
+
+  const syncedVenue = syncVenueSnapshot(createdVenue);
+  const courtCodes = normalizeCourtCodes(input.courtCodes);
 
   if (courtCodes.length === 0) {
     throw new Error("请至少新增一片场地");
   }
 
-  const venue = {
-    id: venueId,
-    name: normalizeText(input.name),
-    shortName: normalizeText(input.shortName) || normalizeText(input.name),
-    province: normalizeText(input.province),
-    city: normalizeText(input.city),
-    district: normalizeText(input.district),
-    address: normalizeText(input.address),
-    latitude: input.latitude,
-    longitude: input.longitude,
-    navigationName: normalizeText(input.navigationName) || normalizeText(input.name),
-    status: "ACTIVE" as const,
-  };
-
-  const courts = courtCodes.map((courtCode, index) => ({
-    id: createId("court"),
-    venueId,
-    courtCode,
-    courtName: getDefaultCourtName(courtCode),
-    sortOrder: index + 1,
-    status: "ACTIVE" as const,
-  }));
-
-  store.venues.push(venue);
-  store.venueCourts.push(...courts);
-
-  return {
-    venue: { ...venue },
-    courts: courts.map((court) => ({ ...court })),
-  };
-}
-
-export function updateVenue(input: VenueUpdateInput): VenueWithCourts {
-  const store = getActivityStore();
-  const venue = store.venues.find((item) => item.id === input.venueId && item.status === "ACTIVE");
-
-  if (!venue) {
-    throw new Error("场馆不存在");
+  for (const [index, courtCode] of courtCodes.entries()) {
+    await createVenueCourt({
+      venueId: syncedVenue.venue.id,
+      courtCode,
+      courtName: getDefaultCourtName(courtCode),
+      defaultCapacity: index < 4 ? 8 : undefined,
+    });
   }
 
+  const venues = await fetchVenuesForOwner(syncedVenue.venue.ownerType, syncedVenue.venue.ownerId);
+
+  return (
+    venues.find((item) => item.venue.id === syncedVenue.venue.id) ??
+    syncVenueSnapshot({
+      venue: syncedVenue.venue,
+      courts: listVenueCourts(syncedVenue.venue.id, true),
+    })
+  );
+}
+
+export async function updateVenue(input: VenueUpdateInput): Promise<VenueWithCourts> {
   if (!normalizeText(input.name)) {
     throw new Error("请填写场馆名称");
   }
 
-  venue.name = normalizeText(input.name);
-  venue.shortName = normalizeText(input.shortName) || venue.name;
-  venue.province = normalizeText(input.province);
-  venue.city = normalizeText(input.city);
-  venue.district = normalizeText(input.district);
-  venue.address = normalizeText(input.address);
-  venue.latitude = input.latitude;
-  venue.longitude = input.longitude;
-  venue.navigationName = normalizeText(input.navigationName) || venue.name;
+  const response = await requestApi<VenueApiResponse>({
+    path: `/venues/${encodeURIComponent(input.venueId)}`,
+    method: "PUT",
+    data: {
+      name: normalizeText(input.name),
+      shortName: normalizeText(input.shortName) || normalizeText(input.name),
+      province: normalizeText(input.province),
+      city: normalizeText(input.city),
+      district: normalizeText(input.district),
+      address: normalizeText(input.address),
+      latitude: input.latitude,
+      longitude: input.longitude,
+      navigationName: normalizeText(input.navigationName) || normalizeText(input.name),
+    },
+    headers: getAuthHeaders(),
+  });
 
-  return {
-    venue: { ...venue },
-    courts: getSortedCourts(venue.id, true),
-  };
+  return syncVenueSnapshot(response);
 }
 
-export function createVenueCourt(input: VenueCourtCreateInput): VenueCourt {
+export async function createVenueCourt(
+  input: VenueCourtCreateInput & { defaultCapacity?: number }
+): Promise<VenueCourt> {
+  const courtCode = normalizeText(input.courtCode);
+  const courtName = normalizeText(input.courtName) || getDefaultCourtName(courtCode);
+
+  if (!courtCode) {
+    throw new Error("请填写场地号");
+  }
+
+  const response = await requestApi<VenueCourt>({
+    path: "/courts",
+    method: "POST",
+    data: {
+      venueId: input.venueId,
+      courtCode,
+      courtName,
+      defaultCapacity: input.defaultCapacity,
+    },
+    headers: getAuthHeaders(),
+  });
+
   const store = getActivityStore();
-  const venue = store.venues.find((item) => item.id === input.venueId && item.status === "ACTIVE");
+  const existingIndex = store.venueCourts.findIndex((item) => item.id === response.id);
+
+  if (existingIndex >= 0) {
+    store.venueCourts.splice(existingIndex, 1, { ...store.venueCourts[existingIndex], ...response });
+  } else {
+    store.venueCourts.push({ ...response });
+  }
+
+  return { ...response };
+}
+
+export async function updateVenueCourt(
+  input: VenueCourtUpdateInput & { defaultCapacity?: number }
+): Promise<VenueCourt> {
   const courtCode = normalizeText(input.courtCode);
   const courtName = normalizeText(input.courtName) || getDefaultCourtName(courtCode);
-
-  if (!venue) {
-    throw new Error("场馆不存在");
-  }
 
   if (!courtCode) {
     throw new Error("请填写场地号");
   }
 
-  assertUniqueCourtCode(input.venueId, courtCode);
+  const response = await requestApi<VenueCourt>({
+    path: `/courts/${encodeURIComponent(input.courtId)}`,
+    method: "PUT",
+    data: {
+      courtCode,
+      courtName,
+      defaultCapacity: input.defaultCapacity,
+    },
+    headers: getAuthHeaders(),
+  });
 
-  const sortOrder =
-    store.venueCourts
-      .filter((court) => court.venueId === input.venueId)
-      .reduce((max, court) => Math.max(max, court.sortOrder), 0) + 1;
+  const existingCourt = getActivityStore().venueCourts.find((item) => item.id === response.id);
 
-  const nextCourt = {
-    id: createId("court"),
-    venueId: input.venueId,
-    courtCode,
-    courtName,
-    sortOrder,
-    status: "ACTIVE" as const,
-  };
+  if (existingCourt) {
+    Object.assign(existingCourt, response);
+  } else {
+    getActivityStore().venueCourts.push({ ...response });
+  }
 
-  store.venueCourts.push(nextCourt);
-
-  return { ...nextCourt };
+  return { ...response };
 }
 
-export function updateVenueCourt(input: VenueCourtUpdateInput): VenueCourt {
-  const court = getActivityStore().venueCourts.find((item) => item.id === input.courtId);
-  const courtCode = normalizeText(input.courtCode);
-  const courtName = normalizeText(input.courtName) || getDefaultCourtName(courtCode);
+export async function deactivateVenueCourt(courtId: string): Promise<VenueCourt> {
+  const response = await requestApi<VenueCourt>({
+    path: `/courts/${encodeURIComponent(courtId)}/disable`,
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
 
-  if (!court) {
-    throw new Error("场地不存在");
+  const existingCourt = getActivityStore().venueCourts.find((item) => item.id === response.id);
+
+  if (existingCourt) {
+    Object.assign(existingCourt, response);
+  } else {
+    getActivityStore().venueCourts.push({ ...response });
   }
 
-  if (!courtCode) {
-    throw new Error("请填写场地号");
-  }
-
-  assertUniqueCourtCode(court.venueId, courtCode, court.id);
-
-  court.courtCode = courtCode;
-  court.courtName = courtName;
-
-  return { ...court };
-}
-
-export function deactivateVenueCourt(courtId: string): VenueCourt {
-  const court = getActivityStore().venueCourts.find((item) => item.id === courtId);
-
-  if (!court) {
-    throw new Error("场地不存在");
-  }
-
-  court.status = "INACTIVE";
-
-  return { ...court };
+  return { ...response };
 }

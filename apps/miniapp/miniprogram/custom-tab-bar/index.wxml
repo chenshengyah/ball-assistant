@@ -20,17 +20,6 @@
           <view class="tab-icon__home-roof"></view>
           <view class="tab-icon__home-body"></view>
         </view>
-
-        <view
-          wx:elif="{{item.icon === 'activity'}}"
-          class="tab-icon tab-icon--activity"
-        >
-          <view class="tab-icon__calendar-body"></view>
-          <view class="tab-icon__calendar-bar"></view>
-          <view class="tab-icon__calendar-ring tab-icon__calendar-ring--left"></view>
-          <view class="tab-icon__calendar-ring tab-icon__calendar-ring--right"></view>
-        </view>
-
         <view
           wx:elif="{{item.icon === 'profile'}}"
           class="tab-icon tab-icon--profile"

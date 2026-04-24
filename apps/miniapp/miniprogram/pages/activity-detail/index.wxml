@@ -1,4 +1,4 @@
-<app-nav title="活动详情" fallbackUrl="/pages/activity/index"></app-nav>
+<app-nav title="活动详情" fallbackUrl="/pages/home/index"></app-nav>
 
 <view
   wx:if="{{!isMissing}}"
@@ -41,9 +41,9 @@
         <view class="detail-meta__label"><text>发起人</text></view>
         <view class="detail-meta__value"><text>{{ownerContactName}}</text></view>
       </view>
-      <view wx:if="{{ownerContactWechat}}" class="detail-meta__row">
-        <view class="detail-meta__label"><text>联系微信</text></view>
-        <view class="detail-meta__value"><text>{{ownerContactWechat}}</text></view>
+      <view wx:if="{{ownerContactPhone}}" class="detail-meta__row">
+        <view class="detail-meta__label"><text>联系电话</text></view>
+        <view class="detail-meta__value"><text>{{ownerContactPhone}}</text></view>
       </view>
     </view>
 

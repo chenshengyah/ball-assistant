@@ -44,6 +44,19 @@
         <view class="home-hero__subtitle"><text>看一看这周值得参加的活动吧！</text></view>
       </view>
 
+      <view class="home-quick-actions">
+        <view class="home-quick-action" bindtap="handleOpenMyActivities">
+          <view class="home-quick-action__eyebrow"><text>我的</text></view>
+          <view class="home-quick-action__title"><text>我的活动</text></view>
+          <view class="home-quick-action__meta"><text>查看已发布和已报名的活动</text></view>
+        </view>
+        <view class="home-quick-action home-quick-action--primary" bindtap="handleCreateActivity">
+          <view class="home-quick-action__eyebrow"><text>发布</text></view>
+          <view class="home-quick-action__title"><text>创建活动</text></view>
+          <view class="home-quick-action__meta"><text>用个人或俱乐部身份继续发起</text></view>
+        </view>
+      </view>
+
       <!-- <view class="home-search-block">
         <view class="home-search">
           <view class="home-search__field">

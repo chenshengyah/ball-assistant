@@ -52,7 +52,7 @@ type ActivityDetailPageData = {
   isMissing: boolean;
   ownerLabel: string;
   ownerContactName: string;
-  ownerContactWechat: string;
+  ownerContactPhone: string;
   pendingActionType: string;
   pendingActivityCourtId: string;
   pendingRegistrationId: string;
@@ -101,7 +101,7 @@ Page({
     isMissing: false,
     ownerLabel: "",
     ownerContactName: "",
-    ownerContactWechat: "",
+    ownerContactPhone: "",
     pendingActionType: "",
     pendingActivityCourtId: "",
     pendingRegistrationId: "",
@@ -201,7 +201,8 @@ Page({
       isMissing: false,
       ownerLabel: activity.ownerLabel,
       ownerContactName: activity.ownerDisplay.contactName ?? "",
-      ownerContactWechat: activity.ownerDisplay.contactWechat ?? "",
+      ownerContactPhone:
+        activity.ownerDisplay.contactPhoneMasked ?? activity.ownerDisplay.contactPhone ?? "",
       scheduleText: activity.scheduleText,
       signupMode: activity.signupMode,
       signupModeLabel: SIGNUP_MODE_LABELS[activity.signupMode],

@@ -1,0 +1,215 @@
+@import "../../styles/theme.wxss";
+
+page {
+  background: var(--iz-surface);
+}
+
+.club-management-page {
+  min-height: 100vh;
+  padding: 32rpx 32rpx calc(164rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top left, rgba(112, 127, 228, 0.14), transparent 28%),
+    var(--iz-surface);
+}
+
+.club-management-hero__eyebrow {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--iz-color-primary);
+}
+
+.club-management-hero__title {
+  margin-top: 10rpx;
+  font-size: 48rpx;
+  line-height: 1.18;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.club-management-hero__subtitle {
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: var(--iz-text-secondary);
+}
+
+.club-management-strip,
+.club-management-card {
+  margin-top: 24rpx;
+  border-radius: 32rpx;
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 24rpx 56rpx var(--iz-shadow-soft);
+}
+
+.club-management-strip {
+  padding: 24rpx;
+}
+
+.club-management-strip__item {
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid var(--iz-outline-soft);
+}
+
+.club-management-strip__label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--iz-color-primary);
+}
+
+.club-management-strip__value {
+  margin-top: 12rpx;
+  min-height: 84rpx;
+  padding: 0 24rpx;
+  border-radius: 22rpx;
+  background: var(--iz-surface-low);
+  color: var(--iz-text-primary);
+  font-size: 28rpx;
+  line-height: 84rpx;
+}
+
+.club-management-strip__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.club-management-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 72rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.club-management-pill--secondary {
+  background: var(--iz-surface-high);
+  color: var(--iz-text-primary);
+}
+
+.club-management-card {
+  padding: 28rpx;
+}
+
+.club-management-media-grid,
+.club-management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.club-management-upload-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220rpx;
+  border-radius: 28rpx;
+  overflow: hidden;
+  border: 1rpx dashed var(--iz-outline-strong);
+  background: var(--iz-surface-low);
+}
+
+.club-management-upload-card__image {
+  width: 100%;
+  height: 100%;
+}
+
+.club-management-upload-card__placeholder {
+  color: var(--iz-text-secondary);
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.club-management-field,
+.club-management-location {
+  margin-top: 20rpx;
+}
+
+.club-management-field__label {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.club-management-input,
+.club-management-textarea {
+  width: 100%;
+  margin-top: 12rpx;
+  padding: 0 24rpx;
+  border-radius: 24rpx;
+  border: 1rpx solid var(--iz-outline);
+  background: var(--iz-surface-low);
+  color: var(--iz-text-primary);
+  box-sizing: border-box;
+}
+
+.club-management-input {
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+}
+
+.club-management-textarea {
+  min-height: 180rpx;
+  padding-top: 20rpx;
+  padding-bottom: 20rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+.club-management-location__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.club-management-link {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--iz-color-primary);
+}
+
+.club-management-location__card {
+  margin-top: 12rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: var(--iz-surface-high);
+}
+
+.club-management-location__value {
+  font-size: 26rpx;
+  line-height: 1.6;
+  color: var(--iz-text-primary);
+}
+
+.club-management-footer {
+  position: sticky;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
+  margin-top: 28rpx;
+}
+
+.club-management-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92rpx;
+  border-radius: 999rpx;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
+  font-size: 28rpx;
+  font-weight: 700;
+  box-shadow: 0 18rpx 40rpx var(--iz-shadow-primary-soft);
+}
+
+.club-management-submit--hover {
+  opacity: 0.88;
+}

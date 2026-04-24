@@ -23,6 +23,10 @@ enum ClubRole {
   MEMBER
 }
 
+enum ClubCategory {
+  BADMINTON
+}
+
 enum OwnerType {
   PERSONAL
   CLUB
@@ -84,10 +88,17 @@ model User {
 model Club {
   id           String       @id @default(cuid())
   name         String
+  category     ClubCategory @default(BADMINTON)
   logoUrl      String?
   coverUrl     String?
   description  String?
+  province     String?
   city         String?
+  district     String?
+  address      String?
+  latitude     Float?
+  longitude    Float?
+  wechatId     String?
   contactName  String?
   contactPhone String?
   creatorId    String
@@ -116,6 +127,8 @@ model ClubMember {
 model Venue {
   id              String       @id @default(cuid())
   clubId          String?
+  ownerType       OwnerType
+  ownerId         String
   createdByUserId String
   name            String
   shortName       String?
@@ -161,6 +174,7 @@ model Activity {
   ownerType                      OwnerType
   ownerId                        String
   createdByUserId                String
+  coverUrl                       String?
   clubId                         String?
   personalOwnerId                String?
   ownerDisplayMode               OwnerType?

@@ -1,0 +1,213 @@
+@import "../../styles/theme.wxss";
+
+page {
+  background: var(--iz-surface);
+}
+
+.venue-page {
+  min-height: 100vh;
+  padding: 32rpx 32rpx calc(164rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(146, 56, 128, 0.12), transparent 26%),
+    var(--iz-surface);
+}
+
+.venue-page__eyebrow {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--iz-color-primary);
+}
+
+.venue-page__title {
+  margin-top: 10rpx;
+  font-size: 48rpx;
+  line-height: 1.18;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.venue-page__subtitle {
+  margin-top: 14rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: var(--iz-text-secondary);
+}
+
+.venue-strip,
+.venue-card {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  border-radius: 32rpx;
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 24rpx 56rpx var(--iz-shadow-soft);
+}
+
+.venue-strip {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.venue-strip__selector {
+  flex: 1;
+  min-width: 0;
+}
+
+.venue-strip__label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--iz-color-primary);
+}
+
+.venue-strip__value {
+  margin-top: 12rpx;
+  min-height: 84rpx;
+  padding: 0 24rpx;
+  border-radius: 22rpx;
+  background: var(--iz-surface-low);
+  color: var(--iz-text-primary);
+  font-size: 28rpx;
+  line-height: 84rpx;
+}
+
+.venue-strip__create,
+.venue-link,
+.venue-court-card__action {
+  color: var(--iz-color-primary);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.venue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.venue-field,
+.venue-section-header {
+  margin-top: 20rpx;
+}
+
+.venue-field__label,
+.venue-section-header__title {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.venue-field__header,
+.venue-section-header,
+.venue-court-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.venue-input {
+  width: 100%;
+  margin-top: 12rpx;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border-radius: 24rpx;
+  border: 1rpx solid var(--iz-outline);
+  background: var(--iz-surface-low);
+  color: var(--iz-text-primary);
+  font-size: 28rpx;
+  line-height: 88rpx;
+  box-sizing: border-box;
+}
+
+.venue-location-card {
+  margin-top: 12rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: var(--iz-surface-high);
+}
+
+.venue-location-card__value {
+  font-size: 26rpx;
+  line-height: 1.6;
+  color: var(--iz-text-primary);
+}
+
+.venue-court-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 18rpx;
+}
+
+.venue-court-card {
+  padding: 22rpx;
+  border-radius: 26rpx;
+  background: var(--iz-surface-low);
+}
+
+.venue-court-card--inactive {
+  opacity: 0.68;
+}
+
+.venue-court-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--iz-text-primary);
+}
+
+.venue-court-card__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 116rpx;
+  height: 52rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: var(--iz-surface-high);
+  color: var(--iz-color-primary);
+  font-size: 22rpx;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.venue-field--action {
+  display: flex;
+  align-items: flex-end;
+}
+
+.venue-court-card__action {
+  display: inline-flex;
+  align-items: center;
+  height: 88rpx;
+}
+
+.venue-court-card__action--muted {
+  color: var(--iz-text-tertiary);
+}
+
+.venue-footer {
+  position: sticky;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
+  margin-top: 28rpx;
+}
+
+.venue-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92rpx;
+  border-radius: 999rpx;
+  background: var(--iz-color-primary);
+  color: var(--iz-surface-on-primary);
+  font-size: 28rpx;
+  font-weight: 700;
+  box-shadow: 0 18rpx 40rpx var(--iz-shadow-primary-soft);
+}
+
+.venue-submit--hover {
+  opacity: 0.88;
+}

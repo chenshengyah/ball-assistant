@@ -25,6 +25,17 @@ import { getActivityStore } from "./activity-store";
 import { createId } from "./id";
 
 const MANAGEABLE_ROLES = new Set(["OWNER", "ADMIN"]);
+const PUBLISHABLE_ROLES = new Set(["OWNER"]);
+
+function maskPhoneNumber(phoneNumber?: string): string {
+  const normalized = phoneNumber?.trim() ?? "";
+
+  if (normalized.length < 7) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 3)}****${normalized.slice(-4)}`;
+}
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -193,6 +204,7 @@ function buildOwnerDisplay(ownerType: Activity["ownerType"], ownerId: string): O
     const currentUser = getCurrentUser();
     const owner =
       currentUser?.id === ownerId ? currentUser : store.users.find((user) => user.id === ownerId);
+    const contactPhone = owner?.phoneNumber ?? "";
 
     return {
       mode: "PERSONAL",
@@ -200,16 +212,21 @@ function buildOwnerDisplay(ownerType: Activity["ownerType"], ownerId: string): O
       avatarUrl: owner?.avatarUrl,
       avatarColor: owner?.avatarColor ?? "#4C7CF0",
       contactName: owner?.nickname ?? "活动发起人",
+      contactPhone,
+      contactPhoneMasked: maskPhoneNumber(contactPhone),
     };
   }
 
   const club = store.clubs.find((item) => item.id === ownerId);
+  const contactPhone = club?.contactPhone ?? "";
 
   return {
     mode: "CLUB",
     name: club?.name ?? "俱乐部",
     logoUrl: club?.logoUrl,
     contactName: club?.contactName,
+    contactPhone,
+    contactPhoneMasked: maskPhoneNumber(contactPhone),
   };
 }
 
@@ -393,6 +410,7 @@ function toActivityView(activity: Activity, currentUserId: string): ActivityView
     ownerLabel: getOwnerLabel(activity, memberships, currentUserId),
     ownerType: activity.ownerType,
     ownerDisplay: activity.ownerDisplay,
+    coverUrl: activity.coverUrl ?? "",
     signupMode: activity.signupMode,
     venueLabel: venue?.name ?? activity.venueSnapshotName,
     chargeText: getChargeText(activity),
@@ -439,8 +457,13 @@ export function getCurrentUser(): UserProfile | null {
     gender: authSnapshot.user?.gender || storeUser?.gender || "MALE",
     avatarUrl: authSnapshot.user?.avatarUrl || storeUser?.avatarUrl || "",
     avatarColor: authSnapshot.user?.avatarColor || storeUser?.avatarColor || "#4C7CF0",
+    phoneNumber: authSnapshot.user?.phoneNumber || storeUser?.phoneNumber || "",
+    phoneCountryCode: authSnapshot.user?.phoneCountryCode || storeUser?.phoneCountryCode || "",
+    phoneVerifiedAt: authSnapshot.user?.phoneVerifiedAt || storeUser?.phoneVerifiedAt || "",
     baseProfileComplete:
       authSnapshot.user?.baseProfileComplete ?? storeUser?.baseProfileComplete ?? false,
+    contactProfileComplete:
+      authSnapshot.user?.contactProfileComplete ?? storeUser?.contactProfileComplete ?? false,
   };
 }
 
@@ -454,7 +477,7 @@ export function listOwnerOptions(currentUserId: string): OwnerOption[] {
     label: `${OWNER_TYPE_LABELS.PERSONAL} · ${currentUser?.nickname ?? "我"}`,
   };
   const clubOptions = store.clubMembers
-    .filter((member) => member.userId === currentUserId && MANAGEABLE_ROLES.has(member.role))
+    .filter((member) => member.userId === currentUserId && PUBLISHABLE_ROLES.has(member.role))
     .map((member) => {
       const club = store.clubs.find((item) => item.id === member.clubId);
 
@@ -491,6 +514,10 @@ export function createActivity(input: CreateActivityInput): ActivityView {
     throw new Error("请填写活动名称");
   }
 
+  if (venue.ownerType !== input.ownerType || venue.ownerId !== input.ownerId) {
+    throw new Error("请选择当前发布主体下的有效场馆");
+  }
+
   if (input.signupMode === "USER_SELECT_COURT" && input.courts.length === 0) {
     throw new Error("请至少启用一片场地");
   }
@@ -519,8 +546,12 @@ export function createActivity(input: CreateActivityInput): ActivityView {
     throw new Error("停止取消时间不能晚于活动开始时间");
   }
 
-  if (!input.organizerWechat.trim()) {
-    throw new Error("请填写发起人微信号");
+  if (input.ownerType === "PERSONAL" && !ownerDisplay.contactPhone) {
+    throw new Error("请选择个人卡片后先补齐手机号");
+  }
+
+  if (input.ownerType === "CLUB" && !ownerDisplay.contactPhone) {
+    throw new Error("请选择俱乐部卡片后先补齐联系人手机号");
   }
 
   const activityId = createId("activity");
@@ -529,9 +560,9 @@ export function createActivity(input: CreateActivityInput): ActivityView {
     ownerType: input.ownerType,
     ownerId: input.ownerId,
     createdBy: input.createdBy,
+    coverUrl: input.coverUrl?.trim() ?? "",
     ownerDisplay: {
       ...ownerDisplay,
-      contactWechat: input.organizerWechat.trim(),
     },
     title: input.title.trim(),
     chargeMode: input.chargeMode,
@@ -601,7 +632,7 @@ export function buildRepublishDraft(activityId: string, currentUserId: string): 
     sourceActivityId: activity.id,
     ownerType: matchedOwner?.ownerType ?? fallbackOwner.ownerType,
     ownerId: matchedOwner?.ownerId ?? fallbackOwner.ownerId,
-    organizerWechat: activity.ownerDisplay.contactWechat ?? "",
+    coverUrl: activity.coverUrl ?? "",
     signupMode: activity.signupMode,
     title: `${activity.title} · 再次发布`,
     chargeMode: activity.chargeMode,

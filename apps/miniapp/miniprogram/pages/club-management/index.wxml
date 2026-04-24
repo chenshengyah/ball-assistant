@@ -1,0 +1,98 @@
+<app-nav title="俱乐部管理" fallbackUrl="{{navFallbackUrl}}"></app-nav>
+
+<view class="club-management-page" style="{{pageTopStyle}}">
+  <view class="club-management-hero">
+    <view class="club-management-hero__eyebrow"><text>我的俱乐部</text></view>
+    <view class="club-management-hero__title"><text>{{clubLabels[selectedClubIndex] || '俱乐部资料'}}</text></view>
+    <view class="club-management-hero__subtitle"><text>{{currentClubHint}}</text></view>
+  </view>
+
+  <view class="club-management-strip">
+    <view class="club-management-strip__item">
+      <view class="club-management-strip__label"><text>主体切换</text></view>
+      <picker range="{{clubLabels}}" value="{{selectedClubIndex}}" bindchange="handleClubChange">
+        <view class="club-management-strip__value"><text>{{clubLabels[selectedClubIndex] || '暂无俱乐部'}}</text></view>
+      </picker>
+    </view>
+    <view class="club-management-strip__actions">
+      <view class="club-management-pill" bindtap="handleOpenVenueManagement"><text>管理场馆</text></view>
+      <view class="club-management-pill club-management-pill--secondary" bindtap="handleOpenCreateActivity"><text>继续创建活动</text></view>
+    </view>
+  </view>
+
+  <view class="club-management-card">
+    <view class="club-management-media-grid">
+      <view class="club-management-upload-card" bindtap="handleUploadCover">
+        <image wx:if="{{form.coverUrl}}" class="club-management-upload-card__image" src="{{form.coverUrl}}" mode="aspectFill" />
+        <view wx:else class="club-management-upload-card__placeholder"><text>上传封面</text></view>
+      </view>
+      <view class="club-management-upload-card club-management-upload-card--logo" bindtap="handleUploadLogo">
+        <image wx:if="{{form.logoUrl}}" class="club-management-upload-card__image" src="{{form.logoUrl}}" mode="aspectFill" />
+        <view wx:else class="club-management-upload-card__placeholder"><text>上传 Logo</text></view>
+      </view>
+    </view>
+
+    <view class="club-management-field">
+      <view class="club-management-field__label"><text>俱乐部名称</text></view>
+      <input class="club-management-input" value="{{form.name}}" data-field="name" bindinput="handleInput" />
+    </view>
+    <view class="club-management-field">
+      <view class="club-management-field__label"><text>俱乐部简介</text></view>
+      <textarea class="club-management-textarea" value="{{form.description}}" data-field="description" bindinput="handleInput"></textarea>
+    </view>
+
+    <view class="club-management-grid">
+      <view class="club-management-field">
+        <view class="club-management-field__label"><text>联系人</text></view>
+        <input class="club-management-input" value="{{form.contactName}}" data-field="contactName" bindinput="handleInput" />
+      </view>
+      <view class="club-management-field">
+        <view class="club-management-field__label"><text>联系电话</text></view>
+        <input class="club-management-input" type="number" value="{{form.contactPhone}}" data-field="contactPhone" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="club-management-grid">
+      <view class="club-management-field">
+        <view class="club-management-field__label"><text>省份</text></view>
+        <input class="club-management-input" value="{{form.province}}" data-field="province" bindinput="handleInput" />
+      </view>
+      <view class="club-management-field">
+        <view class="club-management-field__label"><text>城市</text></view>
+        <input class="club-management-input" value="{{form.city}}" data-field="city" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="club-management-grid">
+      <view class="club-management-field">
+        <view class="club-management-field__label"><text>区域</text></view>
+        <input class="club-management-input" value="{{form.district}}" data-field="district" bindinput="handleInput" />
+      </view>
+      <view class="club-management-field">
+        <view class="club-management-field__label"><text>微信号</text></view>
+        <input class="club-management-input" value="{{form.wechatId}}" data-field="wechatId" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="club-management-location">
+      <view class="club-management-location__header">
+        <view class="club-management-field__label"><text>地点信息</text></view>
+        <view class="club-management-link" bindtap="handleChooseLocation"><text>地图选点</text></view>
+      </view>
+      <view class="club-management-location__card">
+        <view class="club-management-location__value"><text>{{form.locationName || '还没有选择地图位置'}}</text></view>
+      </view>
+    </view>
+
+    <view class="club-management-field">
+      <view class="club-management-field__label"><text>详细地址</text></view>
+      <input class="club-management-input" value="{{form.address}}" data-field="address" bindinput="handleInput" />
+    </view>
+  </view>
+
+  <view class="club-management-footer">
+    <view class="club-management-submit" hover-class="club-management-submit--hover" hover-stay-time="80" bindtap="handleSubmit">
+      <text>保存俱乐部资料</text>
+    </view>
+  </view>
+</view>

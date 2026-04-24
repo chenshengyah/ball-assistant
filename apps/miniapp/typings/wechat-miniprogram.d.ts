@@ -50,6 +50,21 @@ declare namespace WechatMiniprogram {
     fail?(error: unknown): void;
   }
 
+  interface UploadFileSuccessCallbackResult {
+    statusCode: number;
+    data: string;
+  }
+
+  interface UploadFileOption {
+    url: string;
+    filePath: string;
+    name: string;
+    formData?: Record<string, string>;
+    header?: Record<string, string>;
+    success?(result: UploadFileSuccessCallbackResult): void;
+    fail?(error: unknown): void;
+  }
+
   interface SystemInfo {
     safeArea?: {
       bottom?: number;
@@ -90,6 +105,7 @@ declare namespace WechatMiniprogram {
     getMenuButtonBoundingClientRect(): MenuButtonRect;
     login(options: LoginOption): void;
     request<T = unknown>(options: RequestOption<T>): void;
+    uploadFile(options: UploadFileOption): void;
   }
 
   interface AppOption {

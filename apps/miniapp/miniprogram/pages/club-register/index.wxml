@@ -1,0 +1,88 @@
+<app-nav title="{{title}}" fallbackUrl="{{navFallbackUrl}}"></app-nav>
+
+<view class="club-register-page" style="{{pageTopStyle}}">
+  <view class="club-register-hero">
+    <view class="club-register-hero__eyebrow"><text>{{source === 'activity-create' ? '来自创建活动' : '俱乐部入口'}}</text></view>
+    <view class="club-register-hero__title"><text>{{title}}</text></view>
+    <view class="club-register-hero__subtitle"><text>{{subtitle}}</text></view>
+  </view>
+
+  <view class="club-register-card">
+    <view class="club-register-section">
+      <view class="club-register-section__header">
+        <view class="club-register-section__title"><text>品牌信息</text></view>
+      </view>
+      <view class="club-register-media-grid">
+        <view class="club-register-upload-card" bindtap="handleUploadCover">
+          <image wx:if="{{form.coverUrl}}" class="club-register-upload-card__image" src="{{form.coverUrl}}" mode="aspectFill" />
+          <view wx:else class="club-register-upload-card__placeholder"><text>上传封面</text></view>
+        </view>
+        <view class="club-register-upload-card club-register-upload-card--logo" bindtap="handleUploadLogo">
+          <image wx:if="{{form.logoUrl}}" class="club-register-upload-card__image" src="{{form.logoUrl}}" mode="aspectFill" />
+          <view wx:else class="club-register-upload-card__placeholder"><text>上传 Logo</text></view>
+        </view>
+      </view>
+      <view class="club-register-field">
+        <view class="club-register-field__label"><text>俱乐部名称</text></view>
+        <input class="club-register-input" value="{{form.name}}" placeholder="例如：企鹅羽球俱乐部" data-field="name" bindinput="handleInput" />
+      </view>
+      <view class="club-register-field">
+        <view class="club-register-field__label"><text>俱乐部简介</text></view>
+        <textarea class="club-register-textarea" value="{{form.description}}" placeholder="介绍活动频率、风格和适合的球友" data-field="description" bindinput="handleInput"></textarea>
+      </view>
+    </view>
+
+    <view class="club-register-section">
+      <view class="club-register-section__title"><text>联系人与社交</text></view>
+      <view class="club-register-grid">
+        <view class="club-register-field">
+          <view class="club-register-field__label"><text>联系人</text></view>
+          <input class="club-register-input" value="{{form.contactName}}" placeholder="例如：阿鹏" data-field="contactName" bindinput="handleInput" />
+        </view>
+        <view class="club-register-field">
+          <view class="club-register-field__label"><text>联系电话</text></view>
+          <input class="club-register-input" type="number" value="{{form.contactPhone}}" placeholder="用于对外联系" data-field="contactPhone" bindinput="handleInput" />
+        </view>
+      </view>
+      <view class="club-register-field">
+        <view class="club-register-field__label"><text>微信号</text></view>
+        <input class="club-register-input" value="{{form.wechatId}}" placeholder="可选，用于后续联系" data-field="wechatId" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="club-register-section">
+      <view class="club-register-section__header">
+        <view class="club-register-section__title"><text>地点信息</text></view>
+        <view class="club-register-link" bindtap="handleChooseLocation"><text>地图选点</text></view>
+      </view>
+      <view class="club-register-location-card">
+        <view class="club-register-location-card__label"><text>当前位置</text></view>
+        <view class="club-register-location-card__value"><text>{{form.locationName || '还没有选择地图位置'}}</text></view>
+      </view>
+      <view class="club-register-grid">
+        <view class="club-register-field">
+          <view class="club-register-field__label"><text>省份</text></view>
+          <input class="club-register-input" value="{{form.province}}" placeholder="可手填" data-field="province" bindinput="handleInput" />
+        </view>
+        <view class="club-register-field">
+          <view class="club-register-field__label"><text>城市</text></view>
+          <input class="club-register-input" value="{{form.city}}" placeholder="可手填" data-field="city" bindinput="handleInput" />
+        </view>
+      </view>
+      <view class="club-register-field">
+        <view class="club-register-field__label"><text>区域</text></view>
+        <input class="club-register-input" value="{{form.district}}" placeholder="例如：浦东新区" data-field="district" bindinput="handleInput" />
+      </view>
+      <view class="club-register-field">
+        <view class="club-register-field__label"><text>详细地址</text></view>
+        <input class="club-register-input" value="{{form.address}}" placeholder="例如：金桥路 588 号 B1" data-field="address" bindinput="handleInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="club-register-footer">
+    <view class="club-register-submit" hover-class="club-register-submit--hover" hover-stay-time="80" bindtap="handleSubmit">
+      <text>{{submitText}}</text>
+    </view>
+  </view>
+</view>

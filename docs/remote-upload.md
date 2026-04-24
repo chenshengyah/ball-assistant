@@ -5,6 +5,47 @@
 - 本地命令：上传小程序开发版，构建或推送 API 镜像
 - GitHub Actions：保留给共享体验包上传
 
+## 0. 完整测试发布流程
+
+从本地改动到可验收体验包，推荐按以下顺序执行：
+
+1. 确认 API 测试环境已部署，且 `DATABASE_URL / JWT_SECRET / WECHAT_MINIAPP_APP_ID / WECHAT_MINIAPP_APP_SECRET` 已配置。
+2. 确认测试 API 域名已加入微信小程序后台 `request` 合法域名。
+3. 在仓库根目录生成小程序运行环境配置：
+
+   ```bash
+   MINIAPP_RUNTIME_ENV=production \
+   MINIAPP_PRODUCTION_API_BASE_URL=https://ball-assistant.cloud/api \
+   pnpm miniapp:env:production
+   ```
+
+4. 本地打开小程序，确认首页、活动列表、活动详情、创建活动入口能访问测试 API。
+5. 准备本地上传密钥 `apps/miniapp/.private/miniapp-ci.key`，并确认本机 IP 已加入微信代码上传白名单。
+6. 本地演练上传命令：
+
+   ```bash
+   MINIAPP_DRY_RUN=1 pnpm miniapp:upload:dev
+   ```
+
+7. 演练通过后上传开发版：
+
+   ```bash
+   pnpm miniapp:upload:dev
+   ```
+
+8. 在微信开发者工具或小程序后台确认开发版版本号、描述和 `robot` 槽位正确。
+9. 合并到触发分支后，由 GitHub Actions 上传共享体验包。
+10. 在 GitHub Actions artifact 中确认上传元数据存在。
+11. 用共享体验包完成冒烟验收：
+    - 首页和活动列表可浏览
+    - 活动详情可打开
+    - 登录和完善资料可进入
+    - 创建活动页可进入并展示角色卡
+    - API 异常时有可读提示
+12. 若体验包不可用，优先回滚小程序运行环境配置或重新上传上一个稳定版本。
+13. 若 API 不可用，优先回滚 API 服务或切回上一个稳定测试 API 域名。
+14. 回滚完成后，在上传记录或 PR 中记录原因、影响版本和恢复方式。
+
 ## 1. API 测试环境
 
 后端继续作为独立 Node 服务部署，至少需要这些环境变量：
@@ -33,13 +74,7 @@
 
 - 旧的 `test` 环境名和 `MINIAPP_TEST_API_BASE_URL` 仍然可用，但会被视为 `production` 的别名
 
-默认会优先使用 gitignore 的本地私有配置文件：
-
-```bash
-cp apps/miniapp/miniprogram/config/private.example.ts apps/miniapp/miniprogram/config/private.ts
-```
-
-或者直接生成：
+统一通过生成脚本写入 `apps/miniapp/miniprogram/config/private.ts`：
 
 ```bash
 MINIAPP_RUNTIME_ENV=production \
@@ -55,13 +90,15 @@ pnpm miniapp:env:production
 - `MINIAPP_TEST_API_BASE_URL`
 - `MINIAPP_API_BASE_URL`
 
+`private.example.ts` 仅作为手动配置示例保留，不再作为推荐流程的一部分。
+
 ## 3. 本地上传小程序开发版
 
 先准备：
 
 1. 把上传密钥放到 `apps/miniapp/.private/miniapp-ci.key`
 2. 确认本机 IP 已加入微信代码上传白名单
-3. 确认 `private.ts` 或环境变量已经指向正确测试 API
+3. 先执行一次环境生成命令，确认 `apps/miniapp/miniprogram/config/private.ts` 已指向正确测试 API
 
 最常用命令：
 

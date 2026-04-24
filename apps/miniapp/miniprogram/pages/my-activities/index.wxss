@@ -1,24 +1,29 @@
+@import "../../styles/theme.wxss";
+
 page {
-  background: #f8fafc;
+  background: var(--iz-surface);
 }
 
 .my-activities-page {
   min-height: 100vh;
   padding: 40rpx 32rpx;
   box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, rgba(112, 127, 228, 0.12), transparent 24%),
+    var(--iz-surface);
 }
 
 .page-title {
   font-size: 44rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .page-subtitle {
   margin-top: 12rpx;
   font-size: 26rpx;
   line-height: 1.7;
-  color: #475569;
+  color: var(--iz-text-secondary);
 }
 
 .section-card,
@@ -26,15 +31,16 @@ page {
   margin-top: 24rpx;
   padding: 28rpx;
   border-radius: 28rpx;
-  background: #ffffff;
-  box-shadow: 0 20rpx 48rpx rgba(15, 23, 42, 0.06);
+  background: var(--iz-surface-lowest);
+  border: 1rpx solid var(--iz-outline);
+  box-shadow: 0 20rpx 48rpx var(--iz-shadow-soft);
 }
 
 .section-card__title,
 .empty-card__title {
   font-size: 30rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .activity-row {
@@ -44,13 +50,13 @@ page {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  border-top: 1rpx solid #e2e8f0;
+  border-top: 1rpx solid var(--iz-outline-soft);
 }
 
 .activity-row__title {
   font-size: 28rpx;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--iz-text-primary);
 }
 
 .activity-row__meta,
@@ -58,10 +64,10 @@ page {
   margin-top: 8rpx;
   font-size: 24rpx;
   line-height: 1.6;
-  color: #64748b;
+  color: var(--iz-text-secondary);
 }
 
 .activity-row__arrow {
   font-size: 36rpx;
-  color: #94a3b8;
+  color: var(--iz-text-tertiary);
 }

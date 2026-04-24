@@ -10,58 +10,69 @@
     </view>
   </view>
 
-    <view class="profile-card">
-      <view class="profile-card__title"><text>登录策略</text></view>
-      <view class="profile-card__text"><text>{{hintText}}</text></view>
-      <view class="profile-card__status"><text>{{baseProfileLabel}}</text></view>
-      <view
-        class="profile-card__button"
-        hover-class="profile-card__button--hover"
-        hover-stay-time="80"
-        bindtap="handleOpenRegistration"
-      ><text>{{actionButtonText}}</text></view>
+  <view class="profile-card">
+    <view class="profile-card__eyebrow"><text>资料中心</text></view>
+    <view class="profile-card__title"><text>{{baseProfileLabel}}</text></view>
+    <view class="profile-card__text"><text>{{hintText}}</text></view>
+    <view
+      class="profile-card__button"
+      hover-class="profile-card__button--hover"
+      hover-stay-time="80"
+      bindtap="handleOpenRegistration"
+    ><text>{{actionButtonText}}</text></view>
+  </view>
+
+  <view class="profile-summary-grid">
+    <view class="profile-summary-card">
+      <view class="profile-summary-card__label"><text>常用动作</text></view>
+      <view class="profile-summary-card__text"><text>{{quickActionDescription}}</text></view>
+    </view>
+    <view class="profile-summary-card">
+      <view class="profile-summary-card__label"><text>当前模式</text></view>
+      <view class="profile-summary-card__text"><text>{{statusLabel}}</text></view>
+    </view>
+  </view>
+
+  <view class="profile-section">
+    <view class="profile-section__title"><text>角色相关入口</text></view>
+
+    <view
+      class="profile-entry"
+      hover-class="profile-entry--hover"
+      hover-stay-time="80"
+      bindtap="handleOpenMyActivities"
+    >
+      <view>
+        <view class="profile-entry__title"><text>我的活动</text></view>
+        <view class="profile-entry__text"><text>查看我发布和参与过的活动集合。</text></view>
+      </view>
+      <view class="profile-entry__arrow"><text>›</text></view>
     </view>
 
-    <view class="profile-section">
-      <view class="profile-section__title"><text>角色相关入口</text></view>
-
-      <view
-        class="profile-entry"
-        hover-class="profile-entry--hover"
-        hover-stay-time="80"
-        bindtap="handleOpenMyActivities"
-      >
-        <view>
-          <view class="profile-entry__title"><text>我的活动</text></view>
-          <view class="profile-entry__text"><text>查看我发布的和我报名的活动集合。</text></view>
-        </view>
-        <view class="profile-entry__arrow"><text>›</text></view>
+    <view
+      class="profile-entry"
+      hover-class="profile-entry--hover"
+      hover-stay-time="80"
+      bindtap="handleOpenCreateActivity"
+    >
+      <view>
+        <view class="profile-entry__title"><text>创建活动</text></view>
+        <view class="profile-entry__text"><text>继续发布个人局或俱乐部活动。</text></view>
       </view>
-
-      <view
-        class="profile-entry"
-        hover-class="profile-entry--hover"
-        hover-stay-time="80"
-        bindtap="handleOpenCreateActivity"
-      >
-        <view>
-          <view class="profile-entry__title"><text>创建活动</text></view>
-          <view class="profile-entry__text"><text>仅在动作触发时检查登录和资料完整度。</text></view>
-        </view>
-        <view class="profile-entry__arrow"><text>›</text></view>
-      </view>
-
-      <view
-        class="profile-entry"
-        hover-class="profile-entry--hover"
-        hover-stay-time="80"
-        bindtap="handleOpenClubRegister"
-      >
-        <view>
-          <view class="profile-entry__title"><text>俱乐部入口</text></view>
-          <view class="profile-entry__text"><text>俱乐部注册和管理动作统一延后到登录后触发。</text></view>
-        </view>
-        <view class="profile-entry__arrow"><text>›</text></view>
-      </view>
+      <view class="profile-entry__arrow"><text>›</text></view>
     </view>
+
+    <view
+      class="profile-entry"
+      hover-class="profile-entry--hover"
+      hover-stay-time="80"
+      bindtap="handleOpenClubRegister"
+    >
+      <view>
+        <view class="profile-entry__title"><text>{{clubEntryTitle}}</text></view>
+        <view class="profile-entry__text"><text>{{clubEntryDescription}}</text></view>
+      </view>
+      <view class="profile-entry__arrow"><text>›</text></view>
+    </view>
+  </view>
 </view>

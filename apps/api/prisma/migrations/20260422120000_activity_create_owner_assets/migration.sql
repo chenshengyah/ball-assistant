@@ -1,0 +1,25 @@
+CREATE TYPE "ClubCategory" AS ENUM ('BADMINTON');
+
+ALTER TABLE "Club"
+ADD COLUMN "category" "ClubCategory" NOT NULL DEFAULT 'BADMINTON',
+ADD COLUMN "province" TEXT,
+ADD COLUMN "district" TEXT,
+ADD COLUMN "address" TEXT,
+ADD COLUMN "latitude" DOUBLE PRECISION,
+ADD COLUMN "longitude" DOUBLE PRECISION,
+ADD COLUMN "wechatId" TEXT;
+
+ALTER TABLE "Venue"
+ADD COLUMN "ownerType" "OwnerType" NOT NULL DEFAULT 'CLUB',
+ADD COLUMN "ownerId" TEXT NOT NULL DEFAULT '';
+
+UPDATE "Venue"
+SET "ownerType" = 'CLUB',
+    "ownerId" = COALESCE("clubId", '');
+
+ALTER TABLE "Venue"
+ALTER COLUMN "ownerType" DROP DEFAULT,
+ALTER COLUMN "ownerId" DROP DEFAULT;
+
+ALTER TABLE "Activity"
+ADD COLUMN "coverUrl" TEXT;

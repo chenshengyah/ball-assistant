@@ -2,8 +2,11 @@
 page,
 .tab-bar {
   --iz-color-primary: #4052b6;
+  --iz-color-primary-strong: #28398e;
+  --iz-color-primary-soft: #e4e8ff;
   --iz-color-tertiary: #923880;
   --iz-color-success: #1e824c;
+  --iz-color-danger: #be3d5b;
 
   --iz-surface: #f9f5ff;
   --iz-surface-low: #f3eeff;
@@ -14,6 +17,7 @@ page,
 
   --iz-text-primary: #2c2a51;
   --iz-text-secondary: #595781;
+  --iz-text-tertiary: #7f7aa5;
 
   --iz-meta-icon: #c9c4f2;
   --iz-meta-icon-strong: #b5b0e5;
@@ -28,6 +32,7 @@ page,
   --iz-layer-search: rgba(243, 238, 255, 0.92);
   --iz-layer-empty: rgba(255, 255, 255, 0.88);
   --iz-layer-glass: rgba(255, 255, 255, 0.95);
+  --iz-layer-glass-strong: rgba(255, 255, 255, 0.18);
 
   --iz-shadow-soft: rgba(44, 42, 81, 0.06);
   --iz-shadow-medium: rgba(44, 42, 81, 0.08);

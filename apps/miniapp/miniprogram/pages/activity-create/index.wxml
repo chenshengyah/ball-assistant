@@ -1,4 +1,4 @@
-<app-nav title="创建活动" fallbackUrl="/pages/activity/index"></app-nav>
+<app-nav title="创建活动" fallbackUrl="/pages/home/index"></app-nav>
 
 <view class="create-page" style="{{pageTopStyle}}">
   <view class="create-page__hero">
@@ -12,32 +12,54 @@
     class="notice-card"
   ><text>{{republishNotice}}</text></view>
 
-    <view class="section-card">
-      <view class="section-title"><text>发布信息</text></view>
+  <view class="section-card">
+    <view class="section-title"><text>选择发布角色</text></view>
 
     <view class="form-section">
-      <view class="form-label"><text>发布身份</text></view>
+      <view class="form-label"><text>发布角色</text></view>
       <view class="owner-card-list">
         <view
           wx:for="{{ownerCardItems}}"
-          wx:key="index"
+          wx:key="key"
           wx:for-item="ownerCard"
-          class="owner-card {{selectedOwnerIndex === index ? 'owner-card--active' : ''}}"
-          data-owner-index="{{index}}"
+          class="owner-card {{selectedRoleType === ownerCard.key ? 'owner-card--active' : ''}}"
+          data-field="{{ownerCard.key}}"
           bindtap="handleOwnerSelect"
         >
           <view class="owner-card__top">
             <view class="owner-card__tag"><text>{{ownerCard.tag}}</text></view>
             <view
-              wx:if="{{selectedOwnerIndex === index}}"
+              wx:if="{{selectedRoleType === ownerCard.key}}"
               class="owner-card__selected"
-            ><text>当前发布身份</text></view>
+            ><text>当前角色</text></view>
           </view>
           <view class="owner-card__title"><text>{{ownerCard.title}}</text></view>
           <view class="owner-card__meta"><text>{{ownerCard.meta}}</text></view>
+          <view class="owner-card__status"><text>{{ownerCard.statusText}}</text></view>
         </view>
       </view>
       <view class="form-help"><text>{{ownerContactHint}}</text></view>
+    </view>
+  </view>
+
+  <block wx:if="{{showRoleContent}}">
+  <view class="section-card">
+    <view class="section-title"><text>发布信息</text></view>
+
+    <view class="form-section">
+      <view class="form-label"><text>活动封面</text></view>
+      <view class="cover-uploader" bindtap="handleUploadCover">
+        <image
+          wx:if="{{createForm.coverUrl}}"
+          class="cover-uploader__image"
+          src="{{createForm.coverUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="cover-uploader__placeholder">
+          <text>点击上传活动封面</text>
+        </view>
+      </view>
+      <view class="form-help"><text>封面为选填，发布后可用于活动卡片与详情头图展示。</text></view>
     </view>
 
     <view class="form-section">
@@ -52,15 +74,10 @@
     </view>
 
     <view class="form-section">
-      <view class="form-label"><text>发起人微信号</text></view>
-      <input
-        class="text-field"
-        value="{{createForm.organizerWechat}}"
-        placeholder="例如：badminton_ava"
-        data-field="organizerWechat"
-        bindinput="handleCreateInput"
-      />
-      <view class="form-help"><text>会展示在活动详情页，供报名人联系你。</text></view>
+      <view class="form-label"><text>对外联系方式</text></view>
+      <view class="readonly-field">
+        <text>{{selectedRoleType === 'PERSONAL' ? '将展示你已验证的手机号' : '将展示俱乐部联系人手机号'}}</text>
+      </view>
     </view>
 
     <view class="form-grid">
@@ -342,6 +359,166 @@
         bindtap="handleSubmitCreate"
       ><text>发布活动</text></view>
     </view>
+  </block>
+</view>
+
+<view
+  wx:if="{{showProfileSheet}}"
+  class="sheet-mask"
+  bindtap="handleCloseProfileSheet"
+></view>
+<view
+  wx:if="{{showProfileSheet}}"
+  class="venue-sheet"
+  catchtap="handleVenueSheetTap"
+>
+  <view class="venue-sheet__handle">
+    <view class="venue-sheet__handle-bar"></view>
+  </view>
+  <view class="venue-sheet__header">
+    <view class="venue-sheet__title"><text>完善个人资料</text></view>
+    <view class="venue-sheet__subtitle"><text>先补齐基础资料和手机号，再进入活动创建配置。</text></view>
+  </view>
+  <scroll-view class="venue-sheet__body" scroll-y="true" show-scrollbar="{{false}}">
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>头像</text></view>
+      <button class="registration-avatar" open-type="chooseAvatar" bindchooseavatar="handleProfileChooseAvatar">
+        <image wx:if="{{profileSheetForm.avatarUrl}}" class="registration-avatar__image" src="{{profileSheetForm.avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="registration-avatar__fallback"><text>{{profileSheetForm.avatarInitial}}</text></view>
+        <view class="registration-avatar__text"><text>点击选择微信头像</text></view>
+      </button>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>昵称</text></view>
+      <input class="text-field" type="nickname" value="{{profileSheetForm.nickname}}" bindinput="handleProfileNicknameInput" />
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>性别</text></view>
+      <picker range="{{['男','女']}}" value="{{profileSheetForm.selectedGenderIndex}}" bindchange="handleProfileGenderChange">
+        <view class="picker-field"><text>{{profileSheetForm.selectedGenderIndex === 1 ? '女' : '男'}}</text></view>
+      </picker>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>手机号</text></view>
+      <view class="registration-phone-card">
+        <view class="registration-phone-card__text">
+          <text>{{profileSheetForm.phoneVerified ? profileSheetForm.phoneMasked : '用于创建活动和报名时对外联系'}}</text>
+        </view>
+        <button class="registration-phone-card__button" open-type="getPhoneNumber" bindgetphonenumber="handleGetPhoneNumber">
+          <text>{{profileSheetForm.phoneVerified ? '重新验证' : '验证手机号'}}</text>
+        </button>
+      </view>
+    </view>
+  </scroll-view>
+  <view class="venue-sheet__footer">
+    <view class="action-button action-button--secondary" bindtap="handleCloseProfileSheet"><text>取消</text></view>
+    <view class="action-button action-button--primary" bindtap="handleSubmitProfileSheet"><text>保存并继续</text></view>
+  </view>
+</view>
+
+<view
+  wx:if="{{showClubSheet}}"
+  class="sheet-mask"
+  bindtap="handleCloseClubSheet"
+></view>
+<view
+  wx:if="{{showClubSheet}}"
+  class="venue-sheet"
+  catchtap="handleVenueSheetTap"
+>
+  <view class="venue-sheet__handle">
+    <view class="venue-sheet__handle-bar"></view>
+  </view>
+  <view class="venue-sheet__header">
+    <view class="venue-sheet__title"><text>俱乐部资料</text></view>
+    <view class="venue-sheet__subtitle"><text>创建或完善俱乐部信息后，即可用俱乐部身份发布。</text></view>
+  </view>
+  <scroll-view class="venue-sheet__body" scroll-y="true" show-scrollbar="{{false}}">
+    <view wx:if="{{clubOwnerLabels.length > 0}}" class="venue-sheet__section">
+      <view class="form-label"><text>已有俱乐部</text></view>
+      <picker range="{{clubOwnerLabels}}" value="{{selectedClubOwnerIndex}}" bindchange="handleClubOwnerChange">
+        <view class="picker-field"><text>{{clubOwnerLabels[selectedClubOwnerIndex] || '新建俱乐部'}}</text></view>
+      </picker>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>俱乐部封面</text></view>
+      <view class="cover-uploader" bindtap="handleUploadClubCover">
+        <image wx:if="{{clubSheetForm.coverUrl}}" class="cover-uploader__image" src="{{clubSheetForm.coverUrl}}" mode="aspectFill" />
+        <view wx:else class="cover-uploader__placeholder"><text>点击上传俱乐部封面</text></view>
+      </view>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>俱乐部 Logo</text></view>
+      <view class="cover-uploader cover-uploader--logo" bindtap="handleUploadClubLogo">
+        <image wx:if="{{clubSheetForm.logoUrl}}" class="cover-uploader__image" src="{{clubSheetForm.logoUrl}}" mode="aspectFill" />
+        <view wx:else class="cover-uploader__placeholder"><text>点击上传 Logo</text></view>
+      </view>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>俱乐部名称</text></view>
+      <input class="text-field" value="{{clubSheetForm.name}}" data-field="name" bindinput="handleClubInput" />
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-grid">
+        <view class="form-grid__item">
+          <view class="form-label"><text>联系人</text></view>
+          <input class="text-field" value="{{clubSheetForm.contactName}}" data-field="contactName" bindinput="handleClubInput" />
+        </view>
+        <view class="form-grid__item">
+          <view class="form-label"><text>联系电话</text></view>
+          <input class="text-field" type="number" value="{{clubSheetForm.contactPhone}}" data-field="contactPhone" bindinput="handleClubInput" />
+        </view>
+      </view>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-grid">
+        <view class="form-grid__item">
+          <view class="form-label"><text>省份</text></view>
+          <input class="text-field" value="{{clubSheetForm.province}}" data-field="province" bindinput="handleClubInput" />
+        </view>
+        <view class="form-grid__item">
+          <view class="form-label"><text>城市</text></view>
+          <input class="text-field" value="{{clubSheetForm.city}}" data-field="city" bindinput="handleClubInput" />
+        </view>
+      </view>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-grid">
+        <view class="form-grid__item">
+          <view class="form-label"><text>区域</text></view>
+          <input class="text-field" value="{{clubSheetForm.district}}" data-field="district" bindinput="handleClubInput" />
+        </view>
+        <view class="form-grid__item">
+          <view class="form-label"><text>微信号</text></view>
+          <input class="text-field" value="{{clubSheetForm.wechatId}}" data-field="wechatId" bindinput="handleClubInput" />
+        </view>
+      </view>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="section-header">
+        <view class="form-label"><text>俱乐部地点</text></view>
+        <view class="section-link" bindtap="handleChooseClubLocation"><text>地图选点</text></view>
+      </view>
+      <view class="location-card">
+        <view class="location-card__row">
+          <view class="location-card__label"><text>地点名</text></view>
+          <view class="location-card__value"><text>{{clubSheetForm.locationName || '未选择'}}</text></view>
+        </view>
+      </view>
+      <view class="form-section">
+        <view class="form-label"><text>详细地址</text></view>
+        <input class="text-field" value="{{clubSheetForm.address}}" data-field="address" bindinput="handleClubInput" />
+      </view>
+    </view>
+    <view class="venue-sheet__section">
+      <view class="form-label"><text>俱乐部简介</text></view>
+      <textarea class="textarea-field textarea-field--block" value="{{clubSheetForm.description}}" data-field="description" bindinput="handleClubInput"></textarea>
+    </view>
+  </scroll-view>
+  <view class="venue-sheet__footer">
+    <view class="action-button action-button--secondary" bindtap="handleCloseClubSheet"><text>取消</text></view>
+    <view class="action-button action-button--primary" bindtap="handleSubmitClubSheet"><text>保存并继续</text></view>
+  </view>
 </view>
 
 <view
@@ -477,15 +654,11 @@
             bindtap="handleChooseVenueLocation"
           ><text>地图选点</text></view>
         </view>
-        <view class="form-help"><text>回填地点名、详细地址、经纬度；省市区可继续手动修正。</text></view>
+        <view class="form-help"><text>回填地点名和详细地址后，省市区可继续手动修正。</text></view>
         <view class="location-card">
           <view class="location-card__row">
             <view class="location-card__label"><text>地点名</text></view>
             <view class="location-card__value"><text>{{venueManagerForm.locationName || '未选择'}}</text></view>
-          </view>
-          <view class="location-card__row">
-            <view class="location-card__label"><text>经纬度</text></view>
-            <view class="location-card__value"><text>{{venueManagerForm.latitude || '-'}} / {{venueManagerForm.longitude || '-'}}</text></view>
           </view>
         </view>
       </view>

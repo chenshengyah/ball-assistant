@@ -20,7 +20,7 @@ export type FormCourt = {
 
 export type CreateForm = {
   sourceActivityId: string;
-  organizerWechat: string;
+  coverUrl: string;
   signupMode: ActivitySignupMode;
   title: string;
   chargeAmountYuan: string;
@@ -183,7 +183,7 @@ export function getDefaultCreateForm(): CreateForm {
 
   return {
     sourceActivityId: "",
-    organizerWechat: "",
+    coverUrl: "",
     signupMode: "USER_SELECT_COURT",
     title: "",
     chargeAmountYuan: "68",
@@ -268,7 +268,7 @@ export function mapDraftToCreateState(
   return {
     createForm: {
       sourceActivityId: draft.sourceActivityId ?? "",
-      organizerWechat: draft.organizerWechat,
+      coverUrl: draft.coverUrl ?? "",
       signupMode: draft.signupMode,
       title: draft.title,
       chargeAmountYuan:
@@ -317,10 +317,6 @@ export function buildCreateActivityInput(params: {
 
   if (!createForm.title.trim()) {
     throw new Error("请填写活动名称");
-  }
-
-  if (!createForm.organizerWechat.trim()) {
-    throw new Error("请填写发起人微信号");
   }
 
   const signupMode = createForm.signupMode;
@@ -379,7 +375,7 @@ export function buildCreateActivityInput(params: {
     ownerType: ownerOption.ownerType,
     ownerId: ownerOption.ownerId,
     createdBy: currentUserId,
-    organizerWechat: createForm.organizerWechat.trim(),
+    coverUrl: createForm.coverUrl.trim(),
     title: createForm.title,
     chargeMode,
     chargeAmountCents: chargeMode === "FREE" ? 0 : chargeAmount * 100,

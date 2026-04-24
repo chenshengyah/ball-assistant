@@ -30,10 +30,16 @@ export type UserProfile = {
   avatarUrl?: string;
   avatarColor: string;
   baseProfileComplete?: boolean;
+  phoneNumber?: string;
+  phoneCountryCode?: string;
+  phoneVerifiedAt?: string;
+  contactProfileComplete?: boolean;
 };
 
 export type Venue = {
   id: string;
+  ownerType: OwnerType;
+  ownerId: string;
   name: string;
   shortName: string;
   province: string;
@@ -51,6 +57,7 @@ export type VenueCourt = {
   venueId: string;
   courtCode: string;
   courtName: string;
+  defaultCapacity?: number | null;
   sortOrder: number;
   status: VenueStatus;
 };
@@ -58,9 +65,20 @@ export type VenueCourt = {
 export type Club = {
   id: string;
   name: string;
+  category?: "BADMINTON";
+  coverUrl?: string;
   logoUrl?: string;
+  description?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  wechatId?: string;
   contactName?: string;
   contactPhone?: string;
+  creatorUserId?: string;
   status: "ACTIVE" | "INACTIVE";
 };
 
@@ -71,7 +89,8 @@ export type OwnerDisplay = {
   avatarColor?: string;
   logoUrl?: string;
   contactName?: string;
-  contactWechat?: string;
+  contactPhone?: string;
+  contactPhoneMasked?: string;
 };
 
 export type ClubMember = {
@@ -86,6 +105,7 @@ export type Activity = {
   ownerType: OwnerType;
   ownerId: string;
   createdBy: string;
+  coverUrl?: string;
   ownerDisplay: OwnerDisplay;
   title: string;
   chargeMode: ChargeMode;
@@ -146,14 +166,16 @@ export type OwnerOption = {
 };
 
 export type VenueCreateInput = {
+  ownerType: OwnerType;
+  ownerId: string;
   name: string;
   shortName: string;
   province: string;
   city: string;
   district: string;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   navigationName: string;
   courtCodes: string[];
 };
@@ -166,8 +188,8 @@ export type VenueUpdateInput = {
   city: string;
   district: string;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   navigationName: string;
 };
 
@@ -193,7 +215,7 @@ export type CreateActivityInput = {
   ownerType: OwnerType;
   ownerId: string;
   createdBy: string;
-  organizerWechat: string;
+  coverUrl?: string;
   title: string;
   chargeMode: ChargeMode;
   chargeAmountCents: number;
@@ -237,6 +259,7 @@ export type ActivityView = {
   ownerLabel: string;
   ownerType: OwnerType;
   ownerDisplay: OwnerDisplay;
+  coverUrl?: string;
   signupMode: ActivitySignupMode;
   venueLabel: string;
   chargeText: string;
@@ -275,7 +298,7 @@ export type ActivityDraft = {
   sourceActivityId?: string;
   ownerType: OwnerType;
   ownerId: string;
-  organizerWechat: string;
+  coverUrl?: string;
   signupMode: ActivitySignupMode;
   title: string;
   chargeMode: ChargeMode;

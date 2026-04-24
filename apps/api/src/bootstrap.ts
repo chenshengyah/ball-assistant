@@ -1,12 +1,17 @@
+import multipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import { RequestMethod, ValidationPipe } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import {
   FastifyAdapter,
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
+import { mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { AppModule } from "./app.module";
 
 export async function createApp(): Promise<NestFastifyApplication> {
@@ -20,6 +25,12 @@ export async function createApp(): Promise<NestFastifyApplication> {
     origin: true,
     credentials: true
   });
+  await app.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024,
+      files: 1
+    }
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,6 +41,16 @@ export async function createApp(): Promise<NestFastifyApplication> {
 
   app.setGlobalPrefix("api", {
     exclude: [{ path: "health", method: RequestMethod.GET }]
+  });
+
+  const configService = app.get(ConfigService);
+  const uploadsRoot = resolve(configService.get<string>("UPLOADS_DIR", "./uploads"));
+
+  mkdirSync(uploadsRoot, { recursive: true });
+
+  await app.register(fastifyStatic, {
+    root: uploadsRoot,
+    prefix: "/api/uploads/"
   });
 
   const swaggerConfig = new DocumentBuilder()

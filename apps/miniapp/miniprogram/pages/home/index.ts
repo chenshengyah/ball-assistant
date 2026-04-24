@@ -1,4 +1,5 @@
 import { listActivities } from "../../services/activity-service";
+import { requireCompleteProfile } from "../../services/auth";
 import type { ActivityView } from "../../types/activity";
 import { getChromeMetrics } from "../../utils/chrome";
 
@@ -167,7 +168,21 @@ Page({
 
   handleCreateActivity(): void {
     wx.navigateTo({
-      url: "/pages/activity-create/index?debugSkipAuth=1",
+      url: "/pages/activity-create/index",
+    });
+  },
+
+  async handleOpenMyActivities(): Promise<void> {
+    const canContinue = await requireCompleteProfile({
+      type: "OPEN_MY_ACTIVITIES",
+    });
+
+    if (!canContinue) {
+      return;
+    }
+
+    wx.navigateTo({
+      url: "/pages/my-activities/index",
     });
   },
 

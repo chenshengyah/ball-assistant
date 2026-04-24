@@ -1,0 +1,107 @@
+<app-nav title="{{title}}" fallbackUrl="{{navFallbackUrl}}"></app-nav>
+
+<view class="venue-page" style="{{pageTopStyle}}">
+  <view class="venue-page__hero">
+    <view class="venue-page__eyebrow"><text>{{source === 'activity-create' ? '来自创建活动' : '场馆中心'}}</text></view>
+    <view class="venue-page__title"><text>{{title}}</text></view>
+    <view class="venue-page__subtitle"><text>{{emptyStateHint}}</text></view>
+  </view>
+
+  <view class="venue-strip">
+    <view class="venue-strip__selector">
+      <view class="venue-strip__label"><text>当前场馆</text></view>
+      <picker wx:if="{{venueLabels.length > 0}}" range="{{venueLabels}}" value="{{selectedVenueIndex >= 0 ? selectedVenueIndex : 0}}" bindchange="handleVenueChange">
+        <view class="venue-strip__value"><text>{{selectedVenueIndex >= 0 ? venueLabels[selectedVenueIndex] : '新建场馆中'}}</text></view>
+      </picker>
+      <view wx:else class="venue-strip__value"><text>还没有场馆，先创建一个</text></view>
+    </view>
+    <view class="venue-strip__create" bindtap="handleCreateVenue"><text>新建场馆</text></view>
+  </view>
+
+  <view class="venue-card">
+    <view class="venue-grid">
+      <view class="venue-field">
+        <view class="venue-field__label"><text>场馆名称</text></view>
+        <input class="venue-input" value="{{venueForm.name}}" placeholder="例如：浦东金桥羽毛球馆" data-field="name" bindinput="handleInput" />
+      </view>
+      <view class="venue-field">
+        <view class="venue-field__label"><text>简称</text></view>
+        <input class="venue-input" value="{{venueForm.shortName}}" placeholder="例如：金桥馆" data-field="shortName" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="venue-grid">
+      <view class="venue-field">
+        <view class="venue-field__label"><text>省份</text></view>
+        <input class="venue-input" value="{{venueForm.province}}" placeholder="可选手填" data-field="province" bindinput="handleInput" />
+      </view>
+      <view class="venue-field">
+        <view class="venue-field__label"><text>城市</text></view>
+        <input class="venue-input" value="{{venueForm.city}}" placeholder="可选手填" data-field="city" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="venue-grid">
+      <view class="venue-field">
+        <view class="venue-field__label"><text>区域</text></view>
+        <input class="venue-input" value="{{venueForm.district}}" placeholder="例如：浦东新区" data-field="district" bindinput="handleInput" />
+      </view>
+      <view class="venue-field">
+        <view class="venue-field__label"><text>导航名</text></view>
+        <input class="venue-input" value="{{venueForm.navigationName}}" placeholder="默认同场馆名称" data-field="navigationName" bindinput="handleInput" />
+      </view>
+    </view>
+
+    <view class="venue-field">
+      <view class="venue-field__header">
+        <view class="venue-field__label"><text>地图定位</text></view>
+        <view class="venue-link" bindtap="handleChooseLocation"><text>地图选点</text></view>
+      </view>
+      <view class="venue-location-card">
+        <view class="venue-location-card__value"><text>{{venueForm.locationName || '还没有选择地图位置'}}</text></view>
+      </view>
+      <input class="venue-input" value="{{venueForm.address}}" placeholder="详细地址" data-field="address" bindinput="handleInput" />
+    </view>
+
+    <view class="venue-section-header">
+      <view class="venue-section-header__title"><text>场地列表</text></view>
+      <view class="venue-link" bindtap="handleAddCourt"><text>新增场地</text></view>
+    </view>
+
+    <view class="venue-court-list">
+      <view wx:for="{{courts}}" wx:key="rowKey" class="venue-court-card {{item.status === 'INACTIVE' ? 'venue-court-card--inactive' : ''}}">
+        <view class="venue-court-card__header">
+          <view class="venue-court-card__title"><text>{{item.courtName || item.courtCode || '新场地'}}</text></view>
+          <view class="venue-court-card__tag"><text>{{item.status === 'ACTIVE' ? '启用中' : '已停用'}}</text></view>
+        </view>
+        <view class="venue-grid">
+          <view class="venue-field">
+            <view class="venue-field__label"><text>场地号</text></view>
+            <input class="venue-input" value="{{item.courtCode}}" placeholder="例如：1 / A" data-court-index="{{index}}" data-field="courtCode" bindinput="handleCourtInput" disabled="{{item.status !== 'ACTIVE'}}" />
+          </view>
+          <view class="venue-field">
+            <view class="venue-field__label"><text>场地名称</text></view>
+            <input class="venue-input" value="{{item.courtName}}" placeholder="例如：1 号场" data-court-index="{{index}}" data-field="courtName" bindinput="handleCourtInput" disabled="{{item.status !== 'ACTIVE'}}" />
+          </view>
+        </view>
+        <view class="venue-grid">
+          <view class="venue-field">
+            <view class="venue-field__label"><text>默认人数</text></view>
+            <input class="venue-input" type="number" value="{{item.defaultCapacity}}" placeholder="例如：8" data-court-index="{{index}}" data-field="defaultCapacity" bindinput="handleCourtInput" disabled="{{item.status !== 'ACTIVE'}}" />
+          </view>
+          <view class="venue-field venue-field--action">
+            <view class="venue-court-card__action {{item.status !== 'ACTIVE' && !item.isNew ? 'venue-court-card__action--muted' : ''}}" data-court-index="{{index}}" bindtap="handleToggleCourtStatus">
+              <text>{{item.isNew ? '移除场地' : item.status === 'ACTIVE' ? '停用场地' : '已停用'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="venue-footer">
+    <view class="venue-submit" hover-class="venue-submit--hover" hover-stay-time="80" bindtap="handleSubmit">
+      <text>保存场馆配置</text>
+    </view>
+  </view>
+</view>
