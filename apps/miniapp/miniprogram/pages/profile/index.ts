@@ -83,7 +83,7 @@ Page({
         ? "资料已完善，可使用报名、创建和我的活动。"
         : isAuthenticated
           ? "已登录，但还需要补齐头像昵称和性别。"
-          : "首页、活动列表和活动详情都可以先看。",
+          : "首页和活动详情都可以先看。",
       statusLabel: isProfileComplete
         ? "已完善资料"
         : isAuthenticated

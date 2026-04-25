@@ -44,7 +44,7 @@ PUT `/api/users/me/profile`
 
 - `nickname` 必填
 - `gender` 必填，枚举为 `MALE / FEMALE`
-- 创建活动链路中的个人补齐半屏与“我的”里的独立资料页共用这套资料能力
+- 创建活动链路中的个人资料补齐与“我的”里的独立资料页共用这套资料能力
 
 ### 验证并保存当前用户手机号
 
@@ -452,7 +452,7 @@ GET `/api/activities/:activityId`
 
 - 活动列表：
   - `GET /api/activities`
-  - 用于首页和活动列表公共浏览
+  - 用于首页公共浏览
   - 需支持游客态公开浏览和已登录用户态摘要
 - 我的活动：
   - `GET /api/my/activities?view=published|joined`

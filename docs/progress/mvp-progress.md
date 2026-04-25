@@ -79,7 +79,7 @@
 - 当前状态：`[~] 进行中`
 - 依据：`miniprogram/pages/home/index.ts`、`miniprogram/pages/activity-detail/index.ts`、`miniprogram/pages/activity-create/index.ts`、`miniprogram/pages/user-registration/index.ts`、`miniprogram/pages/my-activities/index.ts`、`miniprogram/pages/profile/index.ts`、`miniprogram/pages/club-register/index.ts`、`miniprogram/pages/club-management/index.ts` 与 `miniprogram/pages/venue-court-management/index.ts` 已具备基础页面能力；首页已承接原活动页浏览结构，俱乐部注册/管理与场馆管理均已落地为真实页面。
 - 完成标准：MVP 关键页面都有可演示的原型或交互说明，能支撑评审和开发排期。
-- 下一步：优先补齐俱乐部注册/完善、俱乐部管理详情编辑、场馆与场地管理的页面或半屏真实实现，并把报名、取消报名和主办方管理动作从 mock 逐步切到真实接口。
+- 下一步：俱乐部注册/完善、俱乐部管理详情编辑、场馆与场地管理页面已落地；继续把报名、取消报名和主办方管理动作从 mock 逐步切到真实接口。
 
 ### 9. 开发范围冻结与首批开发清单
 
@@ -87,14 +87,14 @@
 - 当前状态：`[~] 进行中`
 - 依据：`docs/progress/planning-order.md` 已定义阶段顺序，本轮已完成页面文档与信息架构收口，并在 `docs/global/api-contract.md` 标记 P0 待补接口；但尚未形成一份可直接执行的 P0 任务板。
 - 完成标准：形成第一批开发清单，至少明确先做哪些页面、依赖哪些文档、哪些项必须先补齐再进入开发。
-- 下一步：基于当前 PRD、原型现状和 P0 接口缺口，整理 P0 开发顺序，优先考虑活动列表真实接口、报名/取消报名、我的活动、俱乐部注册/完善和场馆管理承接；俱乐部管理详情编辑按 P0.5 跟进，俱乐部成员管理、审核后台和主页装修归入 P1。
+- 下一步：基于当前 PRD、原型现状和 P0 接口缺口，整理 P0 开发顺序，优先考虑首页活动浏览真实接口、报名/取消报名、我的活动和主办方管理动作；俱乐部成员管理、审核后台和主页装修归入 P1。
 
 ## 最近更新记录
 
 - 2026-04-24：新增 `docs/pages/club-management/README.md`，补齐“我的 -> 俱乐部入口 -> 注册 / 管理 -> 编辑资料 / 管理场馆”的维护闭环。
 - 2026-04-24：小程序导航调整为仅保留 `home / profile` 两个 tab，`activity` 页退出实际路由，活动浏览并入首页。
 - 2026-04-24：落地 `club-register / club-management / venue-court-management` 真实小程序页面，并接入俱乐部与场馆接口。
-- 2026-04-24：新增 `home / activity / profile` 轻量页面 PRD，使文档导航覆盖当前小程序核心路由。
+- 2026-04-24：新增 `home / activity / profile` 轻量页面 PRD；随后实际导航收敛为 `home / profile`，`activity` 保留为历史结构参考。
 - 2026-04-24：将 `docs/global/user-flow.md` 的主流程改为编号步骤，并补充游客浏览、报名、取消报名、主办方管理动作和我的活动回收流程。
 - 2026-04-24：将 `docs/global/api-contract.md` 的未落地接口拆分为“已实现 / P0 待补 / P1 暂缓”，明确活动列表、报名、我的活动和管理动作的接口优先级。
 - 2026-04-24：补充 `docs/remote-upload.md` 的完整测试发布流程，串起 API 环境、小程序环境生成、开发版上传、共享体验包、验收和回滚。
