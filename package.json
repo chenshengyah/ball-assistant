@@ -29,5 +29,17 @@
     "turbo": "^2.5.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "less": "4.1.3"
+    },
+    "packageExtensions": {
+      "miniprogram-ci@*": {
+        "dependencies": {
+          "less": "4.1.3"
+        }
+      }
+    }
   }
 }

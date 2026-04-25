@@ -159,13 +159,6 @@ Page({
     this.updateVisibleActivities(this.data.selectedCategory, keyword);
   },
 
-  handleFilterTap(): void {
-    wx.showToast({
-      title: "筛选功能建设中",
-      icon: "none",
-    });
-  },
-
   handleCreateActivity(): void {
     wx.navigateTo({
       url: "/pages/activity-create/index",
