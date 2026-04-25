@@ -76,6 +76,9 @@ importers:
       class-validator:
         specifier: ^0.14.1
         version: 0.14.4
+      cos-nodejs-sdk-v5:
+        specifier: ^2.15.4
+        version: 2.15.4
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2

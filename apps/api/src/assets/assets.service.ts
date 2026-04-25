@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import COS from "cos-nodejs-sdk-v5";
 import { createWriteStream } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
+import type { Stream } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { extname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -20,7 +22,18 @@ const ALLOWED_MIME_TYPES = new Map([
 
 @Injectable()
 export class AssetsService {
-  constructor(private readonly configService: ConfigService) {}
+  private readonly cosClient: COS | undefined;
+
+  constructor(private readonly configService: ConfigService) {
+    const cosConfig = this.readCosConfig();
+
+    if (cosConfig) {
+      this.cosClient = new COS({
+        SecretId: cosConfig.secretId,
+        SecretKey: cosConfig.secretKey
+      });
+    }
+  }
 
   async uploadImage(request: {
     file: () => Promise<{
@@ -49,8 +62,30 @@ export class AssetsService {
     }
 
     const uploadsRoot = resolve(this.configService.get<string>("UPLOADS_DIR", "./uploads"));
-    const sceneDirectory = resolve(uploadsRoot, scene);
     const fileName = `${Date.now()}-${randomUUID()}${extension}`;
+    const assetKey = `${scene}/${fileName}`;
+    const cosConfig = this.readCosConfig();
+
+    if (this.cosClient && cosConfig) {
+      const cosKey = [cosConfig.uploadPrefix, assetKey].filter(Boolean).join("/");
+
+      await this.cosClient.putObject({
+        Bucket: cosConfig.bucket,
+        Region: cosConfig.region,
+        Key: cosKey,
+        Body: upload.file as unknown as Stream,
+        ContentType: mimeType,
+        ACL: "public-read"
+      });
+
+      return {
+        assetKey: cosKey,
+        assetUrl: `${cosConfig.publicBaseUrl}/${cosKey}`,
+        mimeType
+      };
+    }
+
+    const sceneDirectory = resolve(uploadsRoot, scene);
     const filePath = resolve(sceneDirectory, fileName);
 
     await mkdir(sceneDirectory, { recursive: true });
@@ -58,7 +93,7 @@ export class AssetsService {
     await stat(filePath);
 
     return {
-      assetKey: `${scene}/${fileName}`,
+      assetKey,
       assetUrl: `/api/uploads/${scene}/${fileName}`,
       mimeType
     };
@@ -73,5 +108,43 @@ export class AssetsService {
     }
 
     return scene;
+  }
+
+  private readCosConfig():
+    | {
+        secretId: string;
+        secretKey: string;
+        bucket: string;
+        region: string;
+        publicBaseUrl: string;
+        uploadPrefix: string;
+      }
+    | undefined {
+    const secretId = this.readOptionalEnv("COS_SECRET_ID");
+    const secretKey = this.readOptionalEnv("COS_SECRET_KEY");
+    const bucket = this.readOptionalEnv("COS_BUCKET");
+    const region = this.readOptionalEnv("COS_REGION");
+    const publicBaseUrl = this.readOptionalEnv("COS_PUBLIC_BASE_URL")?.replace(/\/+$/, "");
+    const uploadPrefix = this.readOptionalEnv("COS_UPLOAD_PREFIX")?.replace(/^\/+|\/+$/g, "") ?? "";
+
+    if (!secretId || !secretKey || !bucket || !region || !publicBaseUrl) {
+      return undefined;
+    }
+
+    return {
+      secretId,
+      secretKey,
+      bucket,
+      region,
+      publicBaseUrl,
+      uploadPrefix
+    };
+  }
+
+  private readOptionalEnv(name: string): string | undefined {
+    const value = this.configService.get<string>(name);
+    const trimmed = typeof value === "string" ? value.trim() : "";
+
+    return trimmed || undefined;
   }
 }
