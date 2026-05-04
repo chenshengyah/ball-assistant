@@ -8,11 +8,10 @@ import type {
   ActivitySignupMode,
   CreateActivityInput,
   OwnerOption,
-  VenueWithCourts,
 } from "../types/activity";
 
 export type FormCourt = {
-  venueCourtId: string;
+  id: string;
   label: string;
   enabled: boolean;
   capacity: string;
@@ -25,6 +24,13 @@ export type CreateForm = {
   title: string;
   chargeAmountYuan: string;
   chargeDesc: string;
+  venueName: string;
+  venueAddress: string;
+  venueProvince: string;
+  venueCity: string;
+  venueDistrict: string;
+  venueLatitude: string;
+  venueLongitude: string;
   activityDate: string;
   startTime: string;
   endTime: string;
@@ -173,6 +179,23 @@ function formatTime(date: Date): string {
   return `${hour}:${minute}`;
 }
 
+function createFormCourtId(): string {
+  return `form-court-${Date.now()}-${Math.round(Math.random() * 100000)}`;
+}
+
+export function createFormCourt(label = "", capacity = "4"): FormCourt {
+  return {
+    id: createFormCourtId(),
+    label,
+    enabled: true,
+    capacity,
+  };
+}
+
+export function getDefaultFormCourts(): FormCourt[] {
+  return [createFormCourt("1 号场"), createFormCourt("2 号场")];
+}
+
 export function getDefaultCreateForm(): CreateForm {
   const activityDate = new Date();
   activityDate.setDate(activityDate.getDate() + 3);
@@ -188,6 +211,13 @@ export function getDefaultCreateForm(): CreateForm {
     title: "",
     chargeAmountYuan: "68",
     chargeDesc: "",
+    venueName: "",
+    venueAddress: "",
+    venueProvince: "",
+    venueCity: "",
+    venueDistrict: "",
+    venueLatitude: "",
+    venueLongitude: "",
     activityDate: formatDate(activityDate),
     startTime: formatTime(activityDate),
     endTime: formatTime(endDate),
@@ -197,36 +227,15 @@ export function getDefaultCreateForm(): CreateForm {
   };
 }
 
-export function getDefaultAvailableCourts(
-  venues: VenueWithCourts[],
-  selectedVenueIndex: number
-): FormCourt[] {
-  const venue = venues[selectedVenueIndex];
-
-  if (!venue) {
-    return [];
-  }
-
-  return venue.courts.map((court, index) => ({
-    venueCourtId: court.id,
-    label: court.courtName,
-    enabled: index < Math.min(2, venue.courts.length),
-    capacity: "4",
-  }));
-}
-
 export function mapDraftToCreateState(
   draft: ActivityDraft,
-  ownerOptions: OwnerOption[],
-  venues: VenueWithCourts[]
+  ownerOptions: OwnerOption[]
 ): {
   createForm: CreateForm;
   selectedOwnerIndex: number;
   selectedSignupModeIndex: number;
   selectedChargeModeIndex: number;
-  selectedVenueIndex: number;
   availableCourts: FormCourt[];
-  missingCourtLabels: string[];
 } {
   const selectedOwnerIndex = Math.max(
     ownerOptions.findIndex(
@@ -242,28 +251,12 @@ export function mapDraftToCreateState(
     CHARGE_MODE_OPTIONS.findIndex((item) => item.value === draft.chargeMode),
     0
   );
-  const selectedVenueIndex = Math.max(
-    venues.findIndex((venueItem) => venueItem.venue.id === draft.venueId),
-    0
-  );
-  const venue = venues[selectedVenueIndex];
   const availableCourts =
-    venue?.courts.map((court) => {
-      const existingCourt = draft.courts.find((item) => item.venueCourtId === court.id);
-
-      return {
-        venueCourtId: court.id,
-        label: court.courtName,
-        enabled: Boolean(existingCourt),
-        capacity: `${existingCourt?.capacity ?? 4}`,
-      };
-    }) ?? [];
-  const missingCourtLabels =
     draft.signupMode === "USER_SELECT_COURT"
-      ? draft.courts
-          .filter((item) => !venue?.courts.some((court) => court.id === item.venueCourtId))
-          .map((item) => item.label ?? "已停用场地")
-      : [];
+      ? draft.courts.map((court) =>
+          createFormCourt(court.label ?? court.courtName, `${court.capacity}`)
+        )
+      : getDefaultFormCourts();
 
   return {
     createForm: {
@@ -274,6 +267,13 @@ export function mapDraftToCreateState(
       chargeAmountYuan:
         draft.chargeMode === "FREE" ? "0" : `${Math.round(draft.chargeAmountCents / 100)}`,
       chargeDesc: draft.chargeDesc,
+      venueName: draft.venueName,
+      venueAddress: draft.venueAddress,
+      venueProvince: draft.venueProvince,
+      venueCity: draft.venueCity,
+      venueDistrict: draft.venueDistrict,
+      venueLatitude: draft.venueLatitude === undefined ? "" : `${draft.venueLatitude}`,
+      venueLongitude: draft.venueLongitude === undefined ? "" : `${draft.venueLongitude}`,
       activityDate: draft.activityDate,
       startTime: draft.startTime,
       endTime: draft.endTime,
@@ -284,9 +284,7 @@ export function mapDraftToCreateState(
     selectedOwnerIndex,
     selectedSignupModeIndex,
     selectedChargeModeIndex,
-    selectedVenueIndex,
     availableCourts,
-    missingCourtLabels,
   };
 }
 
@@ -294,7 +292,6 @@ export function buildCreateActivityInput(params: {
   createForm: CreateForm;
   availableCourts: FormCourt[];
   ownerOption: OwnerOption | undefined;
-  selectedVenue: VenueWithCourts | undefined;
   selectedChargeModeIndex: number;
   currentUserId: string;
 }): CreateActivityInput {
@@ -302,7 +299,6 @@ export function buildCreateActivityInput(params: {
     createForm,
     availableCourts,
     ownerOption,
-    selectedVenue,
     selectedChargeModeIndex,
     currentUserId,
   } = params;
@@ -311,8 +307,8 @@ export function buildCreateActivityInput(params: {
     throw new Error("请选择发布身份");
   }
 
-  if (!selectedVenue) {
-    throw new Error("请选择场馆");
+  if (!createForm.venueName.trim()) {
+    throw new Error("请填写球馆名称");
   }
 
   if (!createForm.title.trim()) {
@@ -323,24 +319,29 @@ export function buildCreateActivityInput(params: {
   const courts =
     signupMode === "USER_SELECT_COURT"
       ? availableCourts
-          .filter((court) => court.enabled)
-          .map((court, index) => {
-            const capacity = Number(court.capacity || "0");
+        .filter((court) => court.enabled)
+        .map((court, index) => {
+          const capacity = Number(court.capacity || "0");
+          const courtName = court.label.trim();
 
-            if (!Number.isFinite(capacity) || capacity < 1) {
-              throw new Error(`${court.label} 的人数上限至少为 1`);
-            }
+          if (!Number.isFinite(capacity) || capacity < 1) {
+            throw new Error(`${courtName || "场地"} 的人数上限至少为 1`);
+          }
 
-            return {
-              venueCourtId: court.venueCourtId,
-              capacity,
-              sortOrder: index + 1,
-            };
+          if (!courtName) {
+            throw new Error("请填写场地名称");
+          }
+
+          return {
+            courtName,
+            capacity,
+            sortOrder: index + 1,
+          };
           })
       : [];
 
   if (signupMode === "USER_SELECT_COURT" && courts.length === 0) {
-    throw new Error("请至少启用一片场地");
+    throw new Error("请至少选择一片报名场地");
   }
 
   const totalCapacity =
@@ -363,12 +364,23 @@ export function buildCreateActivityInput(params: {
   const cancelCutoffMinutesBeforeStart = Number(
     createForm.cancelCutoffMinutesBeforeStart || `${CANCEL_CUTOFF_OPTIONS[1]?.value ?? 60}`
   );
+  const venueLatitude =
+    createForm.venueLatitude.trim().length > 0 ? Number(createForm.venueLatitude) : undefined;
+  const venueLongitude =
+    createForm.venueLongitude.trim().length > 0 ? Number(createForm.venueLongitude) : undefined;
 
   if (
     !Number.isFinite(cancelCutoffMinutesBeforeStart) ||
     cancelCutoffMinutesBeforeStart < 0
   ) {
     throw new Error("取消截止规则格式不正确");
+  }
+
+  if (
+    (venueLatitude !== undefined && !Number.isFinite(venueLatitude)) ||
+    (venueLongitude !== undefined && !Number.isFinite(venueLongitude))
+  ) {
+    throw new Error("球馆定位格式不正确");
   }
 
   return {
@@ -380,7 +392,13 @@ export function buildCreateActivityInput(params: {
     chargeMode,
     chargeAmountCents: chargeMode === "FREE" ? 0 : chargeAmount * 100,
     chargeDesc: createForm.chargeDesc,
-    venueId: selectedVenue.venue.id,
+    venueName: createForm.venueName.trim(),
+    venueAddress: createForm.venueAddress.trim(),
+    venueProvince: createForm.venueProvince.trim(),
+    venueCity: createForm.venueCity.trim(),
+    venueDistrict: createForm.venueDistrict.trim(),
+    venueLatitude,
+    venueLongitude,
     signupMode,
     activityDate: createForm.activityDate,
     startTime: createForm.startTime,

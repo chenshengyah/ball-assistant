@@ -1,10 +1,10 @@
-import { uploadImageAsset } from "../../services/asset-service";
+import { pickCompressAndUploadImageAsset } from "../../services/asset-service";
 import {
   createOrUpdateClub,
   fetchOwnedClubs,
   listOwnedClubs,
 } from "../../services/club-service";
-import { ensureAuthenticated } from "../../services/auth";
+import { ensureAuthenticated, getCurrentUserId } from "../../services/auth";
 import { getPageTopStyle } from "../../utils/chrome";
 import { resolveOwningTab } from "../../utils/navigation";
 
@@ -40,12 +40,6 @@ type InputEvent = WechatMiniprogram.BaseEvent<{ value?: string }>;
 type DatasetEvent = WechatMiniprogram.BaseEvent<{ field?: string }>;
 type PickerChangeEvent = WechatMiniprogram.BaseEvent<{ value?: string }>;
 
-type ChooseMediaSuccessResult = {
-  tempFiles?: Array<{
-    tempFilePath?: string;
-  }>;
-};
-
 type ChooseLocationSuccessResult = {
   name: string;
   address: string;
@@ -58,22 +52,17 @@ type MiniProgramLocationError = {
 };
 
 type CompatibleWx = WechatMiniprogram.Wx & {
-  chooseMedia(options: {
-    count: number;
-    mediaType: string[];
-    sizeType: string[];
-    sourceType: string[];
-    success(result: ChooseMediaSuccessResult): void;
-    fail(error: MiniProgramLocationError): void;
-  }): void;
   chooseLocation(options: {
     success(result: ChooseLocationSuccessResult): void;
     fail(error: MiniProgramLocationError): void;
   }): void;
 };
 
-const CURRENT_USER_ID = "user-current";
 const compatibleWx = wx as CompatibleWx;
+
+function getResolvedCurrentUserId(): string {
+  return getCurrentUserId() || "";
+}
 
 function getEmptyForm(): ClubForm {
   return {
@@ -96,7 +85,7 @@ function getEmptyForm(): ClubForm {
 }
 
 function buildForm(clubId: string): ClubForm {
-  const club = listOwnedClubs(CURRENT_USER_ID).find((item) => item.id === clubId);
+  const club = listOwnedClubs(getResolvedCurrentUserId()).find((item) => item.id === clubId);
 
   if (!club) {
     return getEmptyForm();
@@ -124,7 +113,7 @@ function buildForm(clubId: string): ClubForm {
 Page({
   data: {
     clubLabels: [],
-    currentClubHint: "管理俱乐部资料、联系人信息和场馆场地。",
+    currentClubHint: "管理俱乐部资料和联系人信息。",
     form: getEmptyForm(),
     navFallbackUrl: "/pages/profile/index",
     pageTopStyle: "",
@@ -172,12 +161,12 @@ Page({
 
   async refreshOwnedClubs(source: string, preferredClubId = ""): Promise<void> {
     try {
-      await fetchOwnedClubs(CURRENT_USER_ID);
-    } catch {
-      // Fall back to the in-memory snapshot to keep the page usable.
+      await fetchOwnedClubs(getResolvedCurrentUserId());
+    } catch (error) {
+      this.showError(error);
     }
 
-    const clubs = listOwnedClubs(CURRENT_USER_ID);
+    const clubs = listOwnedClubs(getResolvedCurrentUserId());
 
     if (clubs.length === 0) {
       wx.redirectTo({
@@ -206,7 +195,7 @@ Page({
 
   handleClubChange(event: PickerChangeEvent): void {
     const selectedClubIndex = Number(event.detail.value ?? 0);
-    const clubs = listOwnedClubs(CURRENT_USER_ID);
+    const clubs = listOwnedClubs(getResolvedCurrentUserId());
     const selectedClub = clubs[selectedClubIndex];
 
     if (!selectedClub) {
@@ -235,41 +224,15 @@ Page({
     } as never);
   },
 
-  async pickSingleImage(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      compatibleWx.chooseMedia({
-        count: 1,
-        mediaType: ["image"],
-        sizeType: ["compressed"],
-        sourceType: ["album", "camera"],
-        success: (result: ChooseMediaSuccessResult) => {
-          resolve(result.tempFiles?.[0]?.tempFilePath ?? "");
-        },
-        fail: (error: MiniProgramLocationError) => {
-          if ((error.errMsg ?? "").includes("cancel")) {
-            resolve("");
-            return;
-          }
-
-          reject(error);
-        },
-      });
-    });
-  },
-
   async handleUploadCover(): Promise<void> {
     try {
-      const filePath = await this.pickSingleImage();
+      const uploaded = await pickCompressAndUploadImageAsset("club-cover");
 
-      if (!filePath) {
-        return;
+      if (uploaded) {
+        this.setData({
+          "form.coverUrl": uploaded.assetUrl,
+        } as never);
       }
-
-      const uploaded = await uploadImageAsset(filePath, "club-cover");
-
-      this.setData({
-        "form.coverUrl": uploaded.assetUrl,
-      } as never);
     } catch (error) {
       this.showError(error);
     }
@@ -277,17 +240,13 @@ Page({
 
   async handleUploadLogo(): Promise<void> {
     try {
-      const filePath = await this.pickSingleImage();
+      const uploaded = await pickCompressAndUploadImageAsset("club-logo");
 
-      if (!filePath) {
-        return;
+      if (uploaded) {
+        this.setData({
+          "form.logoUrl": uploaded.assetUrl,
+        } as never);
       }
-
-      const uploaded = await uploadImageAsset(filePath, "club-logo");
-
-      this.setData({
-        "form.logoUrl": uploaded.assetUrl,
-      } as never);
     } catch (error) {
       this.showError(error);
     }
@@ -315,7 +274,7 @@ Page({
     try {
       const nextClub = await createOrUpdateClub({
         clubId: this.data.form.clubId,
-        currentUserId: CURRENT_USER_ID,
+        currentUserId: getResolvedCurrentUserId(),
         name: this.data.form.name,
         coverUrl: this.data.form.coverUrl,
         logoUrl: this.data.form.logoUrl,
@@ -340,18 +299,6 @@ Page({
     } catch (error) {
       this.showError(error);
     }
-  },
-
-  handleOpenVenueManagement(): void {
-    if (!this.data.form.clubId) {
-      return;
-    }
-
-    wx.navigateTo({
-      url: `/pages/venue-court-management/index?source=club-management&ownerType=CLUB&ownerId=${encodeURIComponent(
-        this.data.form.clubId
-      )}`,
-    });
   },
 
   handleOpenCreateActivity(): void {

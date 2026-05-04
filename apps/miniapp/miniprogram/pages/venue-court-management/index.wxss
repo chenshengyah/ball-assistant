@@ -47,9 +47,7 @@ page {
 
 .venue-strip {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20rpx;
+  flex-direction: column;
 }
 
 .venue-strip__selector {
@@ -64,9 +62,10 @@ page {
 }
 
 .venue-strip__value {
+  position: relative;
   margin-top: 12rpx;
   min-height: 84rpx;
-  padding: 0 24rpx;
+  padding: 0 56rpx 0 24rpx;
   border-radius: 22rpx;
   background: var(--iz-surface-low);
   color: var(--iz-text-primary);
@@ -74,12 +73,46 @@ page {
   line-height: 84rpx;
 }
 
-.venue-strip__create,
+picker .venue-strip__value::after {
+  content: "";
+  position: absolute;
+  right: 26rpx;
+  top: 50%;
+  width: 14rpx;
+  height: 14rpx;
+  border-right: 3rpx solid var(--iz-text-tertiary);
+  border-bottom: 3rpx solid var(--iz-text-tertiary);
+  transform: translateY(-62%) rotate(45deg);
+}
+
 .venue-link,
 .venue-court-card__action {
   color: var(--iz-color-primary);
   font-size: 24rpx;
   font-weight: 700;
+}
+
+.venue-action-row,
+.venue-add-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx;
+  border-radius: 24rpx;
+  border: 1rpx dashed var(--iz-outline-strong);
+  background: var(--iz-surface-lowest);
+  color: var(--iz-color-primary);
+  font-size: 26rpx;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.venue-action-row {
+  margin-top: 18rpx;
+}
+
+.venue-add-row {
+  background: var(--iz-surface-high);
 }
 
 .venue-grid {
@@ -149,29 +182,10 @@ page {
   background: var(--iz-surface-low);
 }
 
-.venue-court-card--inactive {
-  opacity: 0.68;
-}
-
 .venue-court-card__title {
   font-size: 28rpx;
   font-weight: 700;
   color: var(--iz-text-primary);
-}
-
-.venue-court-card__tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 116rpx;
-  height: 52rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  background: var(--iz-surface-high);
-  color: var(--iz-color-primary);
-  font-size: 22rpx;
-  font-weight: 700;
-  box-sizing: border-box;
 }
 
 .venue-field--action {
@@ -183,10 +197,7 @@ page {
   display: inline-flex;
   align-items: center;
   height: 88rpx;
-}
-
-.venue-court-card__action--muted {
-  color: var(--iz-text-tertiary);
+  color: var(--iz-color-danger);
 }
 
 .venue-footer {

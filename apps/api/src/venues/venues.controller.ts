@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { OwnerType } from "@prisma/client";
 import { CurrentUser } from "../common/auth/current-user.decorator";
@@ -15,7 +15,7 @@ import { VenuesService } from "./venues.service";
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class VenuesController {
-  constructor(private readonly venuesService: VenuesService) {}
+  constructor(@Inject(VenuesService) private readonly venuesService: VenuesService) {}
 
   @Get("venues")
   @ApiOperation({ summary: "List venues for a given personal or club owner" })

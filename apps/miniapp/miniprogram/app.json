@@ -7,11 +7,11 @@
     "pages/my-activities/index",
     "pages/profile/index",
     "pages/club-register/index",
-    "pages/club-management/index",
-    "pages/venue-court-management/index"
+    "pages/club-management/index"
   ],
   "usingComponents": {
-    "app-nav": "/components/app-nav/index"
+    "app-nav": "/components/app-nav/index",
+    "profile-form": "/components/profile-form/index"
   },
   "tabBar": {
     "custom": true,

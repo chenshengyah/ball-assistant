@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException
 } from "@nestjs/common";
@@ -15,8 +16,8 @@ import { UpdateVenueDto } from "./dto/update-venue.dto";
 @Injectable()
 export class VenuesService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly clubsService: ClubsService
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(ClubsService) private readonly clubsService: ClubsService
   ) {}
 
   async listVenues(userId: string, ownerType: OwnerType, ownerId: string) {

@@ -9,5 +9,9 @@ export function maskPhoneNumber(phoneNumber: string): string {
 }
 
 export function hasPhoneNumber(phoneNumber: string | null | undefined): boolean {
-  return Boolean(phoneNumber && phoneNumber.trim().length > 0);
+  return Boolean(phoneNumber && isMainlandPhoneNumber(phoneNumber));
+}
+
+export function isMainlandPhoneNumber(phoneNumber: string): boolean {
+  return /^1[3-9]\d{9}$/.test(phoneNumber.trim());
 }

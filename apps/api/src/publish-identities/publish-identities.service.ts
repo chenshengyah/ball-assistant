@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { ClubsService } from "../clubs/clubs.service";
 
 @Injectable()
 export class PublishIdentitiesService {
-  constructor(private readonly clubsService: ClubsService) {}
+  constructor(@Inject(ClubsService) private readonly clubsService: ClubsService) {}
 
   async listIdentities(userId: string) {
     const clubs = await this.clubsService.listOwnedClubs(userId);

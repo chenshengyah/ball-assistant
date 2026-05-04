@@ -53,8 +53,6 @@ type AuthState = {
   didBootstrap: boolean;
 };
 
-const MOCK_CURRENT_USER_ID = "user-current";
-
 const state: AuthState = {
   status: "ANONYMOUS",
   accessToken: "",
@@ -250,7 +248,7 @@ export async function updateCurrentUserProfile(
   return { ...user };
 }
 
-export async function updateCurrentUserPhoneNumber(code: string): Promise<SessionUser | null> {
+export async function updateCurrentUserPhoneNumber(phoneNumber: string): Promise<SessionUser | null> {
   if (!state.accessToken) {
     return null;
   }
@@ -259,7 +257,7 @@ export async function updateCurrentUserPhoneNumber(code: string): Promise<Sessio
     path: "/users/me/phone-number",
     method: "POST",
     data: {
-      code,
+      phoneNumber,
     },
     headers: {
       Authorization: `Bearer ${state.accessToken}`,
@@ -271,8 +269,12 @@ export async function updateCurrentUserPhoneNumber(code: string): Promise<Sessio
   return { ...user };
 }
 
-export function getCurrentMockUserId(): string | null {
-  return state.status === "ANONYMOUS" ? null : MOCK_CURRENT_USER_ID;
+export function getCurrentUserId(): string | null {
+  if (state.status === "ANONYMOUS") {
+    return null;
+  }
+
+  return state.user?.userId ?? null;
 }
 
 export function clearPendingIntent(): void {

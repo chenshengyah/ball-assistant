@@ -57,10 +57,6 @@ export function resolveOwningTab(route: string, source?: string): string {
     return PROFILE_TAB_ROUTE;
   }
 
-  if (normalizedRoute === "/pages/venue-court-management/index") {
-    return normalizedSource === "activity-create" ? HOME_TAB_ROUTE : PROFILE_TAB_ROUTE;
-  }
-
   if (normalizedRoute === "/pages/user-registration/index") {
     return HOME_OWNED_SOURCES.has(normalizedSource) ? HOME_TAB_ROUTE : PROFILE_TAB_ROUTE;
   }

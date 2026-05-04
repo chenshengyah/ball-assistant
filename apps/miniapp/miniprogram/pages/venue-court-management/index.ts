@@ -6,7 +6,7 @@ import {
   updateVenue,
   updateVenueCourt,
 } from "../../services/venue-service";
-import { ensureAuthenticated } from "../../services/auth";
+import { ensureAuthenticated, getCurrentUserId } from "../../services/auth";
 import { fetchOwnedClubs, listOwnedClubs } from "../../services/club-service";
 import type { OwnerType, VenueStatus, VenueWithCourts } from "../../types/activity";
 import { getPageTopStyle } from "../../utils/chrome";
@@ -51,6 +51,7 @@ type VenueCourtManagementPageData = {
   venueLabels: string[];
   venues: VenueWithCourts[];
   courts: CourtForm[];
+  deletedCourtIds: string[];
 };
 
 type InputEvent = WechatMiniprogram.BaseEvent<{ value?: string }>;
@@ -76,6 +77,10 @@ type CompatibleWx = WechatMiniprogram.Wx & {
 };
 
 const compatibleWx = wx as CompatibleWx;
+
+function getResolvedCurrentUserId(): string {
+  return getCurrentUserId() || "";
+}
 
 function createTempKey(): string {
   return `temp-${Date.now()}-${Math.round(Math.random() * 100000)}`;
@@ -125,30 +130,21 @@ function buildVenueForm(snapshot?: VenueWithCourts): VenueForm {
 
 function buildCourts(snapshot?: VenueWithCourts): CourtForm[] {
   if (!snapshot) {
-    return [
-      {
-        rowKey: createTempKey(),
-        id: "",
-        courtCode: "",
-        courtName: "",
-        defaultCapacity: "8",
-        status: "ACTIVE",
-        originalStatus: "ACTIVE",
-        isNew: true,
-      },
-    ];
+    return [];
   }
 
-  return snapshot.courts.map((court) => ({
-    rowKey: court.id,
-    id: court.id,
-    courtCode: court.courtCode,
-    courtName: court.courtName,
-    defaultCapacity: court.defaultCapacity ? `${court.defaultCapacity}` : "",
-    status: court.status,
-    originalStatus: court.status,
-    isNew: false,
-  }));
+  return snapshot.courts
+    .filter((court) => court.status === "ACTIVE")
+    .map((court) => ({
+      rowKey: court.id,
+      id: court.id,
+      courtCode: court.courtCode,
+      courtName: court.courtName,
+      defaultCapacity: court.defaultCapacity ? `${court.defaultCapacity}` : "",
+      status: "ACTIVE",
+      originalStatus: "ACTIVE",
+      isNew: false,
+    }));
 }
 
 Page({
@@ -165,6 +161,7 @@ Page({
     venueLabels: [],
     venues: [],
     courts: buildCourts(),
+    deletedCourtIds: [],
   } as VenueCourtManagementPageData,
 
   onLoad(options: Record<string, string | undefined>): void {
@@ -214,7 +211,7 @@ Page({
     source: string
   ): Promise<string> {
     if (ownerType === "PERSONAL") {
-      return ownerId || "user-current";
+      return ownerId || getResolvedCurrentUserId();
     }
 
     if (ownerId) {
@@ -222,12 +219,12 @@ Page({
     }
 
     try {
-      await fetchOwnedClubs("user-current");
-    } catch {
-      // Keep local snapshot as a fallback.
+      await fetchOwnedClubs(getResolvedCurrentUserId());
+    } catch (error) {
+      this.showError(error);
     }
 
-    const ownedClubId = listOwnedClubs("user-current")[0]?.id ?? "";
+    const ownedClubId = listOwnedClubs(getResolvedCurrentUserId())[0]?.id ?? "";
 
     if (!ownedClubId) {
       wx.redirectTo({
@@ -267,6 +264,7 @@ Page({
         venueLabels: venues.map((item) => item.venue.name),
         venues,
         courts: buildCourts(selectedVenue),
+        deletedCourtIds: [],
       });
     } catch (error) {
       this.showError(error);
@@ -285,6 +283,7 @@ Page({
       selectedVenueIndex,
       venueForm: buildVenueForm(selectedVenue),
       courts: buildCourts(selectedVenue),
+      deletedCourtIds: [],
     });
   },
 
@@ -293,6 +292,7 @@ Page({
       selectedVenueIndex: -1,
       venueForm: getEmptyVenueForm(),
       courts: buildCourts(),
+      deletedCourtIds: [],
     });
   },
 
@@ -330,19 +330,19 @@ Page({
         ...this.data.courts,
         {
           rowKey: createTempKey(),
-          id: "",
-          courtCode: "",
-          courtName: "",
-          defaultCapacity: "8",
-          status: "ACTIVE",
-          originalStatus: "ACTIVE",
+        id: "",
+        courtCode: "",
+        courtName: "",
+        defaultCapacity: "",
+        status: "ACTIVE",
+        originalStatus: "ACTIVE",
           isNew: true,
         },
       ],
     });
   },
 
-  handleToggleCourtStatus(event: DatasetEvent): void {
+  handleRemoveCourt(event: DatasetEvent): void {
     const courtIndex = Number(event.currentTarget.dataset.courtIndex);
     const court = this.data.courts[courtIndex];
 
@@ -350,22 +350,12 @@ Page({
       return;
     }
 
-    if (court.isNew) {
-      const nextCourts = this.data.courts.filter((_, index) => index !== courtIndex);
-
-      this.setData({
-        courts: nextCourts.length > 0 ? nextCourts : buildCourts(),
-      });
-      return;
-    }
-
-    if (court.status !== "ACTIVE") {
-      return;
-    }
+    const nextCourts = this.data.courts.filter((_, index) => index !== courtIndex);
 
     this.setData({
-      [`courts[${courtIndex}].status`]: "INACTIVE",
-    } as never);
+      deletedCourtIds: court.isNew ? this.data.deletedCourtIds : [...this.data.deletedCourtIds, court.id],
+      courts: nextCourts,
+    });
   },
 
   handleChooseLocation(): void {
@@ -388,9 +378,7 @@ Page({
 
   async handleSubmit(): Promise<void> {
     const venueForm = this.data.venueForm;
-    const activeCourts = this.data.courts.filter(
-      (court) => court.status === "ACTIVE" && court.courtCode.trim()
-    );
+    const activeCourts = this.data.courts.filter((court) => court.courtCode.trim());
 
     if (!venueForm.name.trim()) {
       this.showError(new Error("请填写场馆名称"));
@@ -403,7 +391,7 @@ Page({
     }
 
     if (activeCourts.length === 0) {
-      this.showError(new Error("请至少保留一片启用中的场地"));
+      this.showError(new Error("请至少保留一片场地"));
       return;
     }
 
@@ -416,13 +404,13 @@ Page({
           ownerId: this.data.ownerId,
           name: venueForm.name,
           shortName: venueForm.shortName,
-          province: venueForm.province,
-          city: venueForm.city,
-          district: venueForm.district,
+          province: "",
+          city: "",
+          district: "",
           address: venueForm.address,
           latitude: Number(venueForm.latitude || "0") || undefined,
           longitude: Number(venueForm.longitude || "0") || undefined,
-          navigationName: venueForm.navigationName || venueForm.locationName || venueForm.name,
+          navigationName: venueForm.locationName || venueForm.name,
           courtCodes: activeCourts.map((court) => court.courtCode.trim()),
         });
 
@@ -457,17 +445,17 @@ Page({
           venueId: venueForm.venueId,
           name: venueForm.name,
           shortName: venueForm.shortName,
-          province: venueForm.province,
-          city: venueForm.city,
-          district: venueForm.district,
+          province: "",
+          city: "",
+          district: "",
           address: venueForm.address,
           latitude: Number(venueForm.latitude || "0") || undefined,
           longitude: Number(venueForm.longitude || "0") || undefined,
-          navigationName: venueForm.navigationName || venueForm.locationName || venueForm.name,
+          navigationName: venueForm.locationName || venueForm.name,
         });
 
         for (const court of this.data.courts) {
-          if (court.isNew && court.status === "ACTIVE" && court.courtCode.trim()) {
+          if (court.isNew && court.courtCode.trim()) {
             await createVenueCourt({
               venueId: venueForm.venueId,
               courtCode: court.courtCode.trim(),
@@ -477,12 +465,7 @@ Page({
             continue;
           }
 
-          if (!court.isNew && court.originalStatus === "ACTIVE" && court.status === "INACTIVE") {
-            await deactivateVenueCourt(court.id);
-            continue;
-          }
-
-          if (!court.isNew && court.status === "ACTIVE") {
+          if (!court.isNew) {
             await updateVenueCourt({
               courtId: court.id,
               courtCode: court.courtCode.trim(),
@@ -490,6 +473,10 @@ Page({
               defaultCapacity: Number(court.defaultCapacity || "0") || undefined,
             });
           }
+        }
+
+        for (const courtId of this.data.deletedCourtIds) {
+          await deactivateVenueCourt(courtId);
         }
       }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post, Put, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../common/auth/current-user.decorator";
 import { JwtAuthGuard } from "../common/auth/jwt-auth.guard";
@@ -12,7 +12,7 @@ import { UsersService } from "./users.service";
 @UseGuards(JwtAuthGuard)
 @Controller("users")
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
 
   @Get("me")
   @ApiOperation({ summary: "Get the current authenticated user profile" })
@@ -30,7 +30,7 @@ export class UsersController {
   }
 
   @Post("me/phone-number")
-  @ApiOperation({ summary: "Verify and save the current user phone number" })
+  @ApiOperation({ summary: "Save the current user contact phone number" })
   updatePhoneNumber(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Body() dto: UpdatePhoneNumberDto

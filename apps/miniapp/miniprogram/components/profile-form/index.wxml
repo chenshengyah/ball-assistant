@@ -1,0 +1,74 @@
+<view class="profile-form">
+  <block wx:if="{{showBaseFields}}">
+    <view class="profile-form__label"><text>头像</text></view>
+    <view class="profile-form__avatar">
+      <view class="profile-form__avatar-preview">
+        <image
+          wx:if="{{form.avatarUrl}}"
+          class="profile-form__avatar-image"
+          src="{{form.avatarUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="profile-form__avatar-fallback"><text>{{form.avatarInitial}}</text></view>
+      </view>
+      <view class="profile-form__avatar-copy">
+        <view class="profile-form__avatar-title">
+          <text>{{form.avatarUrl ? '更换头像' : '选择头像'}}</text>
+        </view>
+        <view class="profile-form__avatar-subtitle">
+          <text>{{uploadingAvatar ? '正在压缩上传...' : '可选微信头像、相册或拍照'}}</text>
+        </view>
+        <view class="profile-form__avatar-actions">
+          <button
+            class="profile-form__avatar-action"
+            open-type="chooseAvatar"
+            bindchooseavatar="handleChooseWechatAvatar"
+          >
+            <text>选择头像</text>
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <view class="profile-form__label profile-form__label--top"><text>昵称</text></view>
+    <input
+      class="profile-form__input"
+      type="nickname"
+      value="{{form.nickname}}"
+      placeholder="例如：小陈 / Ava / 北北"
+      bindinput="handleNicknameInput"
+    />
+
+    <view class="profile-form__label profile-form__label--top"><text>性别</text></view>
+    <picker
+      range="{{['请选择','男','女']}}"
+      value="{{form.selectedGenderIndex}}"
+      bindchange="handleGenderChange"
+    >
+      <view class="profile-form__picker {{form.selectedGenderIndex === 0 ? 'profile-form__picker--placeholder' : ''}}">
+        <text>{{form.selectedGenderIndex === 2 ? '女' : form.selectedGenderIndex === 1 ? '男' : '请选择'}}</text>
+      </view>
+    </picker>
+  </block>
+
+  <block wx:if="{{showPhoneField}}">
+    <view class="profile-form__label {{showBaseFields ? 'profile-form__label--top' : ''}}"><text>手机号</text></view>
+    <view class="profile-form__phone-card">
+      <input
+        class="profile-form__phone-input"
+        type="number"
+        maxlength="11"
+        value="{{form.phoneNumber}}"
+        placeholder="用于创建活动和报名时对外联系"
+        bindinput="handlePhoneNumberInput"
+      />
+      <view class="profile-form__phone-status">
+        <text>{{form.phoneComplete ? '已填写' : '需填写正确手机号'}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{!showBaseFields && !showPhoneField}}" class="profile-form__summary">
+    <text>{{summaryText || '创建人资料已完整'}}</text>
+  </view>
+</view>

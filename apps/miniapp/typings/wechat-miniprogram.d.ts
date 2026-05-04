@@ -65,6 +65,34 @@ declare namespace WechatMiniprogram {
     fail?(error: unknown): void;
   }
 
+  interface ChooseMediaSuccessCallbackResult {
+    tempFiles?: Array<{
+      tempFilePath?: string;
+    }>;
+  }
+
+  interface ChooseMediaOption {
+    count: number;
+    mediaType: string[];
+    sizeType: string[];
+    sourceType: string[];
+    success?(result: ChooseMediaSuccessCallbackResult): void;
+    fail?(error: { errMsg?: string }): void;
+  }
+
+  interface CompressImageSuccessCallbackResult {
+    tempFilePath: string;
+  }
+
+  interface CompressImageOption {
+    src: string;
+    quality?: number;
+    compressedWidth?: number;
+    compressedHeight?: number;
+    success?(result: CompressImageSuccessCallbackResult): void;
+    fail?(error: unknown): void;
+  }
+
   interface SystemInfo {
     safeArea?: {
       bottom?: number;
@@ -106,6 +134,8 @@ declare namespace WechatMiniprogram {
     login(options: LoginOption): void;
     request<T = unknown>(options: RequestOption<T>): void;
     uploadFile(options: UploadFileOption): void;
+    chooseMedia(options: ChooseMediaOption): void;
+    compressImage(options: CompressImageOption): void;
   }
 
   interface AppOption {

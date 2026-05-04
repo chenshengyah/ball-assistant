@@ -1,5 +1,4 @@
 import type { Club } from "../types/activity";
-import { getActivityStore } from "./activity-store";
 import { getAccessToken } from "./auth";
 import { requestApi } from "./api";
 
@@ -44,6 +43,8 @@ type ClubApiResponse = {
   status: "ACTIVE" | "INACTIVE";
 };
 
+let ownedClubCache: Club[] = [];
+
 function getAuthHeaders(): Record<string, string> {
   const accessToken = getAccessToken();
 
@@ -56,7 +57,7 @@ function getAuthHeaders(): Record<string, string> {
   };
 }
 
-function toClubModel(response: ClubApiResponse, currentUserId = "user-current"): Club {
+function toClubModel(response: ClubApiResponse, currentUserId = ""): Club {
   return {
     id: response.clubId,
     name: response.clubName,
@@ -78,40 +79,18 @@ function toClubModel(response: ClubApiResponse, currentUserId = "user-current"):
   };
 }
 
-function syncOwnedClub(club: Club, currentUserId: string): void {
-  const store = getActivityStore();
-  const existingIndex = store.clubs.findIndex((item) => item.id === club.id);
+function syncOwnedClub(club: Club): void {
+  const existingIndex = ownedClubCache.findIndex((item) => item.id === club.id);
 
   if (existingIndex >= 0) {
-    store.clubs.splice(existingIndex, 1, { ...store.clubs[existingIndex], ...club });
+    ownedClubCache.splice(existingIndex, 1, { ...ownedClubCache[existingIndex], ...club });
   } else {
-    store.clubs.push({ ...club });
-  }
-
-  const hasOwnerMembership = store.clubMembers.some(
-    (member) => member.clubId === club.id && member.userId === currentUserId && member.role === "OWNER"
-  );
-
-  if (!hasOwnerMembership) {
-    store.clubMembers.push({
-      id: `member-owner-${club.id}-${currentUserId}`,
-      clubId: club.id,
-      userId: currentUserId,
-      role: "OWNER",
-    });
+    ownedClubCache.push({ ...club });
   }
 }
 
-function syncOwnedClubs(clubs: Club[], currentUserId: string): Club[] {
-  const store = getActivityStore();
-  const ownedClubIds = new Set(clubs.map((club) => club.id));
-
-  clubs.forEach((club) => syncOwnedClub(club, currentUserId));
-
-  store.clubMembers = store.clubMembers.filter(
-    (member) =>
-      !(member.userId === currentUserId && member.role === "OWNER" && !ownedClubIds.has(member.clubId))
-  );
+function syncOwnedClubs(clubs: Club[]): Club[] {
+  ownedClubCache = clubs.map((club) => ({ ...club }));
 
   return clubs.map((club) => ({ ...club }));
 }
@@ -122,19 +101,14 @@ export async function fetchOwnedClubs(currentUserId: string): Promise<Club[]> {
     headers: getAuthHeaders(),
   });
 
-  return syncOwnedClubs(response.map((item) => toClubModel(item, currentUserId)), currentUserId);
+  return syncOwnedClubs(response.map((item) => toClubModel(item, currentUserId)));
 }
 
 export function listOwnedClubs(currentUserId: string): Club[] {
-  const store = getActivityStore();
-  const ownedClubIds = new Set(
-    store.clubMembers
-      .filter((member) => member.userId === currentUserId && member.role === "OWNER")
-      .map((member) => member.clubId)
-  );
+  void currentUserId;
 
-  return store.clubs
-    .filter((club) => club.status === "ACTIVE" && ownedClubIds.has(club.id))
+  return ownedClubCache
+    .filter((club) => club.status === "ACTIVE")
     .map((club) => ({ ...club }));
 }
 
@@ -156,12 +130,8 @@ export async function createOrUpdateClub(input: SaveClubInput): Promise<Club> {
     throw new Error("请填写联系人");
   }
 
-  if (!/^1\d{10}$/.test(contactPhone)) {
+  if (!/^1[3-9]\d{9}$/.test(contactPhone)) {
     throw new Error("联系电话格式不正确");
-  }
-
-  if (!address) {
-    throw new Error("请填写俱乐部地址");
   }
 
   const payload = {
@@ -196,7 +166,7 @@ export async function createOrUpdateClub(input: SaveClubInput): Promise<Club> {
       });
 
   const nextClub = toClubModel(response, input.currentUserId);
-  syncOwnedClub(nextClub, input.currentUserId);
+  syncOwnedClub(nextClub);
 
   return { ...nextClub };
 }

@@ -111,8 +111,13 @@ export type Activity = {
   chargeMode: ChargeMode;
   chargeAmountCents: number;
   chargeDesc: string;
-  venueId: string;
   venueSnapshotName: string;
+  venueSnapshotAddress?: string;
+  venueSnapshotProvince?: string;
+  venueSnapshotCity?: string;
+  venueSnapshotDistrict?: string;
+  venueSnapshotLatitude?: number;
+  venueSnapshotLongitude?: number;
   activityStartAt: string;
   activityEndAt: string;
   cancelCutoffMinutesBeforeStart: number;
@@ -126,7 +131,7 @@ export type Activity = {
 export type ActivityCourt = {
   id: string;
   activityId: string;
-  venueCourtId: string;
+  venueCourtId?: string;
   courtCodeSnapshot: string;
   courtNameSnapshot: string;
   capacity: number;
@@ -206,7 +211,7 @@ export type VenueCourtUpdateInput = {
 };
 
 export type CreateActivityCourtInput = {
-  venueCourtId: string;
+  courtName: string;
   capacity: number;
   sortOrder: number;
 };
@@ -220,7 +225,13 @@ export type CreateActivityInput = {
   chargeMode: ChargeMode;
   chargeAmountCents: number;
   chargeDesc: string;
-  venueId: string;
+  venueName: string;
+  venueAddress: string;
+  venueProvince: string;
+  venueCity: string;
+  venueDistrict: string;
+  venueLatitude?: number;
+  venueLongitude?: number;
   signupMode: ActivitySignupMode;
   activityDate: string;
   startTime: string;
@@ -243,7 +254,7 @@ export type RegistrationMemberView = {
 
 export type ActivityCourtView = {
   id: string;
-  venueCourtId: string;
+  venueCourtId?: string;
   label: string;
   code: string;
   capacity: number;
@@ -304,7 +315,13 @@ export type ActivityDraft = {
   chargeMode: ChargeMode;
   chargeAmountCents: number;
   chargeDesc: string;
-  venueId: string;
+  venueName: string;
+  venueAddress: string;
+  venueProvince: string;
+  venueCity: string;
+  venueDistrict: string;
+  venueLatitude?: number;
+  venueLongitude?: number;
   activityDate: string;
   startTime: string;
   endTime: string;

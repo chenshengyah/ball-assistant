@@ -12,15 +12,17 @@ import {
 import {
   ensureAuthenticated,
   getAuthSnapshot,
+  getCurrentUserId,
   updateCurrentUserPhoneNumber,
   updateCurrentUserProfile,
 } from "../../services/auth";
 import {
   buildCreateActivityInput,
+  createFormCourt,
   createImageBlock,
   createParagraphBlock,
   ensureDescriptionBlocks,
-  getDefaultAvailableCourts,
+  getDefaultFormCourts,
   getDefaultCreateForm,
   mapDraftToCreateState,
   parseDescriptionRichtext,
@@ -29,55 +31,18 @@ import {
   type DescriptionBlock,
   type FormCourt,
 } from "../../services/activity-create-form";
-import { uploadImageAsset } from "../../services/asset-service";
+import { pickCompressAndUploadImageAsset } from "../../services/asset-service";
 import {
   createOrUpdateClub,
   fetchOwnedClubs,
   listOwnedClubs,
 } from "../../services/club-service";
-import {
-  createVenue,
-  createVenueCourt,
-  deactivateVenueCourt,
-  fetchVenuesForOwner,
-  listVenues,
-  listVenuesForManagement,
-  updateVenue,
-  updateVenueCourt,
-} from "../../services/venue-service";
 import type {
   OwnerOption,
   OwnerType,
   UserGender,
-  VenueStatus,
-  VenueWithCourts,
 } from "../../types/activity";
 import { getPageTopStyle } from "../../utils/chrome";
-
-type VenueManagerForm = {
-  venueId: string;
-  isNew: boolean;
-  name: string;
-  shortName: string;
-  province: string;
-  city: string;
-  district: string;
-  address: string;
-  latitude: string;
-  longitude: string;
-  locationName: string;
-  navigationName: string;
-};
-
-type VenueManagerCourtForm = {
-  rowKey: string;
-  id: string;
-  courtCode: string;
-  courtName: string;
-  status: VenueStatus;
-  originalStatus: VenueStatus;
-  isNew: boolean;
-};
 
 type OwnerCardItem = {
   key: OwnerType;
@@ -92,8 +57,8 @@ type ProfileSheetForm = {
   avatarUrl: string;
   nickname: string;
   selectedGenderIndex: number;
-  phoneMasked: string;
-  phoneVerified: boolean;
+  phoneNumber: string;
+  phoneComplete: boolean;
 };
 
 type ClubSheetForm = {
@@ -101,17 +66,7 @@ type ClubSheetForm = {
   coverUrl: string;
   logoUrl: string;
   name: string;
-  province: string;
-  city: string;
-  district: string;
-  address: string;
-  latitude: string;
-  longitude: string;
-  locationName: string;
-  contactName: string;
-  contactPhone: string;
   description: string;
-  wechatId: string;
 };
 
 type CreateActivityPageData = {
@@ -132,18 +87,9 @@ type CreateActivityPageData = {
   selectedChargeModeIndex: number;
   cancelCutoffLabels: string[];
   selectedCancelCutoffIndex: number;
-  venues: VenueWithCourts[];
-  venueLabels: string[];
-  selectedVenueIndex: number;
   availableCourts: FormCourt[];
   createForm: CreateForm;
   descriptionBlocks: DescriptionBlock[];
-  showVenueManager: boolean;
-  managerVenues: VenueWithCourts[];
-  managerVenueLabels: string[];
-  selectedManagerVenueIndex: number;
-  venueManagerForm: VenueManagerForm;
-  managerCourts: VenueManagerCourtForm[];
   showProfileSheet: boolean;
   profileSheetForm: ProfileSheetForm;
   showClubSheet: boolean;
@@ -169,19 +115,7 @@ type PickerChangeEvent = WechatMiniprogram.BaseEvent<{
   value?: string;
 }>;
 
-type ChooseAvatarEvent = WechatMiniprogram.BaseEvent<{
-  avatarUrl?: string;
-}>;
-
-type PhoneNumberEvent = WechatMiniprogram.BaseEvent<{
-  code?: string;
-}>;
-
-type ChooseMediaSuccessResult = {
-  tempFiles?: Array<{
-    tempFilePath?: string;
-  }>;
-};
+type ProfileFormChangeEvent = WechatMiniprogram.BaseEvent<ProfileSheetForm>;
 
 type ChooseLocationSuccessResult = {
   name: string;
@@ -195,33 +129,64 @@ type MiniProgramLocationError = {
 };
 
 type CompatibleWx = WechatMiniprogram.Wx & {
-  chooseMedia(options: {
-    count: number;
-    mediaType: string[];
-    sizeType: string[];
-    sourceType: string[];
-    success(result: ChooseMediaSuccessResult): void;
-    fail(error: MiniProgramLocationError): void;
-  }): void;
   chooseLocation(options: {
     success(result: ChooseLocationSuccessResult): void;
     fail(error: MiniProgramLocationError): void;
   }): void;
 };
 
-const CURRENT_USER_ID = "user-current";
 const compatibleWx = wx as CompatibleWx;
 
-function maskPhoneNumber(phoneNumber: string): string {
-  if (phoneNumber.length < 7) {
-    return phoneNumber;
-  }
+function getResolvedCurrentUserId(): string {
+  return getCurrentUserId() || "";
+}
 
-  return `${phoneNumber.slice(0, 3)}****${phoneNumber.slice(-4)}`;
+function isValidPhoneNumber(value: string): boolean {
+  return /^1[3-9]\d{9}$/.test(value.trim());
 }
 
 function getAvatarInitial(nickname: string): string {
   return nickname.trim().slice(0, 1) || "你";
+}
+
+function getGenderIndex(gender?: UserGender | null): number {
+  if (gender === "MALE") {
+    return 1;
+  }
+
+  if (gender === "FEMALE") {
+    return 2;
+  }
+
+  return 0;
+}
+
+function getGenderFromIndex(selectedGenderIndex: number): UserGender | null {
+  if (selectedGenderIndex === 1) {
+    return "MALE";
+  }
+
+  if (selectedGenderIndex === 2) {
+    return "FEMALE";
+  }
+
+  return null;
+}
+
+function buildProfileSheetForm(): ProfileSheetForm {
+  const currentUser = getCurrentUser();
+  const authSnapshot = getAuthSnapshot();
+  const nickname = authSnapshot.user?.nickname ?? "";
+  const phoneNumber = authSnapshot.user?.phoneNumber ?? currentUser?.phoneNumber ?? "";
+
+  return {
+    avatarInitial: getAvatarInitial(nickname),
+    avatarUrl: authSnapshot.user?.avatarUrl ?? currentUser?.avatarUrl ?? "",
+    nickname,
+    selectedGenderIndex: getGenderIndex(authSnapshot.user?.gender),
+    phoneNumber,
+    phoneComplete: Boolean(authSnapshot.contactProfileComplete) || isValidPhoneNumber(phoneNumber),
+  };
 }
 
 function getEmptyClubSheetForm(): ClubSheetForm {
@@ -230,22 +195,12 @@ function getEmptyClubSheetForm(): ClubSheetForm {
     coverUrl: "",
     logoUrl: "",
     name: "",
-    province: "",
-    city: "",
-    district: "",
-    address: "",
-    latitude: "",
-    longitude: "",
-    locationName: "",
-    contactName: "",
-    contactPhone: "",
     description: "",
-    wechatId: "",
   };
 }
 
 function buildClubSheetForm(clubId = ""): ClubSheetForm {
-  const club = listOwnedClubs(CURRENT_USER_ID).find((item) => item.id === clubId);
+  const club = listOwnedClubs(getResolvedCurrentUserId()).find((item) => item.id === clubId);
 
   if (!club) {
     return getEmptyClubSheetForm();
@@ -256,17 +211,7 @@ function buildClubSheetForm(clubId = ""): ClubSheetForm {
     coverUrl: club.coverUrl ?? "",
     logoUrl: club.logoUrl ?? "",
     name: club.name,
-    province: club.province ?? "",
-    city: club.city ?? "",
-    district: club.district ?? "",
-    address: club.address ?? "",
-    latitude: club.latitude ? `${club.latitude}` : "",
-    longitude: club.longitude ? `${club.longitude}` : "",
-    locationName: club.name,
-    contactName: club.contactName ?? "",
-    contactPhone: club.contactPhone ?? "",
     description: club.description ?? "",
-    wechatId: club.wechatId ?? "",
   };
 }
 
@@ -285,7 +230,9 @@ function getClubRoleStatus(ownerOptions: OwnerOption[]): {
     };
   }
 
-  const club = listOwnedClubs(CURRENT_USER_ID).find((item) => item.id === clubOptions[0]?.ownerId);
+  const club = listOwnedClubs(getResolvedCurrentUserId()).find(
+    (item) => item.id === clubOptions[0]?.ownerId
+  );
 
   if (!club?.contactPhone) {
     return {
@@ -295,11 +242,11 @@ function getClubRoleStatus(ownerOptions: OwnerOption[]): {
     };
   }
 
-  if (!club.contactName || !club.address) {
+  if (!club.contactName) {
     return {
       statusText: "待完善",
       title: club.name,
-      meta: "补齐俱乐部信息后，即可作为发布主体使用。",
+      meta: "补齐创建人资料后，即可作为发布主体使用。",
     };
   }
 
@@ -322,7 +269,7 @@ function buildRoleCards(ownerOptions: OwnerOption[]): OwnerCardItem[] {
     {
       key: "PERSONAL",
       title: currentUser?.nickname || "个人",
-      meta: personalReady ? "将展示你已验证的手机号。" : "先补齐资料和手机号，再继续创建。",
+      meta: personalReady ? "将展示你填写的联系手机号。" : "先补齐资料和联系手机号，再继续创建。",
       tag: "个人",
       statusText: personalReady ? "可发布" : authSnapshot.baseProfileComplete ? "待补手机号" : "待完善",
     },
@@ -336,116 +283,13 @@ function buildRoleCards(ownerOptions: OwnerOption[]): OwnerCardItem[] {
   ];
 }
 
-function createTempKey(): string {
-  return `temp-${Date.now()}-${Math.round(Math.random() * 100000)}`;
-}
-
-function getEmptyVenueManagerForm(): VenueManagerForm {
-  return {
-    venueId: "",
-    isNew: true,
-    name: "",
-    shortName: "",
-    province: "",
-    city: "",
-    district: "",
-    address: "",
-    latitude: "",
-    longitude: "",
-    locationName: "",
-    navigationName: "",
-  };
-}
-
-function buildVenueManagerForm(venueItem?: VenueWithCourts): VenueManagerForm {
-  if (!venueItem) {
-    return getEmptyVenueManagerForm();
-  }
-
-  return {
-    venueId: venueItem.venue.id,
-    isNew: false,
-    name: venueItem.venue.name,
-    shortName: venueItem.venue.shortName,
-    province: venueItem.venue.province,
-    city: venueItem.venue.city,
-    district: venueItem.venue.district,
-    address: venueItem.venue.address,
-    latitude: `${venueItem.venue.latitude}`,
-    longitude: `${venueItem.venue.longitude}`,
-    locationName: venueItem.venue.navigationName || venueItem.venue.name,
-    navigationName: venueItem.venue.navigationName,
-  };
-}
-
-function buildManagerCourts(venueItem?: VenueWithCourts): VenueManagerCourtForm[] {
-  if (!venueItem) {
-    return [
-      {
-        rowKey: createTempKey(),
-        id: "",
-        courtCode: "",
-        courtName: "",
-        status: "ACTIVE",
-        originalStatus: "ACTIVE",
-        isNew: true,
-      },
-    ];
-  }
-
-  return venueItem.courts.map((court) => ({
-    rowKey: court.id,
-    id: court.id,
-    courtCode: court.courtCode,
-    courtName: court.courtName,
-    status: court.status,
-    originalStatus: court.status,
-    isNew: false,
-  }));
-}
-
-function getVenueIndexById(venues: VenueWithCourts[], venueId: string): number {
-  const matchedIndex = venues.findIndex((item) => item.venue.id === venueId);
-
-  return matchedIndex >= 0 ? matchedIndex : 0;
-}
-
-function mergeAvailableCourts(
-  venueItem: VenueWithCourts | undefined,
-  previousCourts: FormCourt[]
-): FormCourt[] {
-  if (!venueItem) {
-    return [];
-  }
-
-  const previousMap = new Map(previousCourts.map((court) => [court.venueCourtId, court]));
-
-  return venueItem.courts.map((court) => {
-    const previousCourt = previousMap.get(court.id);
-
-    if (!previousCourt) {
-      return {
-        venueCourtId: court.id,
-        label: court.courtName,
-        enabled: false,
-        capacity: "4",
-      };
-    }
-
-    return {
-      ...previousCourt,
-      label: court.courtName,
-    };
-  });
-}
-
 function getOwnerContactHint(ownerOption?: OwnerOption): string {
   if (!ownerOption) {
     return "先选择个人或俱乐部角色，后续活动配置才会展开。";
   }
 
   if (ownerOption.ownerType === "PERSONAL") {
-    return "个人发布时，将展示你已验证的手机号。";
+    return "个人发布时，将展示你填写的联系手机号。";
   }
 
   return "俱乐部发布时，将展示俱乐部联系人手机号。";
@@ -470,26 +314,17 @@ Page({
     selectedChargeModeIndex: 1,
     cancelCutoffLabels: CANCEL_CUTOFF_OPTIONS.map((item) => item.label),
     selectedCancelCutoffIndex: 1,
-    venues: [],
-    venueLabels: [],
-    selectedVenueIndex: 0,
-    availableCourts: [],
+    availableCourts: getDefaultFormCourts(),
     createForm: getDefaultCreateForm(),
     descriptionBlocks: [createParagraphBlock()],
-    showVenueManager: false,
-    managerVenues: [],
-    managerVenueLabels: [],
-    selectedManagerVenueIndex: 0,
-    venueManagerForm: getEmptyVenueManagerForm(),
-    managerCourts: [],
     showProfileSheet: false,
     profileSheetForm: {
       avatarInitial: "你",
       avatarUrl: "",
       nickname: "",
       selectedGenderIndex: 0,
-      phoneMasked: "",
-      phoneVerified: false,
+      phoneNumber: "",
+      phoneComplete: false,
     },
     showClubSheet: false,
     clubOwnerLabels: [],
@@ -522,7 +357,7 @@ Page({
           ? decodeURIComponent(options.sourceActivityId)
           : "";
 
-      this.hydratePage(sourceActivityId);
+      void this.hydratePage(sourceActivityId);
       return;
     }
 
@@ -538,22 +373,22 @@ Page({
         : "";
 
     try {
-      await fetchOwnedClubs(CURRENT_USER_ID);
-    } catch {
-      // Keep the local mock snapshot if the clubs API is not reachable yet.
+      await fetchOwnedClubs(getResolvedCurrentUserId());
+    } catch (error) {
+      this.showError(error);
     }
 
-    this.hydratePage(sourceActivityId);
+    await this.hydratePage(sourceActivityId);
   },
 
   async syncRemoteOwnerAssets(): Promise<void> {
     try {
-      await fetchOwnedClubs(CURRENT_USER_ID);
-    } catch {
-      // Keep the current local snapshot when the API is temporarily unavailable.
+      await fetchOwnedClubs(getResolvedCurrentUserId());
+    } catch (error) {
+      this.showError(error);
     }
 
-    const ownerOptions = listOwnerOptions(CURRENT_USER_ID);
+    const ownerOptions = listOwnerOptions(getResolvedCurrentUserId());
     const clubOptions = ownerOptions.filter((item) => item.ownerType === "CLUB");
     const currentSelectedOwnerId = this.data.ownerOptions[this.data.selectedOwnerIndex]?.ownerId ?? "";
     const nextSelectedOwnerIndex = ownerOptions.findIndex(
@@ -585,65 +420,45 @@ Page({
       return;
     }
 
-    try {
-      await fetchVenuesForOwner(selectedOwner.ownerType, selectedOwner.ownerId);
-      this.refreshVenueData();
-    } catch {
-      // Leave the in-memory venue list untouched if remote sync fails.
-    }
+    this.ensureDefaultCourts();
   },
 
-  hydratePage(sourceActivityId = ""): void {
+  async hydratePage(sourceActivityId = ""): Promise<void> {
     const currentUser = getCurrentUser() ?? {
-      id: CURRENT_USER_ID,
+      id: getResolvedCurrentUserId(),
       nickname: "当前用户",
       gender: "MALE" as const,
       avatarColor: "#4C7CF0",
       phoneNumber: "",
       contactProfileComplete: false,
     };
-    const ownerOptions = listOwnerOptions(CURRENT_USER_ID);
+    const ownerOptions = listOwnerOptions(getResolvedCurrentUserId());
     const profileSnapshot = getAuthSnapshot();
     const clubOptions = ownerOptions.filter((item) => item.ownerType === "CLUB");
     const defaultClubOwnerIndex = Math.max(
-      clubOptions.findIndex((item) => item.ownerId === listOwnedClubs(CURRENT_USER_ID)[0]?.id),
+      clubOptions.findIndex((item) => item.ownerId === listOwnedClubs(getResolvedCurrentUserId())[0]?.id),
       0
     );
 
     if (sourceActivityId.length > 0) {
       try {
-        const allVenues = listVenues();
         const mapped = mapDraftToCreateState(
-          buildRepublishDraft(sourceActivityId, CURRENT_USER_ID),
-          ownerOptions,
-          allVenues
+          await buildRepublishDraft(sourceActivityId, getResolvedCurrentUserId()),
+          ownerOptions
         );
         const selectedOwner = ownerOptions[mapped.selectedOwnerIndex];
-        const selectedOwnerVenues = selectedOwner
-          ? listVenues(selectedOwner.ownerType, selectedOwner.ownerId)
-          : [];
-        const selectedVenueId = selectedOwnerVenues[mapped.selectedVenueIndex]?.venue.id ?? "";
-        const managerVenues = selectedOwner
-          ? listVenuesForManagement(selectedOwner.ownerType, selectedOwner.ownerId)
-          : [];
-        const managerIndex = getVenueIndexById(managerVenues, selectedVenueId);
 
         this.setData({
           currentUserName: currentUser.nickname,
           ownerContactHint: getOwnerContactHint(selectedOwner),
           pageTitle: "再次发布",
           pageCaption: "已带出上次活动的配置，可直接修改后发布。",
-          republishNotice:
-            mapped.missingCourtLabels.length > 0
-              ? `原活动有 ${mapped.missingCourtLabels.join("、")} 已停用，请重新确认场地选择。`
-              : "",
+          republishNotice: "",
           ownerOptions,
           ownerCardItems: buildRoleCards(ownerOptions),
           showRoleContent: true,
           selectedRoleType: selectedOwner?.ownerType ?? "",
           selectedSignupModeIndex: mapped.selectedSignupModeIndex,
-          venues: selectedOwnerVenues,
-          venueLabels: selectedOwnerVenues.map((item) => item.venue.name),
           createForm: mapped.createForm,
           selectedOwnerIndex: mapped.selectedOwnerIndex,
           selectedChargeModeIndex: mapped.selectedChargeModeIndex,
@@ -654,23 +469,17 @@ Page({
             ),
             0
           ),
-          selectedVenueIndex: mapped.selectedVenueIndex,
           availableCourts: mapped.availableCourts,
           descriptionBlocks: ensureDescriptionBlocks(
             parseDescriptionRichtext(mapped.createForm.descriptionRichtext)
           ),
-          managerVenues,
-          managerVenueLabels: managerVenues.map((item) => item.venue.name),
-          selectedManagerVenueIndex: managerIndex,
-          venueManagerForm: buildVenueManagerForm(managerVenues[managerIndex]),
-          managerCourts: buildManagerCourts(managerVenues[managerIndex]),
           profileSheetForm: {
-            avatarInitial: getAvatarInitial(currentUser.nickname),
-            avatarUrl: currentUser.avatarUrl ?? "",
-            nickname: currentUser.nickname,
-            selectedGenderIndex: currentUser.gender === "FEMALE" ? 1 : 0,
-            phoneMasked: maskPhoneNumber(currentUser.phoneNumber ?? ""),
-            phoneVerified: Boolean(profileSnapshot.contactProfileComplete),
+            avatarInitial: getAvatarInitial(profileSnapshot.user?.nickname ?? ""),
+            avatarUrl: profileSnapshot.user?.avatarUrl ?? "",
+            nickname: profileSnapshot.user?.nickname ?? "",
+            selectedGenderIndex: getGenderIndex(profileSnapshot.user?.gender),
+            phoneNumber: profileSnapshot.user?.phoneNumber ?? currentUser.phoneNumber ?? "",
+            phoneComplete: Boolean(profileSnapshot.contactProfileComplete),
           },
           clubOwnerLabels: clubOptions.map((item) => item.label),
           selectedClubOwnerIndex: defaultClubOwnerIndex,
@@ -691,29 +500,21 @@ Page({
       ownerOptions,
       ownerCardItems: buildRoleCards(ownerOptions),
       selectedSignupModeIndex: 0,
-      venues: [],
-      venueLabels: [],
       selectedOwnerIndex: -1,
       selectedRoleType: "",
       showRoleContent: false,
       selectedChargeModeIndex: 1,
       selectedCancelCutoffIndex: 1,
-      selectedVenueIndex: 0,
-      availableCourts: [],
+      availableCourts: getDefaultFormCourts(),
       createForm: getDefaultCreateForm(),
       descriptionBlocks: [createParagraphBlock()],
-      managerVenues: [],
-      managerVenueLabels: [],
-      selectedManagerVenueIndex: 0,
-      venueManagerForm: getEmptyVenueManagerForm(),
-      managerCourts: buildManagerCourts(),
       profileSheetForm: {
-        avatarInitial: getAvatarInitial(currentUser.nickname),
-        avatarUrl: currentUser.avatarUrl ?? "",
-        nickname: currentUser.nickname,
-        selectedGenderIndex: currentUser.gender === "FEMALE" ? 1 : 0,
-        phoneMasked: maskPhoneNumber(currentUser.phoneNumber ?? ""),
-        phoneVerified: Boolean(profileSnapshot.contactProfileComplete),
+        avatarInitial: getAvatarInitial(profileSnapshot.user?.nickname ?? ""),
+        avatarUrl: profileSnapshot.user?.avatarUrl ?? "",
+        nickname: profileSnapshot.user?.nickname ?? "",
+        selectedGenderIndex: getGenderIndex(profileSnapshot.user?.gender),
+        phoneNumber: profileSnapshot.user?.phoneNumber ?? currentUser.phoneNumber ?? "",
+        phoneComplete: Boolean(profileSnapshot.contactProfileComplete),
       },
       clubOwnerLabels: clubOptions.map((item) => item.label),
       selectedClubOwnerIndex: defaultClubOwnerIndex,
@@ -721,50 +522,13 @@ Page({
     });
   },
 
-  refreshVenueData(savedVenueId = "", selectSavedVenue = false): void {
-    const selectedOwner = this.data.ownerOptions[this.data.selectedOwnerIndex];
-
-    if (!selectedOwner) {
-      this.setData({
-        venues: [],
-        venueLabels: [],
-        availableCourts: [],
-        managerVenues: [],
-        managerVenueLabels: [],
-        showVenueManager: false,
-      });
+  ensureDefaultCourts(): void {
+    if (this.data.availableCourts.length > 0) {
       return;
     }
 
-    const previousSelectedVenueId = this.data.venues[this.data.selectedVenueIndex]?.venue.id ?? "";
-    const venues = listVenues(selectedOwner.ownerType, selectedOwner.ownerId);
-    const managerVenues = listVenuesForManagement(selectedOwner.ownerType, selectedOwner.ownerId);
-    const nextSelectedVenueId =
-      (selectSavedVenue ? savedVenueId : previousSelectedVenueId) ||
-      venues[0]?.venue.id ||
-      "";
-    const nextSelectedVenueIndex = getVenueIndexById(venues, nextSelectedVenueId);
-    const nextSelectedVenue = venues[nextSelectedVenueIndex];
-    const shouldPreserveCourtConfig =
-      previousSelectedVenueId.length > 0 &&
-      previousSelectedVenueId === nextSelectedVenue?.venue.id &&
-      !selectSavedVenue;
-    const availableCourts = shouldPreserveCourtConfig
-      ? mergeAvailableCourts(nextSelectedVenue, this.data.availableCourts)
-      : getDefaultAvailableCourts(venues, nextSelectedVenueIndex);
-    const managerIndex = getVenueIndexById(managerVenues, savedVenueId || nextSelectedVenueId);
-
     this.setData({
-      venues,
-      venueLabels: venues.map((item) => item.venue.name),
-      selectedVenueIndex: nextSelectedVenueIndex,
-      availableCourts,
-      managerVenues,
-      managerVenueLabels: managerVenues.map((item) => item.venue.name),
-      selectedManagerVenueIndex: managerIndex,
-      venueManagerForm: buildVenueManagerForm(managerVenues[managerIndex]),
-      managerCourts: buildManagerCourts(managerVenues[managerIndex]),
-      showVenueManager: false,
+      availableCourts: getDefaultFormCourts(),
     });
   },
 
@@ -777,45 +541,12 @@ Page({
     } as never);
   },
 
-  async pickSingleImage(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      compatibleWx.chooseMedia({
-        count: 1,
-        mediaType: ["image"],
-        sizeType: ["compressed"],
-        sourceType: ["album", "camera"],
-        success: (result: ChooseMediaSuccessResult) => {
-          const tempFilePath = result.tempFiles?.[0]?.tempFilePath ?? "";
-
-          if (!tempFilePath) {
-            reject(new Error("未获取到图片，请重试"));
-            return;
-          }
-
-          resolve(tempFilePath);
-        },
-        fail: (error: MiniProgramLocationError) => {
-          const errMsg = error.errMsg ?? "";
-
-          if (errMsg.includes("cancel")) {
-            resolve("");
-            return;
-          }
-
-          reject(error);
-        },
-      });
-    });
-  },
-
   async pickAndUploadImage(scene: "activity-cover" | "club-cover" | "club-logo"): Promise<string> {
-    const filePath = await this.pickSingleImage();
+    const uploaded = await pickCompressAndUploadImageAsset(scene);
 
-    if (!filePath) {
+    if (!uploaded) {
       return "";
     }
-
-    const uploaded = await uploadImageAsset(filePath, scene);
 
     return uploaded.assetUrl;
   },
@@ -850,56 +581,24 @@ Page({
       ownerCardItems: buildRoleCards(this.data.ownerOptions),
     });
 
-    this.refreshVenueData();
+    this.ensureDefaultCourts();
   },
 
-  handleProfileNicknameInput(event: InputEvent): void {
-    const nickname = typeof event.detail.value === "string" ? event.detail.value.trim() : "";
-
+  handleProfileFormChange(event: ProfileFormChangeEvent): void {
     this.setData({
-      "profileSheetForm.avatarInitial": getAvatarInitial(nickname),
-      "profileSheetForm.nickname": nickname,
-    } as never);
+      profileSheetForm: event.detail,
+    });
   },
 
-  handleProfileChooseAvatar(event: ChooseAvatarEvent): void {
-    const avatarUrl = typeof event.detail.avatarUrl === "string" ? event.detail.avatarUrl : "";
-
-    this.setData({
-      "profileSheetForm.avatarUrl": avatarUrl,
-    } as never);
-  },
-
-  handleProfileGenderChange(event: PickerChangeEvent): void {
-    this.setData({
-      "profileSheetForm.selectedGenderIndex": Number(event.detail.value ?? 0),
-    } as never);
-  },
-
-  async handleGetPhoneNumber(event: PhoneNumberEvent): Promise<void> {
-    const code = typeof event.detail.code === "string" ? event.detail.code : "";
-
-    if (!code || code === "getPhoneNumber:fail user deny") {
+  async handleSubmitProfileSheet(): Promise<void> {
+    if (!this.data.profileSheetForm.avatarUrl) {
       wx.showToast({
-        title: "你还没有完成手机号验证",
+        title: "请先选择头像",
         icon: "none",
       });
       return;
     }
 
-    try {
-      const updatedUser = await updateCurrentUserPhoneNumber(code);
-
-      this.setData({
-        "profileSheetForm.phoneMasked": maskPhoneNumber(updatedUser?.phoneNumber ?? ""),
-        "profileSheetForm.phoneVerified": Boolean(updatedUser?.contactProfileComplete),
-      } as never);
-    } catch (error) {
-      this.showError(error);
-    }
-  },
-
-  async handleSubmitProfileSheet(): Promise<void> {
     if (!this.data.profileSheetForm.nickname.trim()) {
       wx.showToast({
         title: "请先填写昵称",
@@ -908,16 +607,23 @@ Page({
       return;
     }
 
-    if (!this.data.profileSheetForm.phoneVerified) {
+    if (!isValidPhoneNumber(this.data.profileSheetForm.phoneNumber)) {
       wx.showToast({
-        title: "请先完成手机号验证",
+        title: "请先填写正确手机号",
         icon: "none",
       });
       return;
     }
 
-    const gender: UserGender =
-      this.data.profileSheetForm.selectedGenderIndex === 1 ? "FEMALE" : "MALE";
+    const gender = getGenderFromIndex(this.data.profileSheetForm.selectedGenderIndex);
+
+    if (!gender) {
+      wx.showToast({
+        title: "请先选择性别",
+        icon: "none",
+      });
+      return;
+    }
 
     try {
       await updateCurrentUserProfile({
@@ -925,11 +631,12 @@ Page({
         nickname: this.data.profileSheetForm.nickname,
         gender,
       });
+      await updateCurrentUserPhoneNumber(this.data.profileSheetForm.phoneNumber);
 
       this.setData({
         currentUserName: this.data.profileSheetForm.nickname,
-        ownerOptions: listOwnerOptions(CURRENT_USER_ID),
-        ownerCardItems: buildRoleCards(listOwnerOptions(CURRENT_USER_ID)),
+        ownerOptions: listOwnerOptions(getResolvedCurrentUserId()),
+        ownerCardItems: buildRoleCards(listOwnerOptions(getResolvedCurrentUserId())),
         showProfileSheet: false,
       });
       this.activateRole("PERSONAL");
@@ -965,26 +672,6 @@ Page({
     this.setData({
       [`clubSheetForm.${field}`]: value,
     } as never);
-  },
-
-  handleChooseClubLocation(): void {
-    compatibleWx.chooseLocation({
-      success: (result: ChooseLocationSuccessResult) => {
-        this.setData({
-          "clubSheetForm.address": result.address || "",
-          "clubSheetForm.latitude": `${result.latitude}`,
-          "clubSheetForm.longitude": `${result.longitude}`,
-          "clubSheetForm.locationName": result.name || "",
-        } as never);
-      },
-      fail: (error: MiniProgramLocationError) => {
-        const errMsg = error.errMsg ?? "";
-
-        if (!errMsg.includes("cancel")) {
-          this.showError(error);
-        }
-      },
-    });
   },
 
   async handleUploadClubCover(): Promise<void> {
@@ -1031,31 +718,67 @@ Page({
     this.setData({
       showClubSheet: true,
       clubOwnerLabels: clubOwnerOptions.map((item) => item.label),
+      profileSheetForm: buildProfileSheetForm(),
       clubSheetForm: buildClubSheetForm(clubOwnerOptions[this.data.selectedClubOwnerIndex]?.ownerId ?? ""),
     });
   },
 
   async handleSubmitClubSheet(): Promise<void> {
+    if (!this.data.profileSheetForm.avatarUrl) {
+      wx.showToast({
+        title: "请先选择头像",
+        icon: "none",
+      });
+      return;
+    }
+
+    if (!this.data.profileSheetForm.nickname.trim()) {
+      wx.showToast({
+        title: "请先填写昵称",
+        icon: "none",
+      });
+      return;
+    }
+
+    if (!isValidPhoneNumber(this.data.profileSheetForm.phoneNumber)) {
+      wx.showToast({
+        title: "请先填写正确手机号",
+        icon: "none",
+      });
+      return;
+    }
+
+    const gender = getGenderFromIndex(this.data.profileSheetForm.selectedGenderIndex);
+
+    if (!gender) {
+      wx.showToast({
+        title: "请先选择性别",
+        icon: "none",
+      });
+      return;
+    }
+
     try {
+      const updatedProfile = await updateCurrentUserProfile({
+        avatarUrl: this.data.profileSheetForm.avatarUrl,
+        nickname: this.data.profileSheetForm.nickname,
+        gender,
+      });
+      const updatedUser = await updateCurrentUserPhoneNumber(this.data.profileSheetForm.phoneNumber);
+      const contactName = updatedUser?.nickname || updatedProfile?.nickname || this.data.profileSheetForm.nickname;
+      const contactPhone = updatedUser?.phoneNumber || this.data.profileSheetForm.phoneNumber;
       const nextClub = await createOrUpdateClub({
         clubId: this.data.clubSheetForm.clubId || undefined,
-        currentUserId: CURRENT_USER_ID,
+        currentUserId: getResolvedCurrentUserId(),
         coverUrl: this.data.clubSheetForm.coverUrl,
         logoUrl: this.data.clubSheetForm.logoUrl,
         name: this.data.clubSheetForm.name,
-        province: this.data.clubSheetForm.province,
-        city: this.data.clubSheetForm.city,
-        district: this.data.clubSheetForm.district,
-        address: this.data.clubSheetForm.address,
-        latitude: Number(this.data.clubSheetForm.latitude || "0") || undefined,
-        longitude: Number(this.data.clubSheetForm.longitude || "0") || undefined,
         description: this.data.clubSheetForm.description,
-        wechatId: this.data.clubSheetForm.wechatId,
-        contactName: this.data.clubSheetForm.contactName,
-        contactPhone: this.data.clubSheetForm.contactPhone,
+        contactName,
+        contactPhone,
       });
 
-      const ownerOptions = listOwnerOptions(CURRENT_USER_ID);
+      const ownerOptions = listOwnerOptions(getResolvedCurrentUserId());
       const clubOwnerOptions = ownerOptions.filter((item) => item.ownerType === "CLUB");
       const selectedClubOwnerIndex = Math.max(
         clubOwnerOptions.findIndex((item) => item.ownerId === nextClub.id),
@@ -1063,6 +786,7 @@ Page({
       );
 
       this.setData({
+        currentUserName: contactName,
         ownerOptions,
         ownerCardItems: buildRoleCards(ownerOptions),
         clubOwnerLabels: clubOwnerOptions.map((item) => item.label),
@@ -1123,16 +847,12 @@ Page({
 
     if (roleType === "CLUB") {
       const clubOptions = this.data.ownerOptions.filter((item) => item.ownerType === "CLUB");
-      const ownedClub = listOwnedClubs(CURRENT_USER_ID).find(
+      const ownedClub = listOwnedClubs(getResolvedCurrentUserId()).find(
         (item) => item.id === clubOptions[this.data.selectedClubOwnerIndex]?.ownerId
       );
 
-      if (!ownedClub || !ownedClub.contactPhone || !ownedClub.address || !ownedClub.contactName) {
-        wx.navigateTo({
-          url: `/pages/club-register/index?source=activity-create${
-            ownedClub?.id ? `&clubId=${encodeURIComponent(ownedClub.id)}` : ""
-          }`,
-        });
+      if (!ownedClub || !ownedClub.contactPhone || !ownedClub.contactName) {
+        this.handleOpenClubSheet();
         return;
       }
 
@@ -1158,18 +878,6 @@ Page({
       selectedSignupModeIndex,
       "createForm.signupMode": selectedOption.value,
     } as never);
-  },
-
-  handleVenueChange(event: PickerChangeEvent): void {
-    const selectedVenueIndex = Number(event.detail.value ?? 0);
-    const venues = this.data.venues;
-
-    this.setData({
-      venues,
-      selectedVenueIndex,
-      venueLabels: venues.map((item) => item.venue.name),
-      availableCourts: getDefaultAvailableCourts(venues, selectedVenueIndex),
-    });
   },
 
   handleCancelCutoffChange(event: PickerChangeEvent): void {
@@ -1221,13 +929,13 @@ Page({
 
   async handleAddImageBlock(): Promise<void> {
     try {
-      const imagePath = await this.pickSingleImage();
+      const uploaded = await pickCompressAndUploadImageAsset("activity-detail");
 
-      if (!imagePath) {
+      if (!uploaded) {
         return;
       }
 
-      this.updateDescriptionBlocks([...this.data.descriptionBlocks, createImageBlock(imagePath)]);
+      this.updateDescriptionBlocks([...this.data.descriptionBlocks, createImageBlock(uploaded.assetUrl)]);
     } catch (error) {
       this.showError(error);
     }
@@ -1242,9 +950,9 @@ Page({
     }
 
     try {
-      const imagePath = await this.pickSingleImage();
+      const uploaded = await pickCompressAndUploadImageAsset("activity-detail");
 
-      if (!imagePath) {
+      if (!uploaded) {
         return;
       }
 
@@ -1252,7 +960,7 @@ Page({
         index === blockIndex && item.type === "image"
           ? {
               ...item,
-              src: imagePath,
+              src: uploaded.assetUrl,
             }
           : item
       );
@@ -1327,308 +1035,61 @@ Page({
     } as never);
   },
 
-  handleOpenVenueManager(): void {
-    const selectedOwner = this.data.ownerOptions[this.data.selectedOwnerIndex];
+  handleAddCourt(): void {
+    const nextIndex = this.data.availableCourts.length + 1;
 
-    if (!selectedOwner) {
-      wx.showToast({
-        title: "请先选择发布角色",
-        icon: "none",
-      });
-      return;
-    }
-
-    wx.navigateTo({
-      url: `/pages/venue-court-management/index?source=activity-create&ownerType=${encodeURIComponent(
-        selectedOwner.ownerType
-      )}&ownerId=${encodeURIComponent(selectedOwner.ownerId)}`,
+    this.setData({
+      availableCourts: [...this.data.availableCourts, createFormCourt(`${nextIndex} 号场`)],
     });
   },
 
-  handleCloseVenueManager(): void {
+  handleRemoveCourt(event: DatasetEvent): void {
+    const courtIndex = Number(event.currentTarget.dataset.courtIndex);
+
+    if (!Number.isFinite(courtIndex)) {
+      return;
+    }
+
     this.setData({
-      showVenueManager: false,
+      availableCourts: this.data.availableCourts.filter((_, index) => index !== courtIndex),
+    });
+  },
+
+  handleChooseVenueLocation(): void {
+    compatibleWx.chooseLocation({
+      success: (result) => {
+        this.setData({
+          "createForm.venueName": result.name || this.data.createForm.venueName,
+          "createForm.venueAddress": result.address || this.data.createForm.venueAddress,
+          "createForm.venueLatitude": `${result.latitude}`,
+          "createForm.venueLongitude": `${result.longitude}`,
+        } as never);
+      },
+      fail: (error) => {
+        const message = typeof error.errMsg === "string" ? error.errMsg : "";
+
+        if (!message.includes("cancel")) {
+          this.showError(new Error("未能获取定位，请手动填写球馆信息"));
+        }
+      },
     });
   },
 
   handleVenueSheetTap(): void {},
 
-  handleManagerVenueChange(event: PickerChangeEvent): void {
-    const selectedManagerVenueIndex = Number(event.detail.value ?? 0);
-    const venueItem = this.data.managerVenues[selectedManagerVenueIndex];
-
-    this.setData({
-      selectedManagerVenueIndex,
-      venueManagerForm: buildVenueManagerForm(venueItem),
-      managerCourts: buildManagerCourts(venueItem),
-    });
-  },
-
-  handleStartCreateVenue(): void {
-    this.setData({
-      venueManagerForm: getEmptyVenueManagerForm(),
-      managerCourts: buildManagerCourts(),
-    });
-  },
-
-  handleVenueManagerInput(event: InputEvent & DatasetEvent): void {
-    const field = event.currentTarget.dataset.field;
-    const value = typeof event.detail.value === "string" ? event.detail.value : "";
-
-    if (!field) {
-      return;
-    }
-
-    this.setData({
-      [`venueManagerForm.${field}`]: value,
-    } as never);
-  },
-
-  handleChooseVenueLocation(): void {
-    compatibleWx.chooseLocation({
-      success: (result: ChooseLocationSuccessResult) => {
-        const locationName = result.name || "";
-        const currentNavigationName = this.data.venueManagerForm.navigationName.trim();
-
-        this.setData({
-          "venueManagerForm.address": result.address || "",
-          "venueManagerForm.latitude": `${result.latitude}`,
-          "venueManagerForm.longitude": `${result.longitude}`,
-          "venueManagerForm.locationName": locationName,
-          "venueManagerForm.navigationName": currentNavigationName || locationName || this.data.venueManagerForm.name,
-        } as never);
-      },
-      fail: (error: MiniProgramLocationError) => {
-        const errMsg = error.errMsg ?? "";
-
-        if (!errMsg.includes("cancel")) {
-          this.showError(error);
-        }
-      },
-    });
-  },
-
-  handleManagerCourtInput(event: InputEvent & DatasetEvent): void {
-    const courtIndex = Number(event.currentTarget.dataset.courtIndex);
-    const field = event.currentTarget.dataset.field;
-    const value = typeof event.detail.value === "string" ? event.detail.value : "";
-
-    if (!field) {
-      return;
-    }
-
-    this.setData({
-      [`managerCourts[${courtIndex}].${field}`]: value,
-    } as never);
-  },
-
-  handleAddManagerCourt(): void {
-    this.setData({
-      managerCourts: [
-        ...this.data.managerCourts,
-        {
-          rowKey: createTempKey(),
-          id: "",
-          courtCode: "",
-          courtName: "",
-          status: "ACTIVE",
-          originalStatus: "ACTIVE",
-          isNew: true,
-        },
-      ],
-    });
-  },
-
-  handleToggleManagerCourtStatus(event: DatasetEvent): void {
-    const courtIndex = Number(event.currentTarget.dataset.courtIndex);
-    const court = this.data.managerCourts[courtIndex];
-
-    if (!court) {
-      return;
-    }
-
-    if (court.isNew) {
-      this.setData({
-        managerCourts: this.data.managerCourts.filter((_, index) => index !== courtIndex),
-      });
-      return;
-    }
-
-    if (court.status === "INACTIVE") {
-      return;
-    }
-
-    this.setData({
-      [`managerCourts[${courtIndex}].status`]: "INACTIVE",
-    } as never);
-  },
-
-  validateVenueManager(): {
-    activeCourts: VenueManagerCourtForm[];
-    latitude: number;
-    longitude: number;
-  } {
-    const { venueManagerForm, managerCourts } = this.data;
-
-    if (!venueManagerForm.name.trim()) {
-      throw new Error("请填写场馆名称");
-    }
-
-    if (!venueManagerForm.address.trim()) {
-      throw new Error("请填写场馆地址");
-    }
-
-    const latitude = Number(venueManagerForm.latitude);
-    const longitude = Number(venueManagerForm.longitude);
-
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      throw new Error("请先地图选点，回填地址信息");
-    }
-
-    const activeCourts = managerCourts.filter((court) => court.status === "ACTIVE");
-    const activeCodes = new Set<string>();
-
-    activeCourts.forEach((court) => {
-      const courtCode = court.courtCode.trim();
-
-      if (!courtCode) {
-        throw new Error("请为启用中的场地填写场地号");
-      }
-
-      if (activeCodes.has(courtCode)) {
-        throw new Error("场地号重复了，请检查后重试");
-      }
-
-      activeCodes.add(courtCode);
-    });
-
-    if (venueManagerForm.isNew && activeCourts.length === 0) {
-      throw new Error("新建场馆时至少需要一片启用场地");
-    }
-
-    return {
-      activeCourts,
-      latitude,
-      longitude,
-    };
-  },
-
-  async handleSaveVenueManager(): Promise<void> {
-    try {
-      const { activeCourts, latitude, longitude } = this.validateVenueManager();
-      const { venueManagerForm, managerCourts } = this.data;
-      const selectedOwner = this.data.ownerOptions[this.data.selectedOwnerIndex];
-
-      if (!selectedOwner) {
-        throw new Error("请先选择发布角色");
-      }
-
-      if (venueManagerForm.isNew) {
-        const createdVenue = await createVenue({
-          ownerType: selectedOwner.ownerType,
-          ownerId: selectedOwner.ownerId,
-          name: venueManagerForm.name,
-          shortName: venueManagerForm.shortName || venueManagerForm.name,
-          province: venueManagerForm.province.trim(),
-          city: venueManagerForm.city.trim(),
-          district: venueManagerForm.district.trim(),
-          address: venueManagerForm.address,
-          latitude,
-          longitude,
-          navigationName: venueManagerForm.navigationName || venueManagerForm.name,
-          courtCodes: activeCourts.map((court) => court.courtCode.trim()),
-        });
-        const createdCourtsByCode = new Map(
-          createdVenue.courts.map((court) => [court.courtCode, court])
-        );
-
-        for (const court of activeCourts) {
-          const createdCourt = createdCourtsByCode.get(court.courtCode.trim());
-
-          if (
-            createdCourt &&
-            court.courtName.trim().length > 0 &&
-            court.courtName.trim() !== createdCourt.courtName
-          ) {
-            await updateVenueCourt({
-              courtId: createdCourt.id,
-              courtCode: court.courtCode.trim(),
-              courtName: court.courtName.trim(),
-            });
-          }
-        }
-
-        this.refreshVenueData(createdVenue.venue.id, true);
-        wx.showToast({
-          title: "场馆已新增",
-          icon: "success",
-        });
-        return;
-      }
-
-      await updateVenue({
-        venueId: venueManagerForm.venueId,
-        name: venueManagerForm.name,
-        shortName: venueManagerForm.shortName,
-        province: venueManagerForm.province.trim(),
-        city: venueManagerForm.city.trim(),
-        district: venueManagerForm.district,
-        address: venueManagerForm.address,
-        latitude,
-        longitude,
-        navigationName: venueManagerForm.navigationName,
-      });
-
-      for (const court of managerCourts) {
-        if (court.isNew) {
-          if (court.status === "ACTIVE" && court.courtCode.trim()) {
-            await createVenueCourt({
-              venueId: venueManagerForm.venueId,
-              courtCode: court.courtCode.trim(),
-              courtName: court.courtName.trim(),
-            });
-          }
-          continue;
-        }
-
-        if (court.originalStatus === "ACTIVE" && court.status === "INACTIVE") {
-          await deactivateVenueCourt(court.id);
-          continue;
-        }
-
-        if (court.status === "ACTIVE") {
-          await updateVenueCourt({
-            courtId: court.id,
-            courtCode: court.courtCode.trim(),
-            courtName: court.courtName.trim(),
-          });
-        }
-      }
-
-      this.refreshVenueData(venueManagerForm.venueId, false);
-      wx.showToast({
-        title: "场馆配置已保存",
-        icon: "success",
-      });
-    } catch (error) {
-      this.showError(error);
-    }
-  },
-
-  handleSubmitCreate(): void {
+  async handleSubmitCreate(): Promise<void> {
     try {
       const createForm = {
         ...this.data.createForm,
         descriptionRichtext: serializeDescriptionBlocks(this.data.descriptionBlocks),
       };
-      const createdActivity = createActivity(
+      const createdActivity = await createActivity(
         buildCreateActivityInput({
           createForm,
           availableCourts: this.data.availableCourts,
           ownerOption: this.data.ownerOptions[this.data.selectedOwnerIndex],
-          selectedVenue: this.data.venues[this.data.selectedVenueIndex],
           selectedChargeModeIndex: this.data.selectedChargeModeIndex,
-          currentUserId: CURRENT_USER_ID,
+          currentUserId: getResolvedCurrentUserId(),
         })
       );
 

@@ -112,7 +112,16 @@
       </scroll-view>
 
       <view
-        wx:if="{{visibleActivities.length > 0}}"
+        wx:if="{{isLoadingActivities}}"
+        class="home-empty"
+      >
+        <view class="home-empty__number"><text>...</text></view>
+        <view class="home-empty__title"><text>正在加载活动</text></view>
+        <view class="home-empty__subtitle"><text>马上看看最近有哪些球局。</text></view>
+      </view>
+
+      <view
+        wx:elif="{{visibleActivities.length > 0}}"
         class="activity-list"
       >
         <view
@@ -183,12 +192,12 @@
         class="home-empty"
       >
         <view class="home-empty__number"><text>0</text></view>
-        <view class="home-empty__title"><text>没有匹配的活动</text></view>
-        <view class="home-empty__subtitle"><text>试试切换分类或搜索别的关键词。</text></view>
+        <view class="home-empty__title"><text>{{loadFailed ? '接口暂时不可用' : '没有匹配的活动'}}</text></view>
+        <view class="home-empty__subtitle"><text>{{loadFailed ? '请稍后再试，或检查网络和 API 配置。' : '试试切换分类或搜索别的关键词。'}}</text></view>
       </view>
 
       <view class="home-stats">
-        <view class="home-stats__number"><text>12+</text></view>
+        <view class="home-stats__number"><text>{{activities.length}}</text></view>
         <view class="home-stats__label"><text>EVENTS FOUND THIS WEEK</text></view>
       </view>
   </view>

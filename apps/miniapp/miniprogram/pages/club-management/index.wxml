@@ -15,8 +15,7 @@
       </picker>
     </view>
     <view class="club-management-strip__actions">
-      <view class="club-management-pill" bindtap="handleOpenVenueManagement"><text>管理场馆</text></view>
-      <view class="club-management-pill club-management-pill--secondary" bindtap="handleOpenCreateActivity"><text>继续创建活动</text></view>
+      <view class="club-management-pill" bindtap="handleOpenCreateActivity"><text>继续创建活动</text></view>
     </view>
   </view>
 

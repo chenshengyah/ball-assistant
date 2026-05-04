@@ -8,7 +8,7 @@ import {
   updateActivityCourtCapacity,
 } from "../../services/activity-service";
 import {
-  getCurrentMockUserId,
+  getCurrentUserId,
   hasRequiredProfileForIntent,
   requireCompleteProfile,
 } from "../../services/auth";
@@ -141,7 +141,7 @@ Page({
 
   onShow(): void {
     this.syncPageChrome();
-    this.hydratePage();
+    void this.hydratePage();
     void this.tryResumePendingAction();
   },
 
@@ -151,9 +151,9 @@ Page({
     });
   },
 
-  hydratePage(): void {
-    const currentUserId = getCurrentMockUserId();
-    const activity = getActivityById(this.data.activityId, currentUserId);
+  async hydratePage(): Promise<void> {
+    const currentUserId = getCurrentUserId();
+    const activity = await getActivityById(this.data.activityId);
 
     if (!activity) {
       this.setData({
@@ -242,7 +242,7 @@ Page({
       return;
     }
 
-    const currentUserId = getCurrentMockUserId();
+    const currentUserId = getCurrentUserId();
 
     if (!currentUserId) {
       return;
@@ -251,9 +251,9 @@ Page({
     try {
       if (this.data.pendingActionType === "SIGN_UP_ACTIVITY") {
         if (this.data.pendingActivityCourtId) {
-          signUpForCourt(this.data.activityId, this.data.pendingActivityCourtId, currentUserId);
+          await signUpForCourt(this.data.activityId, this.data.pendingActivityCourtId);
         } else {
-          signUpForActivity(this.data.activityId, currentUserId);
+          await signUpForActivity(this.data.activityId);
         }
 
         wx.showToast({
@@ -263,7 +263,7 @@ Page({
       }
 
       if (this.data.pendingActionType === "CANCEL_SIGNUP" && this.data.pendingRegistrationId) {
-        cancelRegistration(this.data.pendingRegistrationId, currentUserId);
+        await cancelRegistration(this.data.pendingRegistrationId);
         wx.showToast({
           title: "已取消报名",
           icon: "success",
@@ -282,7 +282,7 @@ Page({
         pendingActivityCourtId: "",
         pendingRegistrationId: "",
       });
-      this.hydratePage();
+      await this.hydratePage();
     }
   },
 
@@ -305,7 +305,7 @@ Page({
       return;
     }
 
-    const currentUserId = getCurrentMockUserId();
+    const currentUserId = getCurrentUserId();
 
     if (!currentUserId) {
       return;
@@ -313,12 +313,12 @@ Page({
 
     try {
       if (typeof activityCourtId === "string" && activityCourtId.length > 0) {
-        signUpForCourt(this.data.activityId, activityCourtId, currentUserId);
+        await signUpForCourt(this.data.activityId, activityCourtId);
       } else {
-        signUpForActivity(this.data.activityId, currentUserId);
+        await signUpForActivity(this.data.activityId);
       }
 
-      this.hydratePage();
+      await this.hydratePage();
       wx.showToast({
         title: "报名已提交",
         icon: "success",
@@ -343,15 +343,15 @@ Page({
       return;
     }
 
-    const currentUserId = getCurrentMockUserId();
+    const currentUserId = getCurrentUserId();
 
     if (!currentUserId) {
       return;
     }
 
     try {
-      cancelRegistration(this.data.currentUserRegistrationId, currentUserId);
-      this.hydratePage();
+      await cancelRegistration(this.data.currentUserRegistrationId);
+      await this.hydratePage();
       wx.showToast({
         title: "已取消报名",
         icon: "success",
@@ -367,10 +367,10 @@ Page({
     });
   },
 
-  handleAdjustCapacity(event: DatasetEvent): void {
+  async handleAdjustCapacity(event: DatasetEvent): Promise<void> {
     const activityCourtId = event.currentTarget.dataset.activityCourtId;
     const delta = Number(event.currentTarget.dataset.delta);
-    const currentUserId = getCurrentMockUserId();
+    const currentUserId = getCurrentUserId();
 
     if (
       typeof activityCourtId !== "string" ||
@@ -388,8 +388,8 @@ Page({
     }
 
     try {
-      updateActivityCourtCapacity(activityCourtId, targetCourt.capacity + delta, currentUserId);
-      this.hydratePage();
+      await updateActivityCourtCapacity(activityCourtId, targetCourt.capacity + delta);
+      await this.hydratePage();
     } catch (error) {
       this.showError(error);
     }
@@ -397,7 +397,7 @@ Page({
 
   handleMoveRegistration(event: DatasetEvent): void {
     const registrationId = event.currentTarget.dataset.registrationId;
-    const currentUserId = getCurrentMockUserId();
+    const currentUserId = getCurrentUserId();
 
     if (typeof registrationId !== "string" || !currentUserId || !this.data.canManage) {
       return;
@@ -419,7 +419,7 @@ Page({
       itemList: targetCourts.map(
         (court) => `${court.label} · ${court.confirmedCount}/${court.capacity}`
       ),
-      success: (result) => {
+      success: async (result) => {
         const targetCourt = targetCourts[result.tapIndex];
 
         if (!targetCourt) {
@@ -427,8 +427,8 @@ Page({
         }
 
         try {
-          moveRegistration(registrationId, targetCourt.id, currentUserId);
-          this.hydratePage();
+          await moveRegistration(registrationId, targetCourt.id);
+          await this.hydratePage();
           wx.showToast({
             title: "已调整场地",
             icon: "success",

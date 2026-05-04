@@ -5,6 +5,7 @@ import {
   IsArray,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -19,7 +20,9 @@ import { Type } from "class-transformer";
 class CreateActivityCourtDto {
   @ApiProperty()
   @IsString()
-  venueCourtId!: string;
+  @MinLength(1)
+  @MaxLength(30)
+  courtName!: string;
 
   @ApiProperty()
   @IsInt()
@@ -68,7 +71,40 @@ export class CreateActivityDto {
 
   @ApiProperty()
   @IsString()
-  venueId!: string;
+  @MinLength(1)
+  @MaxLength(80)
+  venueName!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  venueAddress?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  venueProvince?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  venueCity?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  venueDistrict?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  venueLatitude?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  venueLongitude?: number;
 
   @ApiProperty({ enum: SignupMode })
   @IsEnum(SignupMode)

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../common/auth/current-user.decorator";
 import { JwtAuthGuard } from "../common/auth/jwt-auth.guard";
@@ -10,7 +10,9 @@ import { ActivityCreateService } from "./activity-create.service";
 @UseGuards(JwtAuthGuard)
 @Controller("activity-create")
 export class ActivityCreateController {
-  constructor(private readonly activityCreateService: ActivityCreateService) {}
+  constructor(
+    @Inject(ActivityCreateService) private readonly activityCreateService: ActivityCreateService
+  ) {}
 
   @Get("context")
   @ApiOperation({ summary: "Get activity-create role card context for the current user" })

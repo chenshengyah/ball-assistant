@@ -1,11 +1,16 @@
 import {
   ensureAuthenticated,
   getAuthSnapshot,
+  getCurrentUserId,
   openUserRegistrationFromProfile,
   requireCompleteProfile,
 } from "../../services/auth";
 import { fetchOwnedClubs, listOwnedClubs } from "../../services/club-service";
 import { getPageTopStyle } from "../../utils/chrome";
+
+function getResolvedCurrentUserId(): string {
+  return getCurrentUserId() || "";
+}
 
 type ProfilePageData = {
   actionButtonText: string;
@@ -133,12 +138,15 @@ Page({
     }
 
     try {
-      await fetchOwnedClubs("user-current");
-    } catch {
-      // Keep local snapshot as fallback for UI continuity.
+      await fetchOwnedClubs(getResolvedCurrentUserId());
+    } catch (error) {
+      wx.showToast({
+        title: error instanceof Error ? error.message : "俱乐部加载失败",
+        icon: "none",
+      });
     }
 
-    const clubs = listOwnedClubs("user-current");
+    const clubs = listOwnedClubs(getResolvedCurrentUserId());
 
     wx.navigateTo({
       url:

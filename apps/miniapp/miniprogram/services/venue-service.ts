@@ -7,8 +7,7 @@ import type {
   VenueUpdateInput,
   VenueWithCourts,
 } from "../types/activity";
-import { getActivityStore } from "./activity-store";
-import { getAccessToken } from "./auth";
+import { getAccessToken, getCurrentUserId } from "./auth";
 import { requestApi } from "./api";
 
 function normalizeText(value: string): string {
@@ -16,6 +15,8 @@ function normalizeText(value: string): string {
 }
 
 type VenueApiResponse = VenueWithCourts;
+
+let venueCache: VenueWithCourts[] = [];
 
 function getAuthHeaders(): Record<string, string> {
   const accessToken = getAccessToken();
@@ -29,6 +30,14 @@ function getAuthHeaders(): Record<string, string> {
   };
 }
 
+function resolveOwnerId(ownerType: OwnerType, ownerId: string): string {
+  if (ownerType !== "PERSONAL") {
+    return ownerId;
+  }
+
+  return getCurrentUserId() || ownerId;
+}
+
 function normalizeCourtCodes(courtCodes: string[]): string[] {
   return courtCodes
     .map((courtCode) => normalizeText(courtCode))
@@ -40,27 +49,11 @@ function getDefaultCourtName(courtCode: string): string {
 }
 
 function getSortedCourts(venueId: string, includeInactive = false): VenueCourt[] {
-  return getActivityStore().venueCourts
-    .filter(
-      (court) =>
-        court.venueId === venueId && (includeInactive ? true : court.status === "ACTIVE")
-    )
+  return venueCache
+    .flatMap((item) => item.courts)
+    .filter((court) => court.venueId === venueId && (includeInactive ? true : court.status === "ACTIVE"))
     .sort((left, right) => left.sortOrder - right.sortOrder)
     .map((court) => ({ ...court }));
-}
-
-function assertUniqueCourtCode(venueId: string, courtCode: string, excludeCourtId = ""): void {
-  const normalizedCode = normalizeText(courtCode);
-  const duplicatedCourt = getActivityStore().venueCourts.find(
-    (court) =>
-      court.venueId === venueId &&
-      court.id !== excludeCourtId &&
-      normalizeText(court.courtCode) === normalizedCode
-  );
-
-  if (duplicatedCourt) {
-    throw new Error("该场地号已存在，请换一个");
-  }
 }
 
 function matchesOwner(
@@ -79,13 +72,11 @@ export function listVenuesForManagement(
   ownerType?: OwnerType,
   ownerId?: string
 ): VenueWithCourts[] {
-  const store = getActivityStore();
-
-  return store.venues
-    .filter((venue) => venue.status === "ACTIVE" && matchesOwner(venue, ownerType, ownerId))
+  return venueCache
+    .filter((item) => item.venue.status === "ACTIVE" && matchesOwner(item.venue, ownerType, ownerId))
     .map((venue) => ({
-      venue: { ...venue },
-      courts: getSortedCourts(venue.id, true),
+      venue: { ...venue.venue },
+      courts: getSortedCourts(venue.venue.id, true),
     }));
 }
 
@@ -101,25 +92,25 @@ export function listVenueCourts(venueId: string, includeInactive = false): Venue
 }
 
 function syncVenueSnapshot(snapshot: VenueWithCourts): VenueWithCourts {
-  const store = getActivityStore();
-  const venueIndex = store.venues.findIndex((item) => item.id === snapshot.venue.id);
-
-  if (venueIndex >= 0) {
-    store.venues.splice(venueIndex, 1, { ...store.venues[venueIndex], ...snapshot.venue });
-  } else {
-    store.venues.push({ ...snapshot.venue });
-  }
-
-  store.venueCourts = store.venueCourts.filter((court) => court.venueId !== snapshot.venue.id);
-  store.venueCourts.push(...snapshot.courts.map((court) => ({ ...court })));
-
-  return {
+  const venueIndex = venueCache.findIndex((item) => item.venue.id === snapshot.venue.id);
+  const nextSnapshot = {
     venue: { ...snapshot.venue },
     courts: snapshot.courts.map((court) => ({ ...court })),
   };
+
+  if (venueIndex >= 0) {
+    venueCache.splice(venueIndex, 1, nextSnapshot);
+  } else {
+    venueCache.push(nextSnapshot);
+  }
+
+  return nextSnapshot;
 }
 
 function syncVenueSnapshots(snapshots: VenueWithCourts[]): VenueWithCourts[] {
+  const incomingIds = new Set(snapshots.map((snapshot) => snapshot.venue.id));
+  venueCache = venueCache.filter((snapshot) => !incomingIds.has(snapshot.venue.id));
+
   return snapshots.map((snapshot) => syncVenueSnapshot(snapshot));
 }
 
@@ -127,8 +118,9 @@ export async function fetchVenuesForOwner(
   ownerType: OwnerType,
   ownerId: string
 ): Promise<VenueWithCourts[]> {
+  const resolvedOwnerId = resolveOwnerId(ownerType, ownerId);
   const response = await requestApi<VenueApiResponse[]>({
-    path: `/venues?ownerType=${encodeURIComponent(ownerType)}&ownerId=${encodeURIComponent(ownerId)}`,
+    path: `/venues?ownerType=${encodeURIComponent(ownerType)}&ownerId=${encodeURIComponent(resolvedOwnerId)}`,
     headers: getAuthHeaders(),
   });
 
@@ -145,7 +137,7 @@ export async function createVenue(input: VenueCreateInput): Promise<VenueWithCou
     method: "POST",
     data: {
       ownerType: input.ownerType,
-      ownerId: input.ownerId,
+      ownerId: resolveOwnerId(input.ownerType, input.ownerId),
       name: normalizeText(input.name),
       shortName: normalizeText(input.shortName) || normalizeText(input.name),
       province: normalizeText(input.province),
@@ -233,13 +225,17 @@ export async function createVenueCourt(
     headers: getAuthHeaders(),
   });
 
-  const store = getActivityStore();
-  const existingIndex = store.venueCourts.findIndex((item) => item.id === response.id);
+  const venueIndex = venueCache.findIndex((item) => item.venue.id === response.venueId);
 
-  if (existingIndex >= 0) {
-    store.venueCourts.splice(existingIndex, 1, { ...store.venueCourts[existingIndex], ...response });
-  } else {
-    store.venueCourts.push({ ...response });
+  if (venueIndex >= 0) {
+    const courts = venueCache[venueIndex].courts;
+    const existingIndex = courts.findIndex((item) => item.id === response.id);
+
+    if (existingIndex >= 0) {
+      courts.splice(existingIndex, 1, { ...courts[existingIndex], ...response });
+    } else {
+      courts.push({ ...response });
+    }
   }
 
   return { ...response };
@@ -266,12 +262,13 @@ export async function updateVenueCourt(
     headers: getAuthHeaders(),
   });
 
-  const existingCourt = getActivityStore().venueCourts.find((item) => item.id === response.id);
+  const venue = venueCache.find((item) => item.venue.id === response.venueId);
+  const existingCourt = venue?.courts.find((item) => item.id === response.id);
 
   if (existingCourt) {
     Object.assign(existingCourt, response);
-  } else {
-    getActivityStore().venueCourts.push({ ...response });
+  } else if (venue) {
+    venue.courts.push({ ...response });
   }
 
   return { ...response };
@@ -284,12 +281,13 @@ export async function deactivateVenueCourt(courtId: string): Promise<VenueCourt>
     headers: getAuthHeaders(),
   });
 
-  const existingCourt = getActivityStore().venueCourts.find((item) => item.id === response.id);
+  const venue = venueCache.find((item) => item.venue.id === response.venueId);
+  const existingCourt = venue?.courts.find((item) => item.id === response.id);
 
   if (existingCourt) {
     Object.assign(existingCourt, response);
-  } else {
-    getActivityStore().venueCourts.push({ ...response });
+  } else if (venue) {
+    venue.courts.push({ ...response });
   }
 
   return { ...response };

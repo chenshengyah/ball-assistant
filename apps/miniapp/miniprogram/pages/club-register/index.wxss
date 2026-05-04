@@ -63,10 +63,11 @@ page {
   color: var(--iz-text-primary);
 }
 
-.club-register-link {
+.club-register-section__hint {
+  margin: 10rpx 0 18rpx;
   font-size: 24rpx;
-  font-weight: 700;
-  color: var(--iz-color-primary);
+  line-height: 1.6;
+  color: var(--iz-text-tertiary);
 }
 
 .club-register-media-grid {
@@ -112,12 +113,6 @@ page {
   color: var(--iz-text-primary);
 }
 
-.club-register-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
-}
-
 .club-register-input,
 .club-register-textarea {
   width: 100%;
@@ -142,26 +137,6 @@ page {
   padding-bottom: 20rpx;
   font-size: 26rpx;
   line-height: 1.7;
-}
-
-.club-register-location-card {
-  margin-top: 18rpx;
-  padding: 24rpx;
-  border-radius: 24rpx;
-  background: var(--iz-surface-high);
-}
-
-.club-register-location-card__label {
-  font-size: 22rpx;
-  font-weight: 700;
-  color: var(--iz-color-primary);
-}
-
-.club-register-location-card__value {
-  margin-top: 10rpx;
-  font-size: 26rpx;
-  line-height: 1.6;
-  color: var(--iz-text-primary);
 }
 
 .club-register-footer {

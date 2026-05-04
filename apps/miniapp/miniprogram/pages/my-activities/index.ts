@@ -1,6 +1,6 @@
 import {
   getAuthSnapshot,
-  getCurrentMockUserId,
+  getCurrentUserId,
   requireCompleteProfile,
 } from "../../services/auth";
 import { listMyActivities } from "../../services/activity-service";
@@ -53,7 +53,7 @@ Page({
   onShow(): void {
     this.syncPageChrome();
     if (getAuthSnapshot().baseProfileComplete) {
-      this.hydratePage();
+      void this.hydratePage();
     }
   },
 
@@ -72,23 +72,23 @@ Page({
       return;
     }
 
-    this.hydratePage();
+    await this.hydratePage();
   },
 
-  hydratePage(): void {
+  async hydratePage(): Promise<void> {
     const authSnapshot = getAuthSnapshot();
 
     if (!authSnapshot.baseProfileComplete) {
       return;
     }
 
-    const currentUserId = getCurrentMockUserId();
+    const currentUserId = getCurrentUserId();
 
     if (!currentUserId) {
       return;
     }
 
-    const activities = listMyActivities(currentUserId);
+    const activities = await listMyActivities();
 
     this.setData({
       isReady: true,

@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService
+    @Inject(UsersService) private readonly usersService: UsersService,
+    @Inject(JwtService) private readonly jwtService: JwtService
   ) {}
 
   async loginWithWechatCode(code: string): Promise<{

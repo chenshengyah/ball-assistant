@@ -1,4 +1,4 @@
-import { listActivities } from "../../services/activity-service";
+import { fetchActivities } from "../../services/activity-service";
 import { requireCompleteProfile } from "../../services/auth";
 import type { ActivityView } from "../../types/activity";
 import { getChromeMetrics } from "../../utils/chrome";
@@ -41,6 +41,8 @@ type HomePageData = {
   menuButtonRect: MenuButtonRectLike;
   navBarHeight: number;
   pageBottomPadding: number;
+  isLoadingActivities: boolean;
+  loadFailed: boolean;
   searchKeyword: string;
   selectedCategory: string;
   statusBarHeight: number;
@@ -82,7 +84,7 @@ function toHomeCard(activity: ActivityView, index: number): ActivityCard {
     categoryId: "badminton",
     badge: activity.ownerLabel,
     badgeTone: activity.ownerType === "CLUB" ? "primary" : "tertiary",
-    coverImageUrl: COVER_IMAGES[index % COVER_IMAGES.length],
+    coverImageUrl: activity.coverUrl || COVER_IMAGES[index % COVER_IMAGES.length],
     location: activity.venueLabel,
     priceText: activity.chargeText,
     priceTone: activity.chargeText === "免费" ? "success" : "primary",
@@ -110,6 +112,8 @@ Page({
     },
     navBarHeight: 0,
     pageBottomPadding: 0,
+    isLoadingActivities: false,
+    loadFailed: false,
     searchKeyword: "",
     selectedCategory: "all",
     statusBarHeight: 0,
@@ -119,21 +123,36 @@ Page({
 
   onLoad(): void {
     this.syncChromeMetrics();
-    this.hydrateActivities();
+    void this.hydrateActivities();
   },
 
   onShow(): void {
     this.syncChromeMetrics();
-    this.hydrateActivities();
+    void this.hydrateActivities();
   },
 
-  hydrateActivities(): void {
-    const activities = listActivities(null).map(toHomeCard);
-
+  async hydrateActivities(): Promise<void> {
     this.setData({
-      activities,
+      isLoadingActivities: true,
+      loadFailed: false,
     });
-    this.updateVisibleActivities(this.data.selectedCategory, this.data.searchKeyword, activities);
+
+    try {
+      const activities = (await fetchActivities()).map(toHomeCard);
+
+      this.setData({
+        activities,
+        isLoadingActivities: false,
+      });
+      this.updateVisibleActivities(this.data.selectedCategory, this.data.searchKeyword, activities);
+    } catch {
+      this.setData({
+        activities: [],
+        isLoadingActivities: false,
+        loadFailed: true,
+      });
+      this.updateVisibleActivities(this.data.selectedCategory, this.data.searchKeyword, []);
+    }
   },
 
   handleCategoryTap(event: CategoryTapEvent): void {

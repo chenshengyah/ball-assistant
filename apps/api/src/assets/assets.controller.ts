@@ -1,4 +1,4 @@
-import { Controller, Post, Req, UseGuards } from "@nestjs/common";
+import { Controller, Inject, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../common/auth/jwt-auth.guard";
 import { AssetsService } from "./assets.service";
@@ -8,7 +8,7 @@ import { AssetsService } from "./assets.service";
 @UseGuards(JwtAuthGuard)
 @Controller("assets")
 export class AssetsController {
-  constructor(private readonly assetsService: AssetsService) {}
+  constructor(@Inject(AssetsService) private readonly assetsService: AssetsService) {}
 
   @Post("images")
   @ApiOperation({ summary: "Upload an image asset" })

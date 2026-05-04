@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { createWriteStream } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
@@ -10,7 +10,8 @@ const ALLOWED_SCENES = new Set([
   "activity-cover",
   "activity-detail",
   "club-cover",
-  "club-logo"
+  "club-logo",
+  "user-avatar"
 ]);
 const ALLOWED_MIME_TYPES = new Map([
   ["image/jpeg", ".jpg"],
@@ -20,7 +21,7 @@ const ALLOWED_MIME_TYPES = new Map([
 
 @Injectable()
 export class AssetsService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {}
 
   async uploadImage(request: {
     file: () => Promise<{

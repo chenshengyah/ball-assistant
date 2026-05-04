@@ -9,34 +9,23 @@ import type { UserGender } from "../../types/activity";
 import { getPageTopStyle } from "../../utils/chrome";
 import { resolveOwningTab } from "../../utils/navigation";
 
-type PickerChangeEvent = WechatMiniprogram.BaseEvent<{
-  value?: string;
-}>;
-
-type InputEvent = WechatMiniprogram.BaseEvent<{
-  value?: string;
-}>;
-
-type ChooseAvatarEvent = WechatMiniprogram.BaseEvent<{
-  avatarUrl?: string;
-}>;
-
-type PhoneNumberEvent = WechatMiniprogram.BaseEvent<{
-  code?: string;
-}>;
-
-type RegistrationPageData = {
+type ProfileFormValue = {
   avatarInitial: string;
   avatarUrl: string;
-  genderLabels: string[];
-  navFallbackUrl: string;
   nickname: string;
+  selectedGenderIndex: number;
+  phoneNumber: string;
+  phoneComplete: boolean;
+};
+
+type ProfileFormChangeEvent = WechatMiniprogram.BaseEvent<ProfileFormValue>;
+
+type RegistrationPageData = {
+  navFallbackUrl: string;
   pageTopStyle: string;
   pendingLabel: string;
-  phoneMasked: string;
-  phoneVerified: boolean;
+  profileForm: ProfileFormValue;
   requirePhone: boolean;
-  selectedGenderIndex: number;
   sourceLabel: string;
   submitButtonText: string;
   subtitle: string;
@@ -45,6 +34,34 @@ type RegistrationPageData = {
 
 function getAvatarInitial(nickname: string): string {
   return nickname.trim().slice(0, 1) || "你";
+}
+
+function getGenderIndex(gender?: UserGender | null): number {
+  if (gender === "MALE") {
+    return 1;
+  }
+
+  if (gender === "FEMALE") {
+    return 2;
+  }
+
+  return 0;
+}
+
+function getGenderFromIndex(selectedGenderIndex: number): UserGender | null {
+  if (selectedGenderIndex === 1) {
+    return "MALE";
+  }
+
+  if (selectedGenderIndex === 2) {
+    return "FEMALE";
+  }
+
+  return null;
+}
+
+function isValidPhoneNumber(value: string): boolean {
+  return /^1[3-9]\d{9}$/.test(value.trim());
 }
 
 function getCopy(source: string): {
@@ -61,7 +78,7 @@ function getCopy(source: string): {
       requirePhone: true,
       sourceLabel: "来自创建活动",
       submitButtonText: "保存并继续发布",
-      subtitle: "完善头像昵称、基础资料和手机号后，即可继续发布活动。",
+      subtitle: "完善头像昵称、基础资料和联系手机号后，即可继续发布活动。",
       title: "完善资料与联系方式",
     };
   }
@@ -72,7 +89,7 @@ function getCopy(source: string): {
       requirePhone: true,
       sourceLabel: "来自活动详情",
       submitButtonText: "保存并继续报名",
-      subtitle: "完善头像昵称、基础资料和手机号后，即可继续使用活动相关动作。",
+      subtitle: "完善头像昵称、基础资料和联系手机号后，即可继续使用活动相关动作。",
       title: "完善资料与联系方式",
     };
   }
@@ -133,17 +150,18 @@ function getCopy(source: string): {
 
 Page({
   data: {
-    avatarInitial: "你",
-    avatarUrl: "",
-    genderLabels: ["男", "女"],
     navFallbackUrl: "/pages/profile/index",
-    nickname: "",
     pageTopStyle: "",
     pendingLabel: "保存后，可继续浏览和使用角色相关动作。",
-    phoneMasked: "",
-    phoneVerified: false,
+    profileForm: {
+      avatarInitial: "你",
+      avatarUrl: "",
+      nickname: "",
+      selectedGenderIndex: 0,
+      phoneNumber: "",
+      phoneComplete: false,
+    },
     requirePhone: false,
-    selectedGenderIndex: 0,
     sourceLabel: "资料补全",
     submitButtonText: "保存资料",
     subtitle: "完善头像昵称和基础资料后，可继续使用相关功能。",
@@ -184,19 +202,20 @@ Page({
     const authSnapshot = getAuthSnapshot();
     const copy = getCopy(source);
     const nickname = authSnapshot.user?.nickname ?? "";
+    const phoneNumber = authSnapshot.user?.phoneNumber ?? "";
 
     this.setData({
-      avatarInitial: getAvatarInitial(nickname),
-      avatarUrl: authSnapshot.user?.avatarUrl ?? "",
       navFallbackUrl: resolveOwningTab("/pages/user-registration/index", source),
-      nickname,
       pendingLabel: copy.pendingLabel,
-      phoneMasked: authSnapshot.user?.phoneNumber
-        ? `${authSnapshot.user.phoneNumber.slice(0, 3)}****${authSnapshot.user.phoneNumber.slice(-4)}`
-        : "",
-      phoneVerified: Boolean(authSnapshot.user?.contactProfileComplete),
+      profileForm: {
+        avatarInitial: getAvatarInitial(nickname),
+        avatarUrl: authSnapshot.user?.avatarUrl ?? "",
+        nickname,
+        selectedGenderIndex: getGenderIndex(authSnapshot.user?.gender),
+        phoneNumber,
+        phoneComplete: isValidPhoneNumber(phoneNumber),
+      },
       requirePhone: copy.requirePhone,
-      selectedGenderIndex: authSnapshot.user?.gender === "FEMALE" ? 1 : 0,
       sourceLabel: copy.sourceLabel,
       submitButtonText: copy.submitButtonText,
       subtitle: copy.subtitle,
@@ -204,61 +223,22 @@ Page({
     });
   },
 
-  handleNicknameInput(event: InputEvent): void {
-    const nickname = typeof event.detail.value === "string" ? event.detail.value.trim() : "";
-
+  handleProfileFormChange(event: ProfileFormChangeEvent): void {
     this.setData({
-      avatarInitial: getAvatarInitial(nickname),
-      nickname,
+      profileForm: event.detail,
     });
   },
 
-  handleChooseAvatar(event: ChooseAvatarEvent): void {
-    const avatarUrl = typeof event.detail.avatarUrl === "string" ? event.detail.avatarUrl : "";
-
-    this.setData({
-      avatarUrl,
-    });
-  },
-
-  handleGenderChange(event: PickerChangeEvent): void {
-    this.setData({
-      selectedGenderIndex: Number(event.detail.value ?? 0),
-    });
-  },
-
-  async handleGetPhoneNumber(event: PhoneNumberEvent): Promise<void> {
-    const code = typeof event.detail.code === "string" ? event.detail.code : "";
-
-    if (!code || code === "getPhoneNumber:fail user deny") {
+  async handleSubmit(): Promise<void> {
+    if (!this.data.profileForm.avatarUrl) {
       wx.showToast({
-        title: "你还没有完成手机号验证",
+        title: "请先选择头像",
         icon: "none",
       });
       return;
     }
 
-    try {
-      const updatedUser = await updateCurrentUserPhoneNumber(code);
-
-      this.setData({
-        phoneMasked: updatedUser?.phoneNumber
-          ? `${updatedUser.phoneNumber.slice(0, 3)}****${updatedUser.phoneNumber.slice(-4)}`
-          : "",
-        phoneVerified: Boolean(updatedUser?.contactProfileComplete),
-      });
-    } catch (error) {
-      const title = error instanceof Error ? error.message : "手机号验证失败，请稍后重试";
-
-      wx.showToast({
-        title,
-        icon: "none",
-      });
-    }
-  },
-
-  async handleSubmit(): Promise<void> {
-    if (!this.data.nickname) {
+    if (!this.data.profileForm.nickname) {
       wx.showToast({
         title: "请先填写昵称",
         icon: "none",
@@ -266,22 +246,34 @@ Page({
       return;
     }
 
-    if (this.data.requirePhone && !this.data.phoneVerified) {
+    if (this.data.requirePhone && !isValidPhoneNumber(this.data.profileForm.phoneNumber)) {
       wx.showToast({
-        title: "请先完成手机号验证",
+        title: "请先填写正确手机号",
         icon: "none",
       });
       return;
     }
 
-    const gender: UserGender = this.data.selectedGenderIndex === 1 ? "FEMALE" : "MALE";
+    const gender = getGenderFromIndex(this.data.profileForm.selectedGenderIndex);
+
+    if (!gender) {
+      wx.showToast({
+        title: "请先选择性别",
+        icon: "none",
+      });
+      return;
+    }
 
     try {
       await updateCurrentUserProfile({
-        avatarUrl: this.data.avatarUrl,
-        nickname: this.data.nickname,
+        avatarUrl: this.data.profileForm.avatarUrl,
+        nickname: this.data.profileForm.nickname,
         gender,
       });
+
+      if (this.data.requirePhone) {
+        await updateCurrentUserPhoneNumber(this.data.profileForm.phoneNumber);
+      }
 
       wx.showToast({
         title: "资料已保存",

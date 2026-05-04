@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   NotFoundException
 } from "@nestjs/common";
@@ -9,7 +10,7 @@ import { UpdateClubDto } from "./dto/update-club.dto";
 
 @Injectable()
 export class ClubsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async listOwnedClubs(userId: string): Promise<Club[]> {
     return this.prisma.club.findMany({
@@ -112,7 +113,7 @@ export class ClubsService {
     return clubs.map((club) => this.toClubResponse(club));
   }
 
-  getClubStatus(club: Pick<Club, "name" | "contactName" | "contactPhone" | "address">):
+  getClubStatus(club: Pick<Club, "name" | "contactName" | "contactPhone">):
     | "READY"
     | "NEEDS_CLUB_PROFILE"
     | "NEEDS_CLUB_PHONE" {
@@ -120,7 +121,7 @@ export class ClubsService {
       return "NEEDS_CLUB_PHONE";
     }
 
-    if (!club.name.trim() || !club.contactName?.trim() || !club.address?.trim()) {
+    if (!club.name.trim() || !club.contactName?.trim()) {
       return "NEEDS_CLUB_PROFILE";
     }
 

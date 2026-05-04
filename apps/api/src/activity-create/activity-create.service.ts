@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { ClubsService } from "../clubs/clubs.service";
 import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class ActivityCreateService {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly clubsService: ClubsService
+    @Inject(UsersService) private readonly usersService: UsersService,
+    @Inject(ClubsService) private readonly clubsService: ClubsService
   ) {}
 
   async getContext(userId: string) {

@@ -1,6 +1,13 @@
-import { uploadImageAsset } from "../../services/asset-service";
+import { pickCompressAndUploadImageAsset } from "../../services/asset-service";
 import { createOrUpdateClub, fetchOwnedClubs, getOwnedClubById } from "../../services/club-service";
-import { ensureAuthenticated } from "../../services/auth";
+import {
+  ensureAuthenticated,
+  getAuthSnapshot,
+  getCurrentUserId,
+  updateCurrentUserPhoneNumber,
+  updateCurrentUserProfile,
+} from "../../services/auth";
+import type { UserGender } from "../../types/activity";
 import { getPageTopStyle } from "../../utils/chrome";
 import { resolveOwningTab } from "../../utils/navigation";
 
@@ -10,22 +17,22 @@ type ClubRegisterForm = {
   coverUrl: string;
   logoUrl: string;
   description: string;
-  province: string;
-  city: string;
-  district: string;
-  address: string;
-  latitude: string;
-  longitude: string;
-  locationName: string;
-  wechatId: string;
-  contactName: string;
-  contactPhone: string;
+};
+
+type ProfileFormValue = {
+  avatarInitial: string;
+  avatarUrl: string;
+  nickname: string;
+  selectedGenderIndex: number;
+  phoneNumber: string;
+  phoneComplete: boolean;
 };
 
 type ClubRegisterPageData = {
   form: ClubRegisterForm;
   navFallbackUrl: string;
   pageTopStyle: string;
+  profileForm: ProfileFormValue;
   source: string;
   subtitle: string;
   submitText: string;
@@ -34,41 +41,58 @@ type ClubRegisterPageData = {
 
 type InputEvent = WechatMiniprogram.BaseEvent<{ value?: string }>;
 type DatasetEvent = WechatMiniprogram.BaseEvent<{ field?: string }>;
+type ProfileFormChangeEvent = WechatMiniprogram.BaseEvent<ProfileFormValue>;
 
-type ChooseMediaSuccessResult = {
-  tempFiles?: Array<{
-    tempFilePath?: string;
-  }>;
-};
+function getResolvedCurrentUserId(): string {
+  return getCurrentUserId() || "";
+}
 
-type ChooseLocationSuccessResult = {
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-};
+function getAvatarInitial(nickname: string): string {
+  return nickname.trim().slice(0, 1) || "你";
+}
 
-type MiniProgramLocationError = {
-  errMsg?: string;
-};
+function getGenderIndex(gender?: UserGender | null): number {
+  if (gender === "MALE") {
+    return 1;
+  }
 
-type CompatibleWx = WechatMiniprogram.Wx & {
-  chooseMedia(options: {
-    count: number;
-    mediaType: string[];
-    sizeType: string[];
-    sourceType: string[];
-    success(result: ChooseMediaSuccessResult): void;
-    fail(error: MiniProgramLocationError): void;
-  }): void;
-  chooseLocation(options: {
-    success(result: ChooseLocationSuccessResult): void;
-    fail(error: MiniProgramLocationError): void;
-  }): void;
-};
+  if (gender === "FEMALE") {
+    return 2;
+  }
 
-const CURRENT_USER_ID = "user-current";
-const compatibleWx = wx as CompatibleWx;
+  return 0;
+}
+
+function getGenderFromIndex(selectedGenderIndex: number): UserGender | null {
+  if (selectedGenderIndex === 1) {
+    return "MALE";
+  }
+
+  if (selectedGenderIndex === 2) {
+    return "FEMALE";
+  }
+
+  return null;
+}
+
+function isValidPhoneNumber(value: string): boolean {
+  return /^1[3-9]\d{9}$/.test(value.trim());
+}
+
+function getProfileForm(): ProfileFormValue {
+  const authSnapshot = getAuthSnapshot();
+  const nickname = authSnapshot.user?.nickname ?? "";
+  const phoneNumber = authSnapshot.user?.phoneNumber ?? "";
+
+  return {
+    avatarInitial: getAvatarInitial(nickname),
+    avatarUrl: authSnapshot.user?.avatarUrl ?? "",
+    nickname,
+    selectedGenderIndex: getGenderIndex(authSnapshot.user?.gender),
+    phoneNumber,
+    phoneComplete: isValidPhoneNumber(phoneNumber),
+  };
+}
 
 function getEmptyForm(): ClubRegisterForm {
   return {
@@ -77,16 +101,6 @@ function getEmptyForm(): ClubRegisterForm {
     coverUrl: "",
     logoUrl: "",
     description: "",
-    province: "",
-    city: "",
-    district: "",
-    address: "",
-    latitude: "",
-    longitude: "",
-    locationName: "",
-    wechatId: "",
-    contactName: "",
-    contactPhone: "",
   };
 }
 
@@ -97,20 +111,20 @@ function getCopy(source: string, hasClubId: boolean): Pick<
   if (source === "activity-create") {
     return {
       title: hasClubId ? "完善俱乐部资料" : "创建俱乐部主体",
-      subtitle: "完成后会回到创建活动，继续选择俱乐部身份和场馆。",
+      subtitle: "完成后会回到创建活动，继续选择俱乐部身份并填写球馆。",
       submitText: hasClubId ? "保存并返回创建活动" : "创建并返回创建活动",
     };
   }
 
   return {
     title: hasClubId ? "俱乐部资料" : "创建俱乐部",
-    subtitle: "从我的入口创建或完善俱乐部资料，后续可继续管理场馆与场地。",
+    subtitle: "从我的入口创建或完善俱乐部资料，后续可继续创建活动。",
     submitText: hasClubId ? "保存并进入俱乐部管理" : "创建并进入俱乐部管理",
   };
 }
 
 function buildForm(clubId = ""): ClubRegisterForm {
-  const club = getOwnedClubById(CURRENT_USER_ID, clubId);
+  const club = getOwnedClubById(getResolvedCurrentUserId(), clubId);
 
   if (!club) {
     return getEmptyForm();
@@ -122,16 +136,6 @@ function buildForm(clubId = ""): ClubRegisterForm {
     coverUrl: club.coverUrl ?? "",
     logoUrl: club.logoUrl ?? "",
     description: club.description ?? "",
-    province: club.province ?? "",
-    city: club.city ?? "",
-    district: club.district ?? "",
-    address: club.address ?? "",
-    latitude: club.latitude ? `${club.latitude}` : "",
-    longitude: club.longitude ? `${club.longitude}` : "",
-    locationName: club.name,
-    wechatId: club.wechatId ?? "",
-    contactName: club.contactName ?? "",
-    contactPhone: club.contactPhone ?? "",
   };
 }
 
@@ -140,8 +144,9 @@ Page({
     form: getEmptyForm(),
     navFallbackUrl: "/pages/profile/index",
     pageTopStyle: "",
+    profileForm: getProfileForm(),
     source: "profile",
-    subtitle: "从我的入口创建或完善俱乐部资料，后续可继续管理场馆与场地。",
+    subtitle: "从我的入口创建或完善俱乐部资料，后续可继续创建活动。",
     submitText: "创建并进入俱乐部管理",
     title: "创建俱乐部",
   } as ClubRegisterPageData,
@@ -178,9 +183,9 @@ Page({
     }
 
     try {
-      await fetchOwnedClubs(CURRENT_USER_ID);
-    } catch {
-      // Fall back to local snapshot if the API is temporarily unavailable.
+      await fetchOwnedClubs(getResolvedCurrentUserId());
+    } catch (error) {
+      this.showError(error);
     }
 
     const copy = getCopy(source, Boolean(clubId));
@@ -188,10 +193,17 @@ Page({
     this.setData({
       form: buildForm(clubId),
       navFallbackUrl: resolveOwningTab("/pages/club-register/index", source),
+      profileForm: getProfileForm(),
       source,
       subtitle: copy.subtitle,
       submitText: copy.submitText,
       title: copy.title,
+    });
+  },
+
+  handleProfileFormChange(event: ProfileFormChangeEvent): void {
+    this.setData({
+      profileForm: event.detail,
     });
   },
 
@@ -208,41 +220,15 @@ Page({
     } as never);
   },
 
-  async pickSingleImage(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      compatibleWx.chooseMedia({
-        count: 1,
-        mediaType: ["image"],
-        sizeType: ["compressed"],
-        sourceType: ["album", "camera"],
-        success: (result: ChooseMediaSuccessResult) => {
-          resolve(result.tempFiles?.[0]?.tempFilePath ?? "");
-        },
-        fail: (error: MiniProgramLocationError) => {
-          if ((error.errMsg ?? "").includes("cancel")) {
-            resolve("");
-            return;
-          }
-
-          reject(error);
-        },
-      });
-    });
-  },
-
   async handleUploadCover(): Promise<void> {
     try {
-      const filePath = await this.pickSingleImage();
+      const uploaded = await pickCompressAndUploadImageAsset("club-cover");
 
-      if (!filePath) {
-        return;
+      if (uploaded) {
+        this.setData({
+          "form.coverUrl": uploaded.assetUrl,
+        } as never);
       }
-
-      const uploaded = await uploadImageAsset(filePath, "club-cover");
-
-      this.setData({
-        "form.coverUrl": uploaded.assetUrl,
-      } as never);
     } catch (error) {
       this.showError(error);
     }
@@ -250,58 +236,71 @@ Page({
 
   async handleUploadLogo(): Promise<void> {
     try {
-      const filePath = await this.pickSingleImage();
+      const uploaded = await pickCompressAndUploadImageAsset("club-logo");
 
-      if (!filePath) {
-        return;
+      if (uploaded) {
+        this.setData({
+          "form.logoUrl": uploaded.assetUrl,
+        } as never);
       }
-
-      const uploaded = await uploadImageAsset(filePath, "club-logo");
-
-      this.setData({
-        "form.logoUrl": uploaded.assetUrl,
-      } as never);
     } catch (error) {
       this.showError(error);
     }
   },
 
-  handleChooseLocation(): void {
-    compatibleWx.chooseLocation({
-      success: (result: ChooseLocationSuccessResult) => {
-        this.setData({
-          "form.address": result.address || "",
-          "form.latitude": `${result.latitude}`,
-          "form.longitude": `${result.longitude}`,
-          "form.locationName": result.name || "",
-        } as never);
-      },
-      fail: (error: MiniProgramLocationError) => {
-        if (!(error.errMsg ?? "").includes("cancel")) {
-          this.showError(error);
-        }
-      },
-    });
-  },
-
   async handleSubmit(): Promise<void> {
+    if (!this.data.profileForm.avatarUrl) {
+      wx.showToast({
+        title: "请先选择头像",
+        icon: "none",
+      });
+      return;
+    }
+
+    if (!this.data.profileForm.nickname) {
+      wx.showToast({
+        title: "请先填写昵称",
+        icon: "none",
+      });
+      return;
+    }
+
+    if (!isValidPhoneNumber(this.data.profileForm.phoneNumber)) {
+      wx.showToast({
+        title: "请先填写正确手机号",
+        icon: "none",
+      });
+      return;
+    }
+
+    const gender = getGenderFromIndex(this.data.profileForm.selectedGenderIndex);
+
+    if (!gender) {
+      wx.showToast({
+        title: "请先选择性别",
+        icon: "none",
+      });
+      return;
+    }
+
     try {
+      const updatedProfile = await updateCurrentUserProfile({
+        avatarUrl: this.data.profileForm.avatarUrl,
+        nickname: this.data.profileForm.nickname,
+        gender,
+      });
+      const updatedUser = await updateCurrentUserPhoneNumber(this.data.profileForm.phoneNumber);
+      const contactName = updatedUser?.nickname || updatedProfile?.nickname || this.data.profileForm.nickname;
+      const contactPhone = updatedUser?.phoneNumber || this.data.profileForm.phoneNumber;
       const nextClub = await createOrUpdateClub({
         clubId: this.data.form.clubId || undefined,
-        currentUserId: CURRENT_USER_ID,
+        currentUserId: getResolvedCurrentUserId(),
         name: this.data.form.name,
         coverUrl: this.data.form.coverUrl,
         logoUrl: this.data.form.logoUrl,
         description: this.data.form.description,
-        province: this.data.form.province,
-        city: this.data.form.city,
-        district: this.data.form.district,
-        address: this.data.form.address,
-        latitude: Number(this.data.form.latitude || "0") || undefined,
-        longitude: Number(this.data.form.longitude || "0") || undefined,
-        wechatId: this.data.form.wechatId,
-        contactName: this.data.form.contactName,
-        contactPhone: this.data.form.contactPhone,
+        contactName,
+        contactPhone,
       });
 
       wx.showToast({

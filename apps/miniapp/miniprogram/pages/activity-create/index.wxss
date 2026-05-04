@@ -104,6 +104,10 @@ page {
   color: var(--iz-text-tertiary);
 }
 
+.section-link--danger {
+  color: var(--iz-color-danger);
+}
+
 .form-section {
   margin-top: 20rpx;
 }
@@ -159,6 +163,26 @@ page {
 .text-field {
   height: 84rpx;
   line-height: 84rpx;
+}
+
+.picker-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 56rpx;
+}
+
+.picker-field::after {
+  content: "";
+  position: absolute;
+  right: 26rpx;
+  top: 50%;
+  width: 14rpx;
+  height: 14rpx;
+  border-right: 3rpx solid var(--iz-text-tertiary);
+  border-bottom: 3rpx solid var(--iz-text-tertiary);
+  transform: translateY(-62%) rotate(45deg);
 }
 
 .textarea-field {
@@ -268,8 +292,7 @@ page {
   height: 180rpx;
 }
 
-.cover-uploader__placeholder,
-.readonly-field {
+.cover-uploader__placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,71 +312,6 @@ page {
   min-height: 220rpx;
 }
 
-.registration-avatar {
-  margin-top: 12rpx;
-  padding: 20rpx 24rpx;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 20rpx;
-  border-radius: 24rpx;
-  background: var(--iz-surface-low);
-  border: 1rpx solid var(--iz-outline);
-  color: var(--iz-text-primary);
-  text-align: left;
-}
-
-.registration-avatar::after,
-.registration-phone-card__button::after {
-  border: 0;
-}
-
-.registration-avatar__image,
-.registration-avatar__fallback {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 50%;
-}
-
-.registration-avatar__fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--iz-color-primary), var(--iz-color-primary-strong));
-  color: var(--iz-surface-on-primary);
-  font-size: 36rpx;
-  font-weight: 700;
-}
-
-.registration-avatar__text {
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.registration-phone-card {
-  margin-top: 12rpx;
-  padding: 20rpx 24rpx;
-  border-radius: 24rpx;
-  background: var(--iz-surface-low);
-  border: 1rpx solid var(--iz-outline);
-}
-
-.registration-phone-card__text {
-  font-size: 26rpx;
-  line-height: 1.6;
-  color: var(--iz-text-primary);
-}
-
-.registration-phone-card__button {
-  margin-top: 16rpx;
-  height: 72rpx;
-  border-radius: 999rpx;
-  background: var(--iz-surface-high);
-  color: var(--iz-color-primary);
-  font-size: 26rpx;
-  font-weight: 600;
-}
-
 .description-editor {
   display: flex;
   flex-direction: column;
@@ -362,11 +320,36 @@ page {
 }
 
 .description-block,
+.empty-field,
 .location-card {
   padding: 20rpx;
   border: 1px solid var(--iz-outline);
   border-radius: 20rpx;
   background: var(--iz-surface-low);
+}
+
+.empty-field {
+  margin-top: 12rpx;
+}
+
+.empty-field__title {
+  color: var(--iz-text-primary);
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.empty-field__meta {
+  margin-top: 8rpx;
+  color: var(--iz-text-secondary);
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.empty-field__action {
+  margin-top: 16rpx;
+  color: var(--iz-color-primary);
+  font-size: 24rpx;
+  font-weight: 700;
 }
 
 .description-block__label {
@@ -429,19 +412,13 @@ page {
   background: var(--iz-color-primary-soft);
 }
 
-.manager-court-card--inactive {
-  opacity: 0.72;
-  background: var(--iz-surface-high);
-}
-
 .court-card__name {
   color: var(--iz-text-primary);
   font-size: 28rpx;
   font-weight: 700;
 }
 
-.court-card__toggle,
-.manager-court__tag {
+.court-card__toggle {
   color: var(--iz-color-primary);
   font-size: 24rpx;
 }

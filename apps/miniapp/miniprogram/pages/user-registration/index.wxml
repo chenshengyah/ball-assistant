@@ -8,54 +8,12 @@
   </view>
 
     <view class="registration-card">
-      <view class="registration-card__label"><text>头像</text></view>
-      <button
-        class="registration-avatar"
-        open-type="chooseAvatar"
-        bindchooseavatar="handleChooseAvatar"
-      >
-        <image
-          wx:if="{{avatarUrl}}"
-          class="registration-avatar__image"
-          src="{{avatarUrl}}"
-          mode="aspectFill"
-        />
-        <view
-          wx:else
-          class="registration-avatar__fallback"
-        ><text>{{avatarInitial}}</text></view>
-        <view class="registration-avatar__text"><text>点击选择微信头像</text></view>
-      </button>
-
-      <view class="registration-card__label"><text>昵称</text></view>
-      <input
-        class="registration-input"
-        type="nickname"
-        value="{{nickname}}"
-        placeholder="例如：小陈 / Ava / 北北"
-        bindinput="handleNicknameInput"
+      <profile-form
+        value="{{profileForm}}"
+        require-base="{{true}}"
+        require-phone="{{requirePhone}}"
+        bind:change="handleProfileFormChange"
       />
-
-      <view class="registration-card__label registration-card__label--top"><text>性别</text></view>
-      <picker
-        range="{{genderLabels}}"
-        value="{{selectedGenderIndex}}"
-        bindchange="handleGenderChange"
-      >
-        <view class="registration-picker"><text>{{genderLabels[selectedGenderIndex]}}</text></view>
-      </picker>
-
-      <view wx:if="{{requirePhone}}" class="registration-card__label registration-card__label--top"><text>手机号</text></view>
-      <view wx:if="{{requirePhone}}" class="registration-phone-card">
-        <view class="registration-phone-card__text">
-          <text>{{phoneVerified ? phoneMasked : '用于创建活动和报名时对外联系'}}</text>
-        </view>
-        <button
-          class="registration-phone-card__button"
-          open-type="getPhoneNumber"
-          bindgetphonenumber="handleGetPhoneNumber"
-        ><text>{{phoneVerified ? '重新验证' : '验证手机号'}}</text></button>
-      </view>
 
       <view class="registration-card__hint"><text>{{pendingLabel}}</text></view>
 

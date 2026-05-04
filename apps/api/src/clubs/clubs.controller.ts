@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Post, Put, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../common/auth/current-user.decorator";
 import { JwtAuthGuard } from "../common/auth/jwt-auth.guard";
@@ -12,7 +12,7 @@ import { UpdateClubDto } from "./dto/update-club.dto";
 @UseGuards(JwtAuthGuard)
 @Controller("clubs")
 export class ClubsController {
-  constructor(private readonly clubsService: ClubsService) {}
+  constructor(@Inject(ClubsService) private readonly clubsService: ClubsService) {}
 
   @Post()
   @ApiOperation({ summary: "Create a club owned by the current user" })

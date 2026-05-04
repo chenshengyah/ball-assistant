@@ -148,23 +148,21 @@ model Venue {
   club            Club?        @relation(fields: [clubId], references: [id])
   creator         User         @relation("VenueCreator", fields: [createdByUserId], references: [id])
   courts          VenueCourt[]
-  activities      Activity[]
 }
 
 model VenueCourt {
-  id              String          @id @default(cuid())
+  id              String       @id @default(cuid())
   venueId         String
   courtCode       String
   courtName       String
   defaultCapacity Int?
   defaultFeeCents Int?
   description     String?
-  sortOrder       Int             @default(1)
-  status          RecordStatus    @default(ACTIVE)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  venue           Venue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  activityCourts  ActivityCourt[]
+  sortOrder       Int          @default(1)
+  status          RecordStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  venue           Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
   @@unique([venueId, courtCode])
 }
@@ -188,8 +186,13 @@ model Activity {
   chargeMode                     ChargeMode
   chargeAmountCents              Int                 @default(0)
   chargeDesc                     String?
-  venueId                        String
   venueSnapshotName              String
+  venueSnapshotAddress           String?
+  venueSnapshotProvince          String?
+  venueSnapshotCity              String?
+  venueSnapshotDistrict          String?
+  venueSnapshotLatitude          Float?
+  venueSnapshotLongitude         Float?
   activityStartAt                DateTime
   activityEndAt                  DateTime
   cancelCutoffMinutesBeforeStart Int
@@ -203,7 +206,6 @@ model Activity {
   createdBy                      User                @relation("ActivityCreator", fields: [createdByUserId], references: [id])
   club                           Club?               @relation(fields: [clubId], references: [id])
   personalOwner                  User?               @relation("PersonalActivityOwner", fields: [personalOwnerId], references: [id])
-  venue                          Venue               @relation(fields: [venueId], references: [id])
   courts                         ActivityCourt[]
   signups                        ActivitySignup[]
   signupLogs                     ActivitySignupLog[]
@@ -212,7 +214,7 @@ model Activity {
 model ActivityCourt {
   id                  String           @id @default(cuid())
   activityId          String
-  venueCourtId        String
+  venueCourtId        String?
   courtCodeSnapshot   String
   courtNameSnapshot   String
   capacity            Int
@@ -223,7 +225,6 @@ model ActivityCourt {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   activity            Activity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  venueCourt          VenueCourt       @relation(fields: [venueCourtId], references: [id])
   signups             ActivitySignup[]
 }
 
